@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setUserElementary">
+	
+    <delete id="deleteUserElementaryInfo" parameterType="UserElementaryBean">
+		UPDATE CPES_USER
+		SET DEL_YN					= 'Y'
+			, MOD_USER_SEQ			= #{modUserSeq}
+			, MOD_DT				= NOW()	
+		WHERE USER_SEQ 				= #{userSeq}
+    </delete>
+
+
+    <update id="updateUserElementaryDtlInfo" parameterType="UserElementaryBean">
+		UPDATE CPES_USER
+		SET USER_STS_CD 					= #{userStsCd}
+			, GENDER_CD						= #{genderCd}
+			, BIRTH							= FN_GET_STR_TO_DATE(#{birth}, 'S')
+			, NID							= #{nid}
+			, ADDR_CD						= #{addrCd}
+			, ADDR_FULL_CD					= #{addrFullCd}
+			, ADDR_FULL_NM					= #{addrFullNm}
+			, ADDR_DTL						= #{addrDtl}
+			, SMS_NTCE_AGREE_YN				= #{smsNtceAgreeYn}
+			, MOD_USER_SEQ					= #{modUserSeq}
+			, MOD_DT						= NOW()
+		WHERE USER_SEQ 						= #{userSeq}
+    </update>      
+    
+    <insert id="insertUserElementaryInfo" parameterType="UserElementaryBean">
+		INSERT INTO CPES_USER (
+		USER_SEQ, USER_AUTH_CD, USER_NM_EN, USER_NM_KH, USER_STS_CD
+		, USER_CELL, SMS_NTCE_AGREE_YN, NID, GENDER_CD, BIRTH
+		, ADDR_CD, ADDR_FULL_CD, ADDR_FULL_NM, ADDR_DTL, USE_YN
+		, DEL_YN, REG_USER_SEQ, REG_DT, MOD_USER_SEQ, MOD_DT
+		, USER_EMAIL, PWD_FAIL_CNT, JC_CD, USER_PWD, NEW_PWD_APPLY_YN
+		, ACCNT_LOCK_STS_CD, PRIVATE_INFO_USE_AGREE_YN, EMAIL_NTCE_AGREE_YN) 
+		VALUES (
+		FN_GET_UUID_SEQ(), 'ROLE_LOWJS', #{userNmEn}, #{userNmKh}, 'USS0000000000'
+		, #{userCell}, #{smsNtceAgreeYn}, #{nid}, #{genderCd}, FN_GET_STR_TO_DATE(#{birth}, 'S')
+		, #{addrCd}, #{addrFullCd}, #{addrFullNm}, #{addrDtl}, 'Y'
+		, 'N', #{regUserSeq}, NOW(), #{modUserSeq}, NOW()
+		, ' ', 0, #{jcCd}, ' ', 'Y', ' ', 'Y', 'N')
+		;
+    </insert>
+    
+    <insert id="insertUserElementaryDtlInfoIntvwHis" parameterType="UserElementaryIntvwBean">
+		INSERT INTO CPES_INTVW_HIS_MNG(
+		INTVW_HIS_SEQ, USER_SEQ, RESUME_SEQ, COMPNY_SEQ, INTVW_DT
+		, INTVW_DT_HOUR, INTVW_DT_MINUTE, INTVW_DT_AMPM, ADDR_CD, ADDR_FULL_CD
+		, ADDR_FULL_NM, ADDR_DTL, CONTENT, REG_USER_SEQ, REG_DT
+		, MOD_USER_SEQ, MOD_DT) 
+		VALUES (
+		FN_GET_UUID_SEQ(), #{userSeq}, #{resumeSeq}, #{compnySeq}, FN_GET_STR_TO_DATE(#{intvwDt}, 'S')
+		, #{intvwDtHour}, #{intvwDtMinute}, #{intvwDtAmpm}, #{addrCd}, #{addrFullCd}
+		, #{addrFullNm}, #{addrDtl}, #{content}, #{regUserSeq}, NOW()
+		, #{modUserSeq}, NOW())
+		;
+    </insert>  
+    
+    <update id="updateUserElementaryDtlInfoIntvwModify" parameterType="UserElementaryIntvwBean">
+		UPDATE CPES_INTVW_HIS_MNG
+		SET INTVW_DT						= FN_GET_STR_TO_DATE(#{intvwDt}, 'S')
+			, INTVW_DT_HOUR					= #{intvwDtHour}
+			, INTVW_DT_MINUTE				= #{intvwDtMinute}
+			, INTVW_DT_AMPM					= #{intvwDtAmpm}
+			, ADDR_CD						= #{addrCd}
+			, ADDR_FULL_CD					= #{addrFullCd}
+			, ADDR_FULL_NM					= #{addrFullNm}
+			, ADDR_DTL						= #{addrDtl}
+			, COMPNY_SEQ					= #{compnySeq}
+			, CONTENT						= #{content}
+			, MOD_USER_SEQ					= #{modUserSeq}
+			, MOD_DT						= NOW()
+		WHERE INTVW_HIS_SEQ					= #{intvwHisSeq}
+		AND USER_SEQ						= #{userSeq}
+    </update>  
+
+    <insert id="insertUserElementaryDtlInfoUserTypeChg" parameterType="UserElementaryBean">
+		INSERT INTO cpes_dev.CPES_USER_CHG(
+		USER_CHG_SEQ, USER_SEQ, USER_EMAIL, CHG_PREV_CD, CHG_NEXT_CD
+		, CHG_REASON, CHG_AGREE_STS_CD, REG_USER_SEQ, REG_DT, MOD_USER_SEQ, MOD_DT) 
+		VALUES (
+		FN_GET_UUID_SEQ(), #{userSeq}, #{userEmail}, #{beforeUserAuthCd}, #{afterUserAuthCd}
+		, #{chgReason}, 'CAS0000000003', #{regUserSeq}, NOW(), #{modUserSeq}, NOW())
+    </insert>
+    
+    
+    <update id="insertElemtryCounsel" parameterType="CounselBean">
+		INSERT INTO CPES_COUNSEL
+		(
+			  COUNSEL_SEQ
+			, COUNSEL_METHOD_DIV_CD
+			, COUNSEL_CATE_DIV_CD
+			, ISCO_CD
+			, QUST_TITLE
+			, QUST_REG_USER_SEQ
+			, QUST_REG_DT
+			, ANS_CONTENT
+			, ANS_REG_USER_SEQ
+			, ANS_REG_DT
+			, COUNSEL_STS_CD
+			, JC_CD
+			, JC_USER_SEQ
+			, DEL_YN
+			, SECRET_YN
+			, LIKE_CNT
+		) VALUES
+		(
+			#{counselSeq}
+			,#{counselMethodDivCd}
+			,#{counselCateDivCd}
+			,#{iscoCd}
+			,#{qustTitle}
+			,#{userSeq}
+			,NOW()
+			,#{ansContent}
+			,#{jcUserSeq}
+			,NOW()
+			,#{counselStsCd}
+			,#{jcCd}
+			,#{jcUserSeq}
+			,#{delYn}
+			,#{secretYn}
+			,0
+		)
+
+    </update>  
+              
+</mapper>

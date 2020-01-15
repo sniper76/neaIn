@@ -1,0 +1,24 @@
+/* font */
+@font-face {
+  font-family: Noto Sans R;
+  font-style: normal;
+  font-weight: 400;
+  src: url(fonts/NotoSansR.eot);
+  src: url(fonts/NotoSansR.eot?#iefix) format("embedded-opentype"),  url(fonts/NotoSansR.woff) format("woff");
+}
+
+@font-face {
+  font-family: Noto Sans L;
+  font-style: normal;
+  font-weight: 700;
+  src: url(fonts/NotoSansL.eot);
+  src: url(fonts/NotoSansL.eot?#iefix) format("embedded-opentype"),  url(fonts/NotoSansL.woff) format("woff");
+}
+
+@font-face {
+  font-family: Symbol;
+  font-style: normal;
+  font-weight: 700;
+  src: url(fonts/Symbol.eot);
+  src: url(fonts/Symbol.eot?#iefix) format("embedded-opentype"),  url(fonts/Symbol.woff) format("woff");
+}

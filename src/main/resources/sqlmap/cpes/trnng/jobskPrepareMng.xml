@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jobskPrepareMng">
+	<select id="selectUUID" resultType="java.lang.String">
+		SELECT REPLACE(UUID(),'-','') AS uuid FROM DUAL
+	</select>
+
+	<select id="selectLOC2DepthTotalCount" resultType="java.lang.Integer" >
+		SELECT
+			COUNT(*)
+		FROM
+			CPES_LOC_CD 
+		WHERE
+			COUNTRY_ID <![CDATA[ > ]]> 0
+			AND PROVINCE_ID <![CDATA[ > ]]> 0
+			AND DISTRICT_ID <![CDATA[ = ]]> 0
+			AND COMMUNE_ID <![CDATA[ = ]]> 0
+			AND VILLAGE_ID <![CDATA[ = ]]> 0
+	</select>	
+
+	<select id="selectLOC2DepthList" resultType="CommDtlCdBean" >
+		SELECT
+			'CPES_LOC_CD' AS GRP_CD,
+			LVL_CD AS DTL_CD,
+			NM_EN AS CD_EN_NM,
+			NM_KH AS CD_KH_NM	
+		FROM
+			CPES_LOC_CD 
+		WHERE
+			COUNTRY_ID <![CDATA[ > ]]> 0
+			AND PROVINCE_ID <![CDATA[ > ]]> 0
+			AND DISTRICT_ID <![CDATA[ = ]]> 0
+			AND COMMUNE_ID <![CDATA[ = ]]> 0
+			AND VILLAGE_ID <![CDATA[ = ]]> 0
+		ORDER BY DTL_CD
+	</select>	
+ 
+	<sql id="selectEduTrnngColumn">
+		A.EDU_TRNNG_SEQ,
+		A.EDU_DIV_CD,
+		A.EDU_TRNNG_NM,
+		A.TRNNG_NATNEXP_DIV_CD,
+		A.NEA_EDU_DIV_CD,
+		A.SPONSOR,
+		A.RECRUMT_STS_CD,
+		DATE_FORMAT(A.RECURMT_BGN_DT, '%d/%m/%Y') AS RECURMT_BGN_DT,
+		DATE_FORMAT(A.RECURMT_END_DT, '%d/%m/%Y') AS RECURMT_END_DT,
+		DATE_FORMAT(A.EDU_BGN_DT, '%d/%m/%Y') AS EDU_BGN_DT,
+		DATE_FORMAT(A.EDU_END_DT, '%d/%m/%Y') AS EDU_END_DT,
+		A.EDU_DURA,
+		A.DAY_TIME,
+		A.ADDR_CD,
+		A.ADDR_FULL_CD,
+		A.ADDR_FULL_NM,		
+		A.ADDR_DTL,
+		A.PROVC_CD,
+		A.JC_AGREE_STS_CD,
+		A.JC_CD,
+		A.JC_USER_SEQ,
+		FN_GET_USER_NM_BY_USER_SEQ(A.JC_USER_SEQ, #{lang}) AS JC_USER_NM,
+		A.CATE_CD,
+		A.PROC_PROGRAM_STUDY,
+		A.DEGREE_AWARDS,
+		A.PROSPECT_OCCUP_CATE,
+		A.TUITION,
+		A.DEL_YN,
+		DATE_FORMAT(A.JC_AGREE_DT, '%d/%m/%Y %h:%i %p') AS JC_AGREE_DT,
+		DATE_FORMAT(A.JC_REJECT_DT, '%d/%m/%Y %h:%i %p') AS JC_REJECT_DT,
+		A.REG_USER_SEQ,
+		FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ, #{lang}) AS REG_USER_NM,
+		DATE_FORMAT(A.REG_DT, '%d/%m/%Y %h:%i %p') AS REG_DT,
+		A.MOD_USER_SEQ,
+		A.MOD_DT,
+		B.EDU_TRNNG_SUB_SEQ,
+		B.EDU_TARGET,
+		B.ADMSS_CRITERIA,
+		B.CONTENT,
+		B.ENROL_METHOD,
+		B.SIGN,
+		B.EDU_PROVD,
+		B.FILE_GRP_SEQ AS FILE_GRP_SEQ_EDU,
+		B.PROGRAM_CORS_TYPE_CD,
+		B.SKILL_JOB_PROGRAM_CORS_CD,
+		B.HIGH_GENRL_EDU_CORS_CD,
+		B.TIME_WEEK,
+		B.RECRUMT_MEMB,
+		B.TEACHER_NM_1,
+		B.TEACHER_NM_2,
+		B.TEACHER_1_CAREER,
+		B.TEACHER_2_CAREER,
+		B.LECTURE_PHOTO_FILE_GRP_SEQ,
+		B.TEACHER_1_PHOTO_FILE_GRP_SEQ,
+		B.TEACHER_2_PHOTO_FILE_GRP_SEQ,
+		B.AREA,
+		B.GOOGLE_MAP_LINK,
+		B.MNGER_NM,
+		B.CELL,
+		B.EMAIL,
+		DATE_FORMAT(B.TEACH_DT, '%d/%m/%Y') AS TEACH_DT,
+		B.TEACH_BGN_HOUR,
+		B.TEACH_BGN_MINUTE,
+		B.TEACH_BGN_AMPM,
+		B.TEACH_END_HOUR,
+		B.TEACH_END_MINUTE,
+		B.TEACH_END_AMPM,
+		B.CURRICL,
+		B.MATR,
+		C.INSTT_SEQ,
+		C.INSTT_NM_EN,
+		C.INSTT_NM_KH,
+		C.INSTT_OWNER_NM,
+		C.INSTT_TYPE_CD,
+		C.INSTT_REG_NUM,
+		C.INSTT_ADDR_CD,
+		C.INSTT_CONTENT,
+		C.INSTT_MNGER_NM,
+		C.INSTT_OFFICE_TEL,
+		C.INSTT_CELL,
+		C.INSTT_FAX,
+		C.INSTT_EMAIL,
+		C.INSTT_WEBSITE,
+		C.FILE_GRP_SEQ AS FILE_GRP_SEQ_INSTT,
+		C.INSTT_STS_CD,
+		C.INSTT_OWNER_CD,
+		D.USER_SEQ,
+		D.USER_AUTH_CD,
+		D.USER_STS_CD,
+		FN_GET_USER_NM_BY_USER_SEQ(D.USER_SEQ, #{lang}) AS USER_NM,
+		D.USER_EMAIL,
+		D.USE_YN,
+		( SELECT COUNT(*) FROM CPES_EDU_TRNNG_USER WHERE EDU_TRNNG_SEQ = A.EDU_TRNNG_SEQ ) AS SUBSCRIBER_CNT
+	</sql>		
+	
+	<sql id="whereEduTrnng">
+
+		<!-- NEA/학원 구분코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(neaEduDivCd)">AND A.NEA_EDU_DIV_CD = #{neaEduDivCd}</if>
+
+
+		<!-- 구직준비/소프트스킬 구분 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(eduDivCd)">AND A.EDU_DIV_CD = #{eduDivCd}</if>
+
+
+		<!-- job center  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+
+
+		<!-- 모집 상태 여부 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recrumtStsCd)">AND A.RECRUMT_STS_CD = #{recrumtStsCd}</if>
+
+
+		<!-- 검색어 (eduTrnngNm : A.EDU_TRNNG_NM or A.EDU_TRNNG_NM, insttNm :C.INSTT_NM) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'eduTrnngNm'">
+					AND A.EDU_TRNNG_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'teacherNm'">
+					AND (
+						A.TEACHER_NM_1 LIKE CONCAT('%', #{searchValue}, '%')
+						OR
+						A.TEACHER_NM_2 LIKE CONCAT('%', #{searchValue}, '%')
+					)
+				</when>
+			</choose>
+		</if>
+		
+		<!-- 주소 2 Depth  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrCd2Depth)">AND LEFT(A.ADDR_CD, 3) = #{addrCd2Depth}</if>
+
+		<!-- 분류 기간 조회  -->
+		<choose>
+			<!-- 신청일일 경우 -->
+			<when test="periodKeyword == 'regDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+					AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S') 
+					AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+				</if>
+			</when>
+
+			<!-- 모집기간일 경우 -->
+			<when test="periodKeyword == 'teachDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND B.TEACH_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND B.TEACH_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+					AND B.TEACH_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S')
+					AND B.TEACH_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E')
+				</if>
+			</when>
+		</choose>
+
+		<!-- 해당 교육 기관의 관리자는 소속 된 JOB CENTER 코드만 볼 수 있다. 아직 미확정 확정 후 통보하겠다 함.
+		AND A.JC_CD = ( 
+			SELECT JC_CD FROM CPES_USER 
+			WHERE 
+				USER_AUTH_CD = 'ROLE_ADMIN' 
+			AND 
+				JC_CD = #{user.jcCd}
+			AND 
+				USER_SEQ = #{user.userSeq}
+		) 
+		-->
+		
+		<!-- NEA 직원은 모든 JOB CENTER 코드를 볼수 있다. NEA 코드는 아직 미정 추후 추가 필요 -->
+		
+		<!-- 삭제여부가 아닌 것 -->
+		AND A.DEL_YN != 'Y'
+	</sql>
+	
+	<select id="selectEduTrnngTotalCount" resultType="java.lang.Integer" parameterType="EduTrnngMngBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM
+			CPES_EDU_TRNNG A
+		JOIN
+			CPES_EDU_TRNNG_SUB B
+		ON
+			A.EDU_TRNNG_SEQ = B.EDU_TRNNG_SEQ
+		JOIN
+			CPES_INSTT C
+		ON
+			A.INSTT_SEQ = C.INSTT_SEQ
+		JOIN
+			CPES_USER D
+		ON
+			C.USER_SEQ = D.USER_SEQ
+		<where>
+			<include refid="whereEduTrnng"/>
+		</where>
+	</select>
+	
+	<select id="selectEduTrnngList" resultType="EduTrnngMngBean" parameterType="EduTrnngMngBean">
+		SELECT 
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.* 
+		FROM (	
+				SELECT 
+					<include refid="selectEduTrnngColumn"/>
+				FROM
+					CPES_EDU_TRNNG A
+				JOIN
+					CPES_EDU_TRNNG_SUB B
+				ON
+					A.EDU_TRNNG_SEQ = B.EDU_TRNNG_SEQ
+				JOIN
+					CPES_INSTT C
+				ON
+					A.INSTT_SEQ = C.INSTT_SEQ
+				JOIN
+					CPES_USER D
+				ON
+					C.USER_SEQ = D.USER_SEQ
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) E
+				<where>
+					<include refid="whereEduTrnng"/>
+				</where>
+				<choose>
+					<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+						<choose>
+							<when test="orderColumn == 'TEACHER_NM1'">
+								ORDER BY TEACHER_NM_1 ${orderColumnSort}
+							</when>
+							<otherwise>
+								ORDER BY ${orderColumn} ${orderColumnSort}
+							</otherwise>
+						</choose>					
+					</when>
+					<otherwise>
+						ORDER BY A.REG_DT DESC
+					</otherwise>
+				</choose>
+				<if test="length > -1">
+				LIMIT 
+					${start} , ${length}				
+				</if>
+		) T
+	</select>
+	
+	<select id="selectEduTrnngDetail" resultType="EduTrnngMngBean" parameterType="EduTrnngMngBean">
+		SELECT 
+			<include refid="selectEduTrnngColumn"/>
+		FROM
+			CPES_EDU_TRNNG A
+		JOIN
+			CPES_EDU_TRNNG_SUB B
+		ON
+			A.EDU_TRNNG_SEQ = B.EDU_TRNNG_SEQ
+		JOIN
+			CPES_INSTT C
+		ON
+			A.INSTT_SEQ = C.INSTT_SEQ
+		JOIN
+			CPES_USER D
+		ON
+			C.USER_SEQ = D.USER_SEQ
+		<where>
+			A.EDU_TRNNG_SEQ = #{eduTrnngSeq}
+			<!-- 해당 교육 기관의 관리자는 소속 된 JOB CENTER 코드만 볼 수 있다. 아직 미확정 확정 후 통보하겠다 함.
+			AND A.JC_CD = ( 
+				SELECT JC_CD FROM CPES_USER 
+				WHERE 
+					USER_AUTH_CD = 'ROLE_ADMIN' 
+				AND 
+					JC_CD = #{user.jcCd}
+				AND 
+					USER_SEQ = #{user.userSeq}
+			) 
+			-->
+			
+			<!-- NEA 직원은 모든 JOB CENTER 코드를 볼수 있다. NEA 코드는 아직 미정 추후 추가 필요 -->
+			
+			<!-- 삭제여부가 아닌 것 -->
+			AND A.DEL_YN != 'Y'
+		</where>	
+	</select>
+	
+	
+	<select id="selectJobskPrepareSubscriberTotalCount" resultType="java.lang.Integer" parameterType="EduTrnngMngBean">
+				SELECT
+					COUNT(*) AS totalCount
+				FROM 
+					CPES_EDU_TRNNG_USER A
+				JOIN
+					CPES_EDU_TRNNG B
+				ON
+					A.EDU_TRNNG_SEQ = B.EDU_TRNNG_SEQ
+				JOIN
+					CPES_USER C
+				ON
+					A.USER_SEQ = C.USER_SEQ
+				WHERE
+					A.EDU_TRNNG_SEQ = #{eduTrnngSeq}	
+	</select>
+	
+	<select id="selectJobskPrepareSubscriberList" resultType="EduTrnngMngBean" parameterType="EduTrnngMngBean">
+		SELECT 
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.* 
+		FROM (	
+				SELECT
+					A.EDU_TRNNG_SEQ,
+					A.USER_SEQ,
+					A.JC_AGREE_STS_CD,
+					A.JC_USER_SEQ,
+					B.EDU_DIV_CD,
+					B.EDU_TRNNG_NM,
+					B.NEA_EDU_DIV_CD,
+					C.USER_AUTH_CD,
+					FN_GET_USER_NM_BY_USER_SEQ(A.USER_SEQ, #{lang}) AS USER_NM,
+					C.USER_EMAIL,
+					C.USER_CELL,
+					C.BIRTH,
+					TRUNCATE((TO_DAYS(NOW()) - TO_DAYS(DATE_FORMAT(C.BIRTH, '%Y-%m-%d'))) / 365, 0) AS AGE,			
+					C.GENDER_CD,
+					C.JOBSK_STS_CD,
+					A.REG_USER_SEQ,
+					DATE_FORMAT(A.REG_DT, '%d/%m/%Y %h:%i %p') AS REG_DT,
+					A.MOD_USER_SEQ,
+					DATE_FORMAT(A.MOD_DT, '%d/%m/%Y %h:%i %p') AS MOD_DT
+				FROM 
+					CPES_EDU_TRNNG_USER A
+				JOIN
+					CPES_EDU_TRNNG B
+				ON
+					A.EDU_TRNNG_SEQ = B.EDU_TRNNG_SEQ
+				JOIN
+					CPES_USER C
+				ON
+					A.USER_SEQ = C.USER_SEQ
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) E			
+				WHERE
+					A.EDU_TRNNG_SEQ = #{eduTrnngSeq}
+			<choose>
+				<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+					ORDER BY ${orderColumn} ${orderColumnSort}
+				</when>
+				<otherwise>
+					ORDER BY A.REG_DT DESC
+				</otherwise>
+			</choose>
+			<if test="length > -1">
+				LIMIT 
+					${start} , ${length}				
+			</if>
+		) T			
+	</select>
+	
+	<select id="selectJobskPrepareSubscriberDetail" resultType="EduTrnngMngBean" parameterType="EduTrnngMngBean">
+		SELECT
+			A.EDU_TRNNG_SEQ,
+			A.USER_SEQ,
+			A.JC_AGREE_STS_CD,
+			A.JC_USER_SEQ,
+			B.EDU_DIV_CD,
+			B.EDU_TRNNG_NM,
+			B.NEA_EDU_DIV_CD,
+			C.USER_AUTH_CD,
+			FN_GET_USER_NM_BY_USER_SEQ(A.USER_SEQ, #{lang}) AS USER_NM,
+			C.USER_EMAIL,
+			C.USER_CELL,
+			C.BIRTH,
+			TRUNCATE((TO_DAYS(NOW()) - TO_DAYS(DATE_FORMAT(C.BIRTH, '%Y-%m-%d'))) / 365, 0) AS AGE,			
+			C.GENDER_CD,
+			C.JOBSK_STS_CD,
+			A.REG_USER_SEQ,
+			A.REG_DT,
+			A.MOD_USER_SEQ,
+			A.MOD_DT
+		FROM 
+			CPES_EDU_TRNNG_USER A
+		JOIN
+			CPES_EDU_TRNNG B
+		ON
+			A.EDU_TRNNG_SEQ = B.EDU_TRNNG_SEQ
+		JOIN
+			CPES_USER C
+		ON
+			A.USER_SEQ = C.USER_SEQ
+		WHERE
+			A.EDU_TRNNG_SEQ = #{eduTrnngSeq}
+		AND
+			A.USER_SEQ = #{userSeq}
+	</select>	
+	
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setMngerMng">
+	
+	
+	<insert id="insertUserMenu" parameterType="UserMenuBean">
+		/** setMngerMng.insertUserMenu **/
+		INSERT INTO CPES_USER_MENU
+		(
+			USER_SEQ
+			, MENU_CD
+			, REG_USER_SEQ
+			, REG_DT
+		) VALUES
+		(
+			#{userSeq}
+			, #{menuCd}
+			, #{regUserSeq}
+			, now()
+		)
+	</insert>
+	
+	<insert id="insertUserProgram" parameterType="UserProgramBean">
+		/** setMngerMng.insertUserProgram **/
+		INSERT INTO CPES_USER_PROGRAM
+		(
+			USER_SEQ
+			, MENU_PROGRAM_MAP_SEQ
+			, PROGRAM_SEQ
+			, PRI_PROGRAM_YN
+			, REG_USER_SEQ
+			, REG_DT
+		) VALUES
+		(
+			#{userSeq}
+			, #{menuProgramMapSeq}
+			, (SELECT PROGRAM_SEQ FROM CPES_MENU_PROGRAM_MAP WHERE MENU_PROGRAM_MAP_SEQ =#{menuProgramMapSeq} LIMIT 1)
+			, (SELECT PRI_PROGRAM_YN FROM CPES_MENU_PROGRAM_MAP WHERE MENU_PROGRAM_MAP_SEQ =#{menuProgramMapSeq} LIMIT 1)
+			, #{regUserSeq}
+			, now()
+		)
+	</insert>
+	
+	<delete id="deleteUserMenu"	parameterType="UserMenuBean">
+		/** setMngerMng.deleteUserMenu **/
+		DELETE FROM CPES_USER_MENU WHERE USER_SEQ = #{userSeq}
+	</delete>
+	
+	<delete id="deleteUserProgram"	parameterType="UserMenuBean">
+		/** setMngerMng.deleteUserProgram **/
+		DELETE FROM CPES_USER_PROGRAM WHERE USER_SEQ = #{userSeq}
+	</delete>
+	
+</mapper>

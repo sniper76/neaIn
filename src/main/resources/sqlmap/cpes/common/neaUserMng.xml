@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="neaUserMng">
+	
+	<sql id="neaUserList">
+			SELECT FN_GET_COMMON_NM('INSTT_NM_CD',#{insttNmCd}, #{lang}) AS INSTT_NM_CD
+			     , A.USER_AUTH_CD
+			     , A.USER_EMAIL
+			     , A.USER_NM_KH
+			     , CASE WHEN #{lang} = 'kh'
+			           THEN A.USER_NM_KH
+			           ELSE A.USER_NM_EN
+			           END  AS USER_NM
+			     , A.USER_PWD_OLD
+			     , A.PWD_CREAT_DT
+			     , A.PWD_FAIL_CNT
+			     , A.USER_STS_CD
+			     , A.USER_CELL
+			     , A.USER_ID
+			     , A.USER_SEQ
+			     , A.JC_CD
+			     , A.USER_PWD
+			     , A.NEW_PWD_APPLY_YN
+			     , A.REG_USER_SEQ
+			     , A.REG_DT AS REG_DATE
+			     , FN_GET_BASE_DATE_CHAR(REG_DT, #{lang}) AS REG_DT
+			     , A.MOD_USER_SEQ
+			     , A.MOD_DT AS MOD_DATE
+			     , FN_GET_BASE_DATE_CHAR(MOD_DT, #{lang}) AS MOD_DT
+			     , A.BIRTH
+			     , A.GENDER_CD
+			     , A.ADDR_CD
+			     , A.ADDR_DTL
+			     , A.USE_YN
+			     , A.MNG_ID
+			     , A.MNG_YN
+			     , A.USER_NM_EN
+			     , A.JOBSK_STS_CD
+			     , A.DEL_YN
+			     , A.ADDR_FULL_CD
+			     , A.ADDR_FULL_NM
+			     , A.USER_TEL
+			     , A.NEA_JC_DIV_CD
+			     , A.NON_NEA_YN
+			     ,FN_GET_COMMON_NM('WORK_RETIRE_CD',A.WORK_RETIRE_CD, #{lang}) AS WORK_RETIRE_NM
+			     , A.WORK_RETIRE_CD
+			FROM CPES_USER A  
+            
+	</sql>
+	
+	<sql id="whereNeaUser">
+			A.DEL_YN = 'N'
+			AND A.NEA_JC_DIV_CD = #{neaJcDivCd}
+			<choose>
+	           <when test="urlChk == 'nea'">
+	           AND A.NON_NEA_YN = 'N'
+	          </when>
+	          <when test="urlChk == 'nonNea'">
+	          	AND A.NON_NEA_YN = 'Y'
+	          </when>
+	        </choose>
+			
+  			
+            <!-- keyword search 1:title, 2:reg user -->
+            <if test='keyword != null and keyword != ""'>
+	            <if test='keywordSel == "1"'> 
+					AND A.USER_NM LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "2"'> 
+					AND A.USER_ID LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "3"'> 
+					AND A.USER_EMAIL LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "4"'> 
+					AND A.USER_CELL LIKE CONCAT('%',#{keyword},'%')
+				</if>
+			</if>
+			<!-- keyword search -->
+			
+			<if test="genderCd != null and genderCd != ''">
+				AND A.GENDER_CD = #{genderCd}
+			</if>
+			<if test="genderCd != null and genderCd != ''">
+				AND A.WORK_RETIRE_CD = #{workRetireCd}
+			</if>
+			
+			<if test="startDate != null and startDate != ''">
+			<![CDATA[
+			AND A.REG_DATE	>= FN_GET_STR_TO_DATE(#{startDate}, 'S')
+			]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+			<![CDATA[			
+			AND A.REG_DATE	<= FN_GET_STR_TO_DATE(#{endDate}, 'E')
+			]]>
+			</if>
+			
+	</sql>
+	
+	<select id="selectNeaUserList" resultType="NeaUserMngBean" parameterType="NeaUserMngBean">
+        SELECT 
+			 A.*
+			,${recordsTotal} - ((${pageNo} - 1) * ${length}) - (@ROWNUM:=@ROWNUM+1) + 1 AS ROW_NUM
+		FROM(
+		        SELECT 
+					 A.*
+				FROM
+		        	  (<include refid="neaUserList"/>		
+		         
+				) A
+				<where>
+		            <include refid="whereNeaUser"/>
+				</where>
+				
+		    ) A,
+		(SELECT @ROWNUM := 1) B
+			<choose>
+	           <when test="orderColumn == 'REG_DT'">
+	          	ORDER BY A.REG_DATE ${orderColumnSort}
+	          </when>
+	          <otherwise>
+	          	ORDER BY ${orderColumn} ${orderColumnSort}
+	          </otherwise>
+	        </choose>
+        LIMIT ${start} , ${length}
+    </select>
+	
+	
+    
+    <select id="selectUserSeq" resultType="java.lang.String" parameterType="NeaUserMngBean">
+		select FN_GET_UUID_SEQ() AS uuid FROM DUAL
+	</select>
+    
+    <select id="selectNeaUserListTotalCount" resultType="java.lang.Integer" parameterType="NeaUserMngBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM 
+			(<include refid="neaUserList"/>
+		
+		) A
+		<where>
+			<include refid="whereNeaUser"/>		
+		</where>
+	</select>
+	
+	<select id="selectNeaUserMngDtl" resultType="NeaUserMngBean" parameterType="NeaUserMngBean">
+		SELECT USER_AUTH_CD
+		     , USER_EMAIL
+		     , USER_NM_KH
+		     , USER_PWD_OLD
+		     , PWD_CREAT_DT
+		     , PWD_FAIL_CNT
+		     , USER_STS_CD
+		     , WTHDR_REASON
+		     , LAST_LOGIN_DT
+		     , LAST_LOGIN_IP
+		     , USER_CELL
+		     , USER_ID
+		     , USER_SEQ
+		     , JC_CD
+		     , USER_PWD
+		     , NEW_PWD_APPLY_YN
+		     , REG_USER_SEQ
+		     , REG_DT
+		     , MOD_USER_SEQ
+		     , MOD_DT
+		     , WTHDR_REASON_CD
+		     , ACCNT_LOCK_STS_CD
+		     , PRIVATE_INFO_USE_AGREE_YN
+		     , SMS_NTCE_AGREE_YN
+		     , EMAIL_NTCE_AGREE_YN
+		     , EMAIL_USER_AUTH_VALUE
+		     , NID
+		     , USER_GRP_CD
+		     , FILE_GRP_SEQ
+		     , BIRTH
+		     , GENDER_CD
+		     , FN_GET_COMMON_NM('GENDER_CD',GENDER_CD, #{lang}) AS GENDER_NM
+		     , ADDR_CD
+		     , ADDR_DTL
+		     , INFO_OPEN_YN
+		     , CONCIL_REQ_YN
+		     , MEMB_TAC_AGREE_YN
+		     , PRIVATE_INFO_COLLCT_AGREE_YN
+		     , INFO_PROVD_INFO_AGREE_YN
+		     , USE_YN
+		     , MNG_ID
+		     , MNG_YN
+		     , USER_NM_EN
+		     , JOBSK_STS_CD
+		     , DORMANCY_YN
+		     , SMS_EMAIL_AUTH_DIV_CD
+		     , AUTH_CMPLT_YN
+		     , JOIN_ROUTE_DIV_CD
+		     , DEL_YN
+		     , ADDR_FULL_CD
+		     , ADDR_FULL_NM
+		     , USER_TEL
+		     , NEA_JC_DIV_CD
+		     , NON_NEA_YN
+		     , WORK_RETIRE_CD
+		FROM CPES_USER
+		WHERE USER_SEQ = #{userSeq}
+	</select>
+	
+</mapper>

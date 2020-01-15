@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="counsel">
+
+	<select id="selectUUID" resultType="java.lang.String" parameterType="CounselBean">
+		SELECT REPLACE(UUID(),'-','') AS uuid FROM DUAL
+	</select>
+
+	<sql id="selectCounsel">
+		SELECT 
+			COUNSEL_SEQ,
+			COUNSEL_METHOD_DIV_CD,
+			COUNSEL_CATE_DIV_CD,
+			COUNSEL_TARGET_CD,
+			COUNSEL_STS_CD,
+			ISCO_CD,
+			QUST_TITLE,
+			QUST_CONTENT,
+			QUST_ETC_REQ,
+			DATE_FORMAT(HOPE_COUNSEL_DT, '%d/%m/%Y %h:%i %p') AS HOPE_COUNSEL_DT,
+			QUST_REG_USER_SEQ,
+			DATE_FORMAT(QUST_REG_DT, '%d/%m/%Y %h:%i %p') AS QUST_REG_DT,
+			QUST_FILE_GRP_SEQ,
+			ANS_TITLE,
+			ANS_CONTENT,
+			ANS_FILE_GRP_SEQ,
+			ANS_REG_USER_SEQ,
+			DATE_FORMAT(ANS_REG_DT, '%d/%m/%Y %h:%i %p') AS ANS_REG_DT,
+			ANS_MOD_USER_SEQ,
+			DATE_FORMAT(ANS_MOD_DT, '%d/%m/%Y %h:%i %p') AS ANS_MOD_DT,
+			QUST_JC_CD,
+			FN_GET_JOB_CNTR_NM(QUST_JC_CD, #{lang}) AS JC_NM,
+			JC_USER_SEQ,
+			FN_GET_USER_NM_BY_USER_SEQ(JC_USER_SEQ, #{lang}) AS JC_USER_NM,
+			DEL_YN,
+			SECRET_YN,
+			LIKE_CNT,
+			VIEW_CNT,
+			DATE_FORMAT(COUNSEL_DT, '%d/%m/%Y %h:%i %p') AS COUNSEL_DT,
+			COUNSEL_HOUR,
+			COUNSEL_MINUTE,
+			COUNSEL_AMPM,
+			COUNSEL_NTCE
+		FROM 
+			CPES_COUNSEL
+	</sql>
+	
+	<sql id="userCounsel">
+		SELECT 
+			COUNSEL_SEQ,
+			COUNSEL_METHOD_DIV_CD,
+			FN_GET_COMMON_NM('COUNSEL_METHOD_DIV_CD',COUNSEL_METHOD_DIV_CD,#{lang}) COUNSEL_METHOD_DIV_NM,
+			COUNSEL_CATE_DIV_CD,
+			COUNSEL_TARGET_CD,
+			COUNSEL_STS_CD,
+			ISCO_CD,
+			QUST_TITLE,
+			QUST_CONTENT,
+			QUST_ETC_REQ,
+			DATE_FORMAT(HOPE_COUNSEL_DT, '%d/%m/%Y %h:%i %p') AS HOPE_COUNSEL_DT,
+			QUST_REG_USER_SEQ,
+			DATE_FORMAT(QUST_REG_DT, '%d/%m/%Y %h:%i %p') AS QUST_REG_DT,
+			QUST_FILE_GRP_SEQ,
+			ANS_TITLE,
+			ANS_CONTENT,
+			ANS_FILE_GRP_SEQ,
+			ANS_REG_USER_SEQ,
+			DATE_FORMAT(ANS_REG_DT, '%d/%m/%Y %h:%i %p') AS ANS_REG_DT,
+			ANS_MOD_USER_SEQ,
+			DATE_FORMAT(ANS_MOD_DT, '%d/%m/%Y %h:%i %p') AS ANS_MOD_DT,
+			QUST_JC_CD,
+			FN_GET_JOB_CNTR_NM(QUST_JC_CD, #{lang}) AS JC_NM,
+			JC_USER_SEQ,
+			FN_GET_USER_NM_BY_USER_SEQ(JC_USER_SEQ, #{lang}) AS JC_USER_NM,
+			DEL_YN,
+			SECRET_YN,
+			LIKE_CNT,
+			VIEW_CNT,
+			DATE_FORMAT(COUNSEL_DT, '%d/%m/%Y %h:%i %p') AS COUNSEL_DT,
+			COUNSEL_HOUR,
+			COUNSEL_MINUTE,
+			COUNSEL_AMPM,
+			COUNSEL_NTCE
+		FROM 
+			CPES_COUNSEL
+	</sql>
+	
+	<sql id="selectUser">
+		SELECT 
+			USER_SEQ,
+			USER_AUTH_CD,
+			USER_STS_CD,
+			FN_GET_USER_NM_BY_USER_SEQ(USER_SEQ, #{lang}) AS USER_NM,			
+			USER_EMAIL,
+			JC_CD,
+			USE_YN
+		FROM 
+			CPES_USER
+	</sql>	
+	
+	<sql id="whereCounsel">
+		<!-- 상담 방법 구분 (CMD0000000001 : ONLINE, CMD0000000002 : TEL, CMD0000000003 : CENTER) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(counselMethodDivCd)">AND A.COUNSEL_METHOD_DIV_CD = #{counselMethodDivCd}</if>
+
+		<!-- 상담 게시판 구분 (CTG0000000001 : STUDENT/JUNIOR, CTG0000000002 : STUDENT/SECONDARY, CTG0000000003 : STUDENT/ACADEMIC, CTG0000000004 : CAREER, CTG0000000005 : JOB SEEKER) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(counselTargetCd)">AND A.COUNSEL_TARGET_CD = #{counselTargetCd}</if>
+
+		<!-- 상담 진행 상태 구분 (CSC0000000001 : WAITING, CSC0000000002 : PROCESS, CSC0000000003 : COMPLETED) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(counselStsCd)">AND A.COUNSEL_STS_CD = #{counselStsCd}</if>
+
+		<!-- 상담 카테고리 구분 (CCD0000000001 : Course Counsel, CCD0000000002 : 1:1 counsel) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(counselCateDivCd)">
+			AND A.COUNSEL_CATE_DIV_CD = #{counselCateDivCd}
+			<choose>
+				<when test="counselCateDivCd == 'CCD0000000001'">
+					AND B.USER_AUTH_CD IN ('ROLE_USER', 'ROLE_STDIT')
+				</when>
+			</choose>		
+		</if>
+
+		<!-- 검색어 (qustTitle : A.QUST_TITLE, qustContent : A.QUST_CONTENT, userNm : B.USER_NM) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'qustTitle'">
+					AND A.QUST_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'qustContent'">
+					AND A.QUST_CONTENT LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'userNm'">
+					AND B.USER_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+			</choose>
+		</if>
+		
+		<!-- 회원 타입 구분 (ROLE_STDIT : STUDENT, ROLE_USER : JOB SEEKER) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(userAuthCd)">
+			AND B.USER_AUTH_CD = #{userAuthCd}
+		</if>
+
+		<!-- 등록일 기준 BETWEEN 시작 조회 일자 AND 종료 조회 일자
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+			AND STR_TO_DATE(A.QUST_REG_DT, '%d/%m/%Y') BETWEEN STR_TO_DATE(#{startDate}, '%d/%m/%Y') AND STR_TO_DATE(#{endDate}, '%d/%m/%Y') 
+		</if>
+		 -->
+		 
+		<!-- 등록일 기준 시작 조회 일자만 있을 경우 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+			AND STR_TO_DATE(A.QUST_REG_DT, '%d/%m/%Y') <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y') 
+		</if>
+
+		<!-- 등록일 기준 종료 조회 일자만 있을 경우 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+			AND STR_TO_DATE(A.QUST_REG_DT, '%d/%m/%Y') <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y') 
+		</if>
+				
+		<!-- 삭제글 여부 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(delYn)">AND A.DEL_YN = #{delYn}</if>
+
+		<!-- 비밀 여부 조건 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(secretYn)">AND A.SECRET_YN = #{secretYn}</if>
+			AND (
+				<!-- 해당 JOB CENTER 의 관리자는 볼수 있다. -->
+				A.QUST_JC_CD = ( 
+					SELECT JC_CD FROM CPES_USER 
+					WHERE USER_AUTH_CD = 'ROLE_ADMIN' 
+					AND JC_CD = #{user.jcCd}
+					AND USER_SEQ = #{user.userSeq}
+					AND NEA_JC_DIV_CD = 'NJD0000000002'
+				) 
+				OR
+				<!-- NEA 직원은 볼수 있다. -->
+				'NJD0000000001' = ( 
+					SELECT NEA_JC_DIV_CD FROM CPES_USER 
+					WHERE USER_AUTH_CD = 'ROLE_ADMIN' 
+					AND USER_SEQ = #{user.userSeq}
+				) 
+			) 
+		
+		<!-- 삭제여부가 아닌 것 -->
+			AND A.DEL_YN != 'Y'
+	</sql>
+	
+	<select id="selectCounselListTotalCount" resultType="java.lang.Integer" parameterType="CounselBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM 
+			(<include refid="selectCounsel"/>) A
+		JOIN
+			(<include refid="selectUser"/>) B
+		ON
+			A.QUST_REG_USER_SEQ = B.USER_SEQ
+		<where>
+			<include refid="whereCounsel"/>
+		</where>
+	</select>
+		
+	<select id="selectCounselList" resultType="CounselBean" parameterType="CounselBean">
+		SELECT 
+			A.*,
+			B.*
+		FROM
+			(<include refid="selectCounsel"/>) A
+		JOIN
+			(<include refid="selectUser"/>) B
+		ON
+			A.QUST_REG_USER_SEQ = B.USER_SEQ			
+		<where>
+			<include refid="whereCounsel"/>
+		</where>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+		ORDER BY 
+			${orderColumn} ${orderColumnSort}
+		</if>
+		<if test="length > -1">
+		LIMIT 
+			${start} , ${length}				
+		</if>
+	</select>
+
+	<select id="selectCounselDetail" resultType="CounselBean" parameterType="CounselBean">
+		SELECT 
+			A.*,
+			B.*
+		FROM
+			(<include refid="selectCounsel"/>) A
+		JOIN
+			(<include refid="selectUser"/>) B
+		ON
+			A.QUST_REG_USER_SEQ = B.USER_SEQ				
+		<where>
+			AND A.COUNSEL_SEQ = #{counselSeq}
+			AND (
+				<!-- 해당 JOB CENTER 의 관리자는 볼수 있다. -->
+				A.QUST_JC_CD = ( 
+					SELECT JC_CD FROM CPES_USER 
+					WHERE USER_AUTH_CD = 'ROLE_ADMIN' 
+					AND JC_CD = #{user.jcCd}
+					AND USER_SEQ = #{user.userSeq}
+					AND NEA_JC_DIV_CD = 'NJD0000000002'
+				) 
+				OR
+				<!-- NEA 직원은 볼수 있다. -->
+				'NJD0000000001' = ( 
+					SELECT NEA_JC_DIV_CD FROM CPES_USER 
+					WHERE USER_AUTH_CD = 'ROLE_ADMIN' 
+					AND USER_SEQ = #{user.userSeq}
+				) 
+			) 
+
+		<!-- 삭제여부가 아닌 것 -->
+			AND A.DEL_YN != 'Y'
+		</where>		
+	</select>
+	
+	
+	<select id="selectUserCounselHisTotalCount" resultType="java.lang.Integer" parameterType="CounselBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM 
+			(<include refid="selectCounsel"/>) A
+		JOIN
+			(<include refid="selectUser"/>) B
+		ON
+			A.QUST_REG_USER_SEQ = B.USER_SEQ
+		WHERE B.USER_SEQ = #{userSeq}
+		  <if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+			AND STR_TO_DATE(A.QUST_REG_DT, '%d/%m/%Y') <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y') 
+		</if>
+	</select>
+	
+	<select id="selectUserCounselHis" resultType="CounselBean" parameterType="CounselBean">
+		SELECT 
+			A.*,
+			B.*
+		FROM
+			(<include refid="userCounsel"/>) A
+		JOIN
+			(<include refid="selectUser"/>) B
+		ON
+			A.QUST_REG_USER_SEQ = B.USER_SEQ			
+		WHERE B.USER_SEQ = #{userSeq}
+		
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+			AND STR_TO_DATE(A.QUST_REG_DT, '%d/%m/%Y') <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y') 
+		</if>
+		<!-- 등록일 기준 종료 조회 일자만 있을 경우 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+			AND STR_TO_DATE(A.QUST_REG_DT, '%d/%m/%Y') <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y') 
+		</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+		ORDER BY 
+			${orderColumn} ${orderColumnSort}
+		</if>
+		<if test="length > -1">
+		LIMIT 
+			${start} , ${length}				
+		</if>
+	</select>
+	
+	<select id="selectCounselHistDetail" resultType="CounselBean" parameterType="CounselBean">
+		SELECT 
+			A.*,
+			B.*
+		FROM
+			(<include refid="selectCounsel"/>) A
+		JOIN
+			(<include refid="selectUser"/>) B
+		ON
+			A.QUST_REG_USER_SEQ = B.USER_SEQ				
+		<where>
+			AND A.COUNSEL_SEQ = #{counselSeq}
+
+		<!-- 삭제여부가 아닌 것 -->
+			AND A.DEL_YN != 'Y'
+		</where>		
+	</select>
+	
+</mapper>

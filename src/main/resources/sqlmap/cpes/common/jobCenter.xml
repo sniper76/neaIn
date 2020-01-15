@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jobCenter">
+
+
+	<select id="selectJobCenterList" parameterType="JobCenterBean" resultType="JobCenterBean">
+        SELECT A.*
+              ,${recordsTotal} - ((${pageNo} - 1) * ${length}) - (@ROWNUM:=@ROWNUM+1) + 1 AS ROW_NUM
+        FROM(
+              SELECT A.*
+              FROM(
+	              SELECT
+						A.JC_CD
+					  , CASE WHEN #{lang} = 'kh'
+					         THEN A.JC_KH
+					         ELSE A.JC_EN
+					         END AS JC_NM
+					  , CASE WHEN #{lang} = 'kh'
+					         THEN A.ADDR_KH
+					         ELSE A.ADDR_EN
+					         END AS ADDR_NM
+					  , A.TEL1
+					  , A.TEL2
+					  , A.TEL3
+					  , A.TEL4
+					  , A.EMAIL
+					  , A.FACEBOOK
+					  , A.WEBSITE
+					  , A.FILE_GRP_SEQ
+					  , A.ADDR_CD
+					  , A.EXPLN_EN
+					  , A.LNGTD
+					  , A.LATTD
+					  , A.EXPLN_KH
+					  , A.REG_USER_SEQ
+					  , FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ,#{lang}) AS REG_USER_NM
+					  , FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+					  , A.REG_DT AS REG_DATE
+					  , A.MOD_USER_SEQ
+					  , FN_GET_BASE_DATE_CHAR(A.MOD_DT, #{lang}) AS MOD_DT
+					  , A.ADDR_FULL_NM AS LOC_NM
+					  , A.MAP_LINK
+					  , A.USE_YN
+					FROM CPES_JOB_CENTER A
+				) A
+			    <where>
+				  1=1
+				  <!-- keyword search 1:user Nm, 2:cv title, 3:phone number-->
+		            <if test='keyword != null and keyword != ""'>
+			            <if test='keywordSel == "1"'>
+							AND A.JC_NM LIKE CONCAT('%',#{keyword},'%')
+						</if>
+						<if test='keywordSel == "2"'>
+							AND A.EMAIL LIKE CONCAT('%',#{keyword},'%')
+						</if>
+						<if test='keywordSel == "3"'>
+							AND A.REG_USER_NM LIKE CONCAT('%',#{keyword},'%')
+						</if>
+					</if>
+					<!-- keyword search -->
+
+				  <if test="@org.apache.commons.lang.StringUtils@isNotBlank(useYn)">
+						AND A.USE_YN = #{useYn}
+				  </if>
+				</where>
+
+				) A,
+				(SELECT @ROWNUM := 1) B
+				<choose>
+				    <when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+				               ORDER BY ${orderColumn} ${orderColumnSort}
+				     </when>
+				     <otherwise>
+				               ORDER BY A.REG_DATE DESC
+				      </otherwise>
+			    </choose>
+			 LIMIT ${start} , ${length}
+	</select>
+
+	<select id="selectJobCenterListTotalCount" parameterType="JobCenterBean" resultType="int">
+		SELECT
+			COUNT(1)
+		FROM CPES_JOB_CENTER
+		<where>
+		  1=1
+		  <!-- keyword search 1:user Nm, 2:cv title, 3:phone number-->
+            <if test='keyword != null and keyword != ""'>
+	            <if test='keywordSel == "1"'>
+					AND A.JC_NM LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "2"'>
+					AND A.EMAIL LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "3"'>
+					AND A.REG_USER_NM LIKE CONCAT('%',#{keyword},'%')
+				</if>
+			</if>
+			<!-- keyword search -->
+
+		  <if test="@org.apache.commons.lang.StringUtils@isNotBlank(useYn)">
+				AND A.USE_YN = #{useYn}
+		  </if>
+		</where>
+	</select>
+
+	<select id="selectJcCd" resultType="java.lang.String" parameterType="JobCenterBean">
+		SELECT CONCAT('JCT',LPAD(max(substr(IFNULL(A.JC_CD,0000000000),4)) + 1 ,10,'0'))
+		FROM CPES_JOB_CENTER A
+	</select>
+
+
+	<select id="selectJobCenterDtl" resultType="JobCenterBean" parameterType="JobCenterBean">
+		SELECT
+				A.JC_CD
+			  , A.ADDR_EN
+			  , A.ADDR_KH
+			  , A.JC_EN
+			  , A.JC_KH
+			  , A.TEL1
+			  , A.TEL2
+			  , A.TEL3
+			  , A.TEL4
+			  , A.EMAIL
+			  , A.FACEBOOK
+			  , A.WEBSITE
+			  , A.FILE_GRP_SEQ
+			  , FN_GET_FILE_PATH(A.FILE_GRP_SEQ) AS FILE_PATH
+			  , A.ADDR_CD
+			  , A.EXPLN_EN
+			  , A.EXPLN_KH
+			  , A.REG_USER_SEQ
+			  , FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ,#{lang}) AS REG_USER_NM
+			  , A.REG_DT
+			  , A.MOD_USER_SEQ
+			  , A.MOD_DT
+			  , A.ADDR_FULL_NM AS LOC_NM
+			  , A.MAP_LINK
+			  , A.USE_YN
+			  , A.ADDR_FULL_CD
+			  , A.ADDR_FULL_NM
+			FROM CPES_JOB_CENTER A
+		WHERE A.JC_CD = #{jcCd}
+	</select>
+
+</mapper>

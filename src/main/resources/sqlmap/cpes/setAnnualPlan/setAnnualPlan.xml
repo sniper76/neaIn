@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setAnnualPlan">
+
+	<insert id="insertAnnualPlan" parameterType="ony.cpes.internal.annualPlan.bean.APYearBaseIndicBean">
+		/*setAnnualPlan.insertAnnualPlan*/
+		<selectKey resultType="string" keyProperty="yearBaseIndicSeq" order="BEFORE">
+        	SELECT FN_GET_UUID_SEQ() AS STR FROM DUAL
+    	</selectKey>
+		INSERT INTO CPES_AP_YEAR_BASE_INDIC (
+		YEAR_BASE_INDIC_SEQ
+		, REG_USER_SEQ
+		, REG_DT
+		, MOD_USER_SEQ
+		, MOD_DT
+		, BASE_INDIC_SEQ
+		, DEPTH
+		, SORT
+		, INDIC_ITEM_NM
+		, YEAR
+		, VIEW_YN
+		, UPPER_YEAR_BASE_INDIC_SEQ
+		, FULL_YEAR_BASE_INDIC_SEQ
+		, TITLE
+		) VALUES (
+		#{yearBaseIndicSeq}
+		, #{regUserSeq}
+		, NOW()
+		, #{modUserSeq}
+		, NOW()
+		, #{baseIndicSeq}
+		, #{depth}
+		, #{sort}
+		, #{indicItemNm}
+		, #{year}
+		, 'Y'
+		, #{upperYearBaseIndicSeq}
+
+		<choose>
+			<when test="fullYearBaseIndicSeq != null and fullYearBaseIndicSeq != ''">
+				, CONCAT(#{fullYearBaseIndicSeq}, ',', #{yearBaseIndicSeq})
+			</when>
+			<otherwise>
+				, #{yearBaseIndicSeq}
+			</otherwise>
+		</choose>
+		, #{title}
+		)
+	</insert>
+
+	<insert id="insertAPIndicData" parameterType="ony.cpes.internal.annualPlan.bean.APIndicDataBean">
+		/*setAnnualPlan.insertAPIndicData*/
+		<selectKey resultType="string" keyProperty="indicDataSeq" order="BEFORE">
+        	SELECT FN_GET_UUID_SEQ() AS STR FROM DUAL
+    	</selectKey>
+    	INSERT INTO CPES_AP_INDIC_DATA (
+    	INDIC_DATA_SEQ
+    	, REG_USER_SEQ
+    	, REG_DT
+    	, MOD_USER_SEQ
+    	, MOD_DT
+    	, YEAR_BASE_INDIC_SEQ
+    	, JC_CD
+    	, CONTENT
+    	, RESULT
+    	, MONTH
+    	, DEPTH
+    	, SORT
+    	, INDIC_ITEM_NM
+    	, VIEW_YN
+    	, REPORT_CYCLE_CD
+    	) VALUES (
+    	#{indicDataSeq}
+    	, #{regUserSeq}
+		, NOW()
+		, #{modUserSeq}
+		, NOW()
+    	, #{yearBaseIndicSeq}
+    	, #{jcCd}
+    	, #{content}
+    	, #{result}
+    	, #{month}
+    	, #{depth}
+    	, #{sort}
+    	, #{indicItemNm}
+    	, 'Y'
+    	, #{reportCycleCd}
+    	)
+	</insert>
+
+	<update id="updateAPIndicData" parameterType="ony.cpes.internal.annualPlan.bean.APIndicDataBean">
+		/*setAnnualPlan.updateAPIndicData*/
+		UPDATE CPES_AP_INDIC_DATA
+		SET MOD_DT = NOW()
+		, MOD_USER_SEQ = #{modUserSeq}
+		<if test="yearBaseIndicSeq != null and yearBaseIndicSeq != ''">
+			, YEAR_BASE_INDIC_SEQ = #{yearBaseIndicSeq}
+		</if>
+		<if test="jcCd != null and jcCd != ''">
+			, JC_CD = #{jcCd}
+		</if>
+		<if test="content != null and content != ''">
+			, CONTENT = #{content}
+		</if>
+		<if test="result != null and result != ''">
+			, RESULT = #{result}
+		</if>
+		<if test="month != null and month != ''">
+			, MONTH = #{month}
+		</if>
+		<if test="depth != null and depth != ''">
+			, DEPTH = #{depth}
+		</if>
+		<if test="sort != null and sort != ''">
+			, SORT = #{sort}
+		</if>
+		<if test="indicItemNm != null and indicItemNm != ''">
+			, INDIC_ITEM_NM = #{indicItemNm}
+		</if>
+		<if test="reportCycleCd != null and reportCycleCd != ''">
+			, REPORT_CYCLE_CD = #{reportCycleCd}
+		</if>
+		WHERE INDIC_DATA_SEQ = #{indicDataSeq}
+	</update>
+
+	<delete id="deleteAPIndicData" parameterType="ony.cpes.internal.annualPlan.bean.APIndicDataBean">
+		DELETE FROM CPES_AP_INDIC_DATA
+		WHERE INDIC_DATA_SEQ = #{indicDataSeq}
+	</delete>
+
+</mapper>

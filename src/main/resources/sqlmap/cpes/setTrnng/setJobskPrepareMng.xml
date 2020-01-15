@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setJobskPrepareMng">
+
+	<update id="updateEduTrnng" parameterType="EduTrnngMngBean">
+		UPDATE
+			CPES_EDU_TRNNG
+		<set>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(eduTrnngNm)">EDU_TRNNG_NM = #{eduTrnngNm},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrCd)">ADDR_CD = #{addrCd},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrDtl)">ADDR_DTL = #{addrDtl},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrFullCd)">ADDR_FULL_CD = #{addrFullCd},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrFullNm)">ADDR_FULL_NM = #{addrFullNm},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recrumtStsCd)">RECRUMT_STS_CD = #{recrumtStsCd},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(delYn)">DEL_YN = #{delYn},</if>
+			MOD_USER_SEQ = #{modUserSeq},
+			MOD_DT = NOW()
+		</set>
+		WHERE
+			EDU_TRNNG_SEQ = #{eduTrnngSeq}
+	</update>
+
+	<update id="updateEduTrnngSub" parameterType="EduTrnngMngBean">
+		UPDATE
+			CPES_EDU_TRNNG_SUB
+		<set>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(content)">CONTENT = #{content},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(curricl)">CURRICL = #{curricl},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(matr)">MATR = #{matr},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teachDt)">TEACH_DT = STR_TO_DATE(#{teachDt}, '%d/%m/%Y'),</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teachBgnHour)">TEACH_BGN_HOUR = #{teachBgnHour},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teachBgnMinute)">TEACH_BGN_MINUTE = #{teachBgnMinute},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teachBgnAmpm)">TEACH_BGN_AMPM = #{teachBgnAmpm},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teachEndHour)">TEACH_END_HOUR = #{teachEndHour},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teachEndMinute)">TEACH_END_MINUTE = #{teachEndMinute},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recrumtStsCd)">TEACH_END_AMPM = #{teachEndAmpm},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(area)">AREA = #{area},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(googleMapLink)">GOOGLE_MAP_LINK = #{googleMapLink},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(eduTarget)">EDU_TARGET = #{eduTarget},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recrumtMemb)">RECRUMT_MEMB = #{recrumtMemb},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teacherNm1)">TEACHER_NM_1 = #{teacherNm1},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teacherNm2)">TEACHER_NM_2 = #{teacherNm2},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teacher1PhotoFileGrpSeq)">TEACHER_1_PHOTO_FILE_GRP_SEQ = #{teacher1PhotoFileGrpSeq},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teacher2PhotoFileGrpSeq)">TEACHER_2_PHOTO_FILE_GRP_SEQ = #{teacher2PhotoFileGrpSeq},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teacher1Career)">TEACHER_1_CAREER = #{teacher1Career},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(teacher2Career)">TEACHER_2_CAREER = #{teacher2Career},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(lecturePhotoFileGrpSeq)">LECTURE_PHOTO_FILE_GRP_SEQ = #{lecturePhotoFileGrpSeq},</if>
+		</set>
+		WHERE
+			EDU_TRNNG_SUB_SEQ = #{eduTrnngSubSeq}
+	</update>
+
+
+	<insert id="insertEduTrnng" parameterType="EduTrnngMngBean">
+		INSERT INTO CPES_EDU_TRNNG (
+			EDU_TRNNG_SEQ,
+			EDU_TRNNG_NM,
+			EDU_BGN_DT,
+			EDU_END_DT,
+			TRNNG_NATNEXP_DIV_CD,
+			SPONSOR,
+			RECURMT_BGN_DT,
+			RECURMT_END_DT,
+			EDU_DIV_CD,
+			EDU_DURA,
+			DAY_TIME,
+			ADDR_CD,
+			PROVC_CD,
+			JC_AGREE_STS_CD,
+			JC_CD,
+			JC_USER_SEQ,
+			INSTT_SEQ,
+			CATE_CD,
+			PROC_PROGRAM_STUDY,
+			DEGREE_AWARDS,
+			PROSPECT_OCCUP_CATE,
+			TUITION,
+			JC_AGREE_DT,
+			JC_REJECT_DT,
+			ADDR_DTL,
+			ADDR_FULL_CD,
+			ADDR_FULL_NM,
+			NEA_EDU_DIV_CD,
+			RECRUMT_STS_CD,
+			USE_YN,
+			DEL_YN,
+			REG_USER_SEQ,
+			REG_DT,
+			MOD_USER_SEQ,
+			MOD_DT
+		) VALUES (
+			#{eduTrnngSeq},
+			#{eduTrnngNm},
+			#{eduBgnDt},
+			#{eduEndDt},
+			#{trnngNatnexpDivCd},
+			#{sponsor},
+			#{recurmtBgnDt},
+			#{recurmtEndDt},
+			#{eduDivCd},
+			#{eduDura},
+			#{dayTime},
+			#{addrCd},
+			#{provcCd},
+			#{jcAgreeStsCd},
+			#{jcCd},
+			#{jcUserSeq},
+			#{insttSeq},
+			#{cateCd},
+			#{procProgramStudy},
+			#{degreeAwards},
+			#{prospectOccupCate},
+			#{tuition},
+			#{jcAgreeDt},
+			#{jcRejectDt},
+			#{addrDtl},
+			#{addrFullCd},
+			#{addrFullNm},			
+			#{neaEduDivCd},
+			(CASE WHEN CURRENT_DATE <![CDATA[ < ]]> STR_TO_DATE(#{teachDt}, '%d/%m/%Y') THEN 
+				'RSC0000000002'
+			ELSE
+				'RSC0000000003'
+			END),
+			'Y',
+			'N',
+			#{regUserSeq},
+			NOW(),
+			#{modUserSeq},
+			NOW()
+		)	
+	</insert>
+
+
+	<insert id="insertEduTrnngSub" parameterType="EduTrnngMngBean">
+		INSERT INTO CPES_EDU_TRNNG_SUB (
+			EDU_TRNNG_SUB_SEQ,
+			EDU_TRNNG_SEQ,
+			EDU_TARGET,
+			ADMSS_CRITERIA,
+			CONTENT,
+			ENROL_METHOD,
+			SIGN,
+			EDU_PROVD,
+			FILE_GRP_SEQ,
+			PROGRAM_CORS_TYPE_CD,
+			MAJOR_1DEPTH_CD,
+			MAJOR_2DEPTH_CD,
+			SKILL_JOB_PROGRAM_CORS_CD,
+			HIGH_GENRL_EDU_CORS_CD,
+			TIME_WEEK,
+			RECRUMT_MEMB,
+			TEACHER_NM_1,
+			TEACHER_NM_2,
+			TEACHER_1_CAREER,
+			TEACHER_2_CAREER,
+			LECTURE_PHOTO_FILE_GRP_SEQ,
+			TEACHER_1_PHOTO_FILE_GRP_SEQ,
+			TEACHER_2_PHOTO_FILE_GRP_SEQ,
+			AREA,
+			GOOGLE_MAP_LINK,
+			MNGER_NM,
+			CELL,
+			EMAIL,
+			TEACH_DT,
+			TEACH_BGN_HOUR,
+			TEACH_BGN_MINUTE,
+			TEACH_BGN_AMPM,
+			CURRICL,
+			MATR,
+			TEACH_END_HOUR,
+			TEACH_END_MINUTE,
+			TEACH_END_AMPM
+		) VALUES (
+			#{eduTrnngSubSeq},
+			#{eduTrnngSeq},
+			#{eduTarget},
+			#{admssCriteria},
+			#{content},
+			#{enrolMethod},
+			#{sign},
+			#{eduProvd},
+			#{fileGrpSeq},
+			#{programCorsTypeCd},
+			#{major1DepthCd},
+			#{major2DepthCd},
+			#{skillJobProgramCorsCd},
+			#{highGenrlEduCorsCd},
+			#{timeWeek},
+			#{recrumtMemb},
+			#{teacherNm1},
+			#{teacherNm2},
+			#{teacher1Career},
+			#{teacher2Career},
+			#{lecturePhotoFileGrpSeq},
+			#{teacher1PhotoFileGrpSeq},
+			#{teacher2PhotoFileGrpSeq},
+			#{area},
+			#{googleMapLink},
+			#{mngerNm},
+			#{cell},
+			#{email},
+			STR_TO_DATE(#{teachDt}, '%d/%m/%Y'),
+			#{teachBgnHour},
+			#{teachBgnMinute},
+			#{teachBgnAmpm},
+			#{curricl},
+			#{matr},
+			#{teachEndHour},
+			#{teachEndMinute},
+			#{teachEndAmpm}
+		)	
+	</insert>
+	
+	<update id="deleteEduTrnng" parameterType="EduTrnngMngBean">
+		UPDATE
+			CPES_EDU_TRNNG
+		<set>
+			DEL_YN = 'Y',
+			MOD_USER_SEQ = #{modUserSeq},
+			MOD_DT = NOW()
+		</set>
+		WHERE
+			EDU_TRNNG_SEQ = #{eduTrnngSeq}
+	</update>
+	
+	<update id="updateJobskPrepareSubscriber" parameterType="EduTrnngMngBean">
+		UPDATE
+			CPES_EDU_TRNNG_USER
+		<set>
+			JC_AGREE_STS_CD = #{jcAgreeStsCd},
+			JC_USER_SEQ = #{user.userSeq},
+		</set>
+		WHERE
+			EDU_TRNNG_SEQ = #{eduTrnngSeq}
+		AND
+			USER_SEQ = #{userSeq}
+	</update>
+		
+<!-- 
+	<insert id="insertEduTrnngLog" parameterType="EduTrnngMngBean">
+		INSERT INTO CPES_EDU_TRNNG_LOG (
+			EDU_TRNNG_LOG_SEQ,
+			EDU_TRNNG_SEQ,
+			EDU_TRNNG_NM,
+			EDU_BGN_DT,
+			EDU_END_DT,
+			TRNNG_NATNEXP_DIV_CD,
+			SPONSOR,
+			RECURMT_BGN_DT,
+			RECURMT_END_DT,
+			EDU_DIV_CD,
+			EDU_DURA,
+			DAY_TIME,
+			ADDR_CD,
+			PROVC_CD,
+			JC_AGREE_STS_CD,
+			JC_CD,
+			JC_USER_SEQ,
+			INSTT_SEQ,
+			CATE_CD,
+			PROC_PROGRAM_STUDY,
+			DEGREE_AWARDS,
+			PROSPECT_OCCUP_CATE,
+			TUITION,
+			USE_YN,
+			DEL_YN,
+			RECRUMT_STS_CD,
+			JC_AGREE_DT,
+			JC_REJECT_DT,
+			REG_USER_SEQ,
+			REG_DT,
+			MOD_USER_SEQ,
+			MOD_DT
+		) 
+		SELECT 
+			#{eduTrnngLogSeq} AS EDU_TRNNG_LOG_SEQ,
+			EDU_TRNNG_SEQ,
+			EDU_TRNNG_NM,
+			EDU_BGN_DT,
+			EDU_END_DT,
+			TRNNG_NATNEXP_DIV_CD,
+			SPONSOR,
+			RECURMT_BGN_DT,
+			RECURMT_END_DT,
+			EDU_DIV_CD,
+			EDU_DURA,
+			DAY_TIME,
+			ADDR_CD,
+			PROVC_CD,
+			JC_AGREE_STS_CD,
+			JC_CD,
+			JC_USER_SEQ,
+			INSTT_SEQ,
+			CATE_CD,
+			PROC_PROGRAM_STUDY,
+			DEGREE_AWARDS,
+			PROSPECT_OCCUP_CATE,
+			TUITION,
+			USE_YN,
+			DEL_YN,
+			RECRUMT_STS_CD,
+			JC_AGREE_DT,
+			JC_REJECT_DT,
+			REG_USER_SEQ,
+			NOW() AS REG_DT,
+			MOD_USER_SEQ,
+			NOW() AS MOD_DT
+		FROM
+			CPES_EDU_TRNNG
+		WHERE 
+			EDU_TRNNG_SEQ = #{eduTrnngSeq}
+	</insert>	
+
+	<update id="updateEduTrnngSub" parameterType="EduTrnngMngBean">
+		UPDATE
+			CPES_EDU_TRNNG_SUB
+		<set>
+		</set>
+		WHERE
+			EDU_TRNNG_SEQ = #{eduTrnngSeq}
+	</update>
+
+	<insert id="insertEduTrnngSubLog" parameterType="EduTrnngMngBean">
+		INSERT INTO CPES_EDU_TRNNG_SUB_LOG (
+			EDU_TRNNG_SUB_LOG_SEQ,
+			EDU_TRNNG_SUB_SEQ,
+			EDU_TRNNG_LOG_SEQ,
+			EDU_TARGET,
+			ADMSS_CRITERIA,
+			CONTENT,
+			ENROL_METHOD,
+			SIGN,
+			EDU_PROVD,
+			FILE_GRP_SEQ,
+			PROGRAM_CORS_TYPE_CD,
+			MAJOR_1DEPTH_CD,
+			MAJOR_2DEPTH_CD,
+			SKILL_JOB_PROGRAM_CORS_CD,
+			HIGH_GENRL_EDU_CORS_CD
+		)
+		SELECT
+		 	FN_GET_UUID_SEQ AS EDU_TRNNG_SUB_LOG_SEQ,
+			EDU_TRNNG_SUB_SEQ,
+			#{eduTrnngLogSeq} AS EDU_TRNNG_LOG_SEQ,
+			EDU_TARGET,
+			ADMSS_CRITERIA,
+			CONTENT,
+			ENROL_METHOD,
+			SIGN,
+			EDU_PROVD,
+			FILE_GRP_SEQ,
+			PROGRAM_CORS_TYPE_CD,
+			MAJOR_1DEPTH_CD,
+			MAJOR_2DEPTH_CD,
+			SKILL_JOB_PROGRAM_CORS_CD,
+			HIGH_GENRL_EDU_CORS_CD
+		FROM
+			CPES_EDU_TRNNG_SUB
+		WHERE 
+			EDU_TRNNG_SUB_SEQ = #{eduTrnngSubSeq}			
+	</insert>
+ -->		
+</mapper>

@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, minimum-scale=1.0, user-scalable=yes" />
+    <meta name="title" content="사이트 제목" />
+	<meta name="keywords" content="키워드 입력" />
+	<meta name="description" content="사이트 상세설명" />
+	<link rel="shortcut icon" href="../images/common/favicon.png" />
+    <link rel="stylesheet" href="../css/font.css" />
+    <link rel="stylesheet" href="../css/sub.css" />
+    <script src="../js/jquery/jquery-1.12.4.min.js"></script>
+    <script src="../js/common.js"></script>
+    <title>National Employment Agency Internal Portal</title>
+		<style>
+/* template 가이드용 스타일 */
+h2{font-size:30px;}
+h2 span{font-size:20px !important;}
+.template pre{margin:10px 0;padding:10px 20px 0;border:1px solid #e9e9e9;background:#fafafa;font-size:13px;}
+.template .tab_item{margin:15px 0 20px;}
+.template .tab_item{border-left:1px solid #d9d9d9;}
+.template .tab_item li{float:left;display:inline;width:7.69%;border-top:1px solid #d9d9d9;background:#eee;}
+.template .tab_item li.active{border-top:solid 1px #d9d9d9;background:#fff;}
+.template .tab_item li a{display:block;padding:0;line-height:46px;font-size:14px;letter-spacing:-1px;text-align:center;border-right:1px solid #d9d9d9;text-decoration:none;white-space:nowrap;}
+.template .tab_item li.active a,.template .tab_item .tab_obj li a:hover{background-color:#fff;}
+.tab_obj{display:none;position:relative;padding:0;}
+hr{position: static;width:100%;margin:20px 0;border-bottom:5px solid red;visibility:visible;}
+h3.aa{position:relative;padding:10px 0 20px;font-size:26px;color:#000;font-weight:400;letter-spacing:-1px;}
+h3.aa:before{position:absolute;left:0;top:0;width:25px;height:4px;content:'';background-color:#0e76bb;}
+h3.aa span,h4.aa span{font-size:16px;color:#f16c09;}
+h4.aa{position:relative;padding:5px 0 10px;font-size:20px;color:#000;font-weight:400;letter-spacing:-1px;}
+h4.aa:before{position:absolute;left:0;top:0;width:15px;height:3px;content:'';background-color:#0e76bb;}
+	</style>
+</head>
+<body>
+
+<div id="wrapper">
+<div id="container">
+    <div class="wrap clearfix">
+
+        <main class="colgroup">
+            <article>
+                <header class="sub_head">
+                    <div class="sub_title"><h2>게시판 템플릿 <span></span></h2></div>
+					<p style="color:#f16c09;">설명 박스 소스는 그대로 사용하시면 됩니다. 필요시 나중에 스타일 요청할 예정입니다.</p>
+                </header>
+
+                <div id="contents">
+<div class="template">
+
+<ul class="tab_item clearfix">
+    <li><a href="#">게시판 템플릿</a></li>
+    <li><a href="#">정렬/여백</a></li>
+    <li><a href="#">상세검색</a></li>
+    <li><a href="#">리스트</a></li>
+    <li><a href="#">상세보기</a></li>
+    <li><a href="#">글쓰기</a></li>
+    <li><a href="#">팝업</a></li>
+</ul>
+
+
+    <div class="tab_obj n1">
+
+<h3 class="aa">상단 설명 박스 <span>- 내용이 한줄일 경우 클래스 short_contents 추가</span></h3>
+<div class="bbs_explain">
+	<div class="box_wrap">
+		<p>고객님들께서 자주 문의해주시는 질문들을 카테고리 별로 모아놨습니다. <br />문의하시기 전에 꼭 확인해주세요.</p><!-- 내용이 한줄일 경우 클래스 short_contents 추가 -->
+	</div>
+</div>
+<!-- //bbs_explain -->
+
+<div class="bbs_explain">
+	<div class="box_wrap">
+		<p class="short_contents">고객님들께서 자주 문의해주시는 질문들을 카테고리 별로 모아놨습니다.</p><!-- 내용이 한줄일 경우 클래스 short_contents 추가 -->
+	</div>
+</div>
+<!-- //bbs_explain -->
+
+<hr />
+
+<h3 class="aa">설명박스</h3>
+<div class="bbs_box">
+	<div class="box_wrap">
+		<p>고객님들께서 자주 문의해주시는 질문들을 카테고리 별로 모아놨습니다. <br />문의하시기 전에 꼭 확인해주세요.</p>
+	</div>
+</div>
+<!-- //bbs_box -->
+
+<hr />
+
+<h3 class="aa">상단 <span>- 게시물 수, 카테고리 등</span></h3>
+<div class="bbs_info clearfix">
+	<div class="bbs_left bbs_count">
+		Search Result &nbsp;:
+		<strong class="currently">20</strong>
+		<span class="total">/&nbsp;1,125</span>
+	</div>
+	<div class="bbs_right bbs_category">
+		<label for="list_order" class="skip">Change list order</label>
+		<select id="list_order" title="Select Change list order">
+			<option value="">Latest</option>
+			<option value="" >View</option>
+			<option value="" >like</option>
+		</select>
+		<label for="list_count" class="skip">Change list count</label>
+		<select id="list_count" title="Select Change list count">
+			<option value="">10</option>
+			<option value="" >15</option>
+			<option value="" >20</option>
+		</select>
+		<a href="" class="bbs_btn type03 download">Dounload</a>
+	</div>
+</div>
+<!-- //bbs_info -->
+
+<hr />
+
+<h3 class="aa">페이징</h3>
+<div class="pagination">
+	<a href="" class="prev_end">First page</a>
+	<a href="" class="prev_one">Prev page</a>
+	<strong title="Current page">1</strong>
+	<a href="" title="Go to page 2">2</a>
+	<a href="" title="Go to page 3">3</a>
+	<a href="" title="Go to page 4">4</a>
+	<a href="" title="Go to page 5">5</a>
+	<a href="" title="Go to page 6">6</a>
+	<a href="" title="Go to page 7">7</a>
+	<a href="" title="Go to page 8">8</a>
+	<a href="" title="Go to page 9">9</a>
+	<a href="" title="Go to page 10">110</a>
+	<a href="" class="next_one">Next page</a>
+	<a href="" class="next_end">Last page</a>
+</div>
+<!-- //pagination -->
+
+<hr />
+
+<h3 class="aa">하단 버튼 박스</h3>
+<h4>좌&#183;우 정렬</h4>
+<div class="bbs_btn_wrap clearfix">
+	<span class="bbs_left">
+		<a href="" class="bbs_btn list">List</a>
+	</span>
+	<span class="bbs_right">
+		<a href="" class="bbs_btn save">Save</a>
+		<a href="" class="bbs_btn modify">Modify</a>
+		<a href="" class="bbs_btn cancel">Cancel</a>
+		<a href="" class="bbs_btn delete">Delete</a>
+	</span>
+</div>
+<!-- //bbs_btn_wrap -->
+
+<br />
+<h4>가운데 정렬</h4>
+<div class="bbs_btn_wrap clearfix">
+	<div class="bbs_center">
+		<a href="" class="bbs_btn list">List</a>
+		<a href="" class="bbs_btn write">Write</a>
+		<a href="" class="bbs_btn save">Save</a>
+		<a href="" class="bbs_btn modify">Modify</a>
+		<a href="" class="bbs_btn approve">Approve</a>
+		<a href="" class="bbs_btn cancel">Cancel</a>
+		<a href="" class="bbs_btn delete">Delete</a>
+		<a href="" class="bbs_btn deny">Deny</a>
+	</div>
+</div>
+<!-- //bbs_btn_wrap -->
+
+<hr />
+
+<h3 class="aa">버튼 <span>- 기본 클래스 bbs_btn 에 클래스 추가하여 사용. a, span, input, button 태그에 모두 사용 가능</span></h3>
+<div class="bbs_btn_wrap clearfix">
+	<div class="bbs_center">
+		<a href="" class="bbs_btn list">List</a>
+		<a href="" class="bbs_btn write">Write</a>
+		<a href="" class="bbs_btn save">Save</a>
+		<a href="" class="bbs_btn modify">Modify</a>
+		<a href="" class="bbs_btn approve">Approve</a>
+		<a href="" class="bbs_btn cancel">Cancel</a>
+		<a href="" class="bbs_btn delete">Delete</a>
+		<a href="" class="bbs_btn deny">Deny</a>
+		<br />
+		<a href="" class="bbs_btn">bbs_btn</a>
+		<a href="" class="bbs_btn type01">type01</a>
+		<a href="" class="bbs_btn type02">type02</a>
+		<a href="" class="bbs_btn type03">type03</a>
+		<a href="" class="bbs_btn type04">type04</a>
+		<a href="" class="bbs_btn type05">type05</a>
+		<a href="" class="bbs_btn type06">type06</a>
+	</div>
+</div>
+<!-- //bbs_btn_wrap -->
+
+<h4>작은 버튼 <span>- 클래스 small 추가</span></h4>
+<div class="bbs_btn_wrap clearfix">
+	<div class="bbs_center">
+		<a href="" class="bbs_btn list small">List</a>
+		<a href="" class="bbs_btn write small">Write</a>
+		<a href="" class="bbs_btn save small">Save</a>
+		<a href="" class="bbs_btn modify small">Modify</a>
+		<a href="" class="bbs_btn approve small">Approve</a>
+		<a href="" class="bbs_btn cancel small">Cancel</a>
+		<a href="" class="bbs_btn delete small">Delete</a>
+		<a href="" class="bbs_btn deny small">Deny</a>		
+		<br />
+		<a href="" class="bbs_btn small">bbs_btn</a>
+		<a href="" class="bbs_btn type01 small">type01</a>
+		<a href="" class="bbs_btn type02 small">type02</a>
+		<a href="" class="bbs_btn type03 small">type03</a>
+		<a href="" class="bbs_btn type04 small">type04</a>
+		<a href="" class="bbs_btn type05 small">type05</a>
+		<a href="" class="bbs_btn type06 small">type06</a>
+	</div>
+</div>
+<!-- //bbs_btn_wrap -->
+
+<h4>아이콘 버튼</h4>
+<div class="bbs_btn_wrap clearfix">
+	<div class="bbs_center">
+		<a href="" class="bbs_btn type02 small writing">button</a>
+		<a href="" class="bbs_btn type02 small check">Save</a>
+		<a href="" class="bbs_btn type02 small move">Move</a>
+		<a href="" class="bbs_btn type02 small copy">Copy</a>
+		<a href="" class="bbs_btn type06 small del">Delete</a>
+		<a href="" class="bbs_btn type06 small top">Top</a>
+		<a href="" class="bbs_btn type06 small bottom">Bottom</a>
+		<a href="" class="bbs_btn type03 small preview">Preview</a>
+		<button class="bbs_btn btn_del small">delete</button>
+		<button class="bbs_btn btn_del">delete</button>
+		<a href="" class="bbs_btn type03 download">Download</a>
+		<a href="" class="bbs_btn type03 registration">User Registration</a>
+	</div>
+</div>
+<!-- //bbs_btn_wrap -->
+
+<hr />
+
+<h3 class="aa">탭메뉴 <span>한줄에 들어갈 개수 변경해야 할 경우 클래스 count2 ~ count5 추가</span></h3>
+<div class="bbs_tab">
+	<ul class="clearfix">
+		<li><a href="">탭메뉴1탭메뉴1탭메뉴1탭메뉴1탭메뉴1탭메뉴1</a></li>
+		<li class="on"><a href="">탭메뉴2</a></li>
+		<li><a href="">탭메뉴3</a></li>
+		<li><a href="">탭메뉴4</a></li>
+	</ul>
+</div>
+
+<h4 class="aa">기능 넣어야 할 경우 <span>클래스 action 추가 하고 해당 콘텐츠에 클래스 tab_contents 추가</span></h4>
+<div class="bbs_tab action">
+	<ul class="clearfix">
+		<li class="on"><a href="">탭메뉴1탭메뉴1탭메뉴1탭메뉴1탭메뉴1탭메뉴1</a></li>
+		<li><a href="">탭메뉴2</a></li>
+		<li><a href="">탭메뉴3</a></li>
+		<li><a href="">탭메뉴4</a></li>
+	</ul>
+</div>
+<div class="tab_contents">
+	탭 콘텐츠 1
+</div>
+<div class="tab_contents">
+	탭 콘텐츠 2
+</div>
+<div class="tab_contents">
+	탭 콘텐츠 3
+</div>
+<div class="tab_contents">
+	탭 콘텐츠 4
+</div>
+
+<hr />
+
+<h3 class="aa">테이블</h3>
+<h4>thead가 있는 경우</h4>
+<table class="bbs_table">
+	<caption>테이블명 - 테이블 설명</caption>
+	<colgroup>
+		<col style="width:20%;" />
+		<col style="width:20%;" />
+		<col style="width:20%;" />
+		<col style="width:20%;" />
+		<col style="width:20%;" />
+	</colgroup>
+	<thead>
+	<tr>
+		<th scope="col">11제목</th>
+		<th scope="col">12제목</th>
+		<th scope="col">13제목</th>
+		<th scope="col">14제목</th>
+		<th scope="col">15제목</th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<th scope="col">내용</th>
+		<td>내용</td>
+		<td>내용</td>
+		<td>내용</td>
+		<td>내용</td>
+	</tr>
+	<tr>
+		<th scope="col">내용</th>
+		<td>내용</td>
+		<td>내용</td>
+		<td>내용</td>
+		<td>내용</td>
+	</tr>
+	</tbody>
+</table>
+
+<br />
+<h4>thead가 없는 경우</h4>
+<table class="bbs_table">
+	<caption>테이블명 - 테이블 설명</caption>
+	<colgroup>
+		<col style="width:15%;" />
+		<col style="width:35%;" />
+		<col style="width:15%;" />
+		<col style="width:35%;" />
+	</colgroup>
+	<tbody>
+	<tr>
+		<th scope="row">제목</th>
+		<td colspan="3">내용</td>
+	</tr>
+	<tr>
+		<th scope="row">제목</th>
+		<td>내용</td>
+		<th scope="row">제목</th>
+		<td>내용</td>
+	</tr>
+	<tr>
+		<th scope="row">제목</th>
+		<td>내용</td>
+		<th scope="row">제목</th>
+		<td>내용</td>
+	</tr>
+	</tbody>
+</table>
+
+<br />
+
+<h4>가로 스크롤 있어야 할 경우</h4>
+<div class="bbs_scroll_x">
+	<table class="bbs_table">
+		<caption>테이블명 - 테이블 설명</caption>
+		<colgroup>
+			<col style="width:15%;" />
+			<col style="width:35%;" />
+			<col style="width:15%;" />
+			<col style="width:35%;" />
+		</colgroup>
+		<tbody>
+		<tr>
+			<th scope="row">제목</th>
+			<td colspan="3">내용</td>
+		</tr>
+		<tr>
+			<th scope="row">제목</th>
+			<td>내용</td>
+			<th scope="row">제목</th>
+			<td>내용</td>
+		</tr>
+		<tr>
+			<th scope="row">제목</th>
+			<td>내용</td>
+			<th scope="row">제목</th>
+			<td>내용</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+<br />
+
+<h4>세로 스크롤 있어야 할 경우</h4>
+<div class="bbs_scroll_y">
+	<table class="bbs_table">
+		<caption>테이블명 - 테이블 설명</caption>
+		<colgroup>
+			<col style="width:15%;" />
+			<col style="width:35%;" />
+			<col style="width:15%;" />
+			<col style="width:35%;" />
+		</colgroup>
+		<tbody>
+		<tr>
+			<th scope="row">제목</th>
+			<td colspan="3">내용</td>
+		</tr>
+		<tr>
+			<th scope="row">제목</th>
+			<td>내용</td>
+			<th scope="row">제목</th>
+			<td>내용</td>
+		</tr>
+		<tr>
+			<th scope="row">제목</th>
+			<td>내용</td>
+			<th scope="row">제목</th>
+			<td>내용</td>
+		</tr>
+		<tr>
+			<th scope="row">제목</th>
+			<td>내용</td>
+			<th scope="row">제목</th>
+			<td>내용</td>
+		</tr>
+		<tr>
+			<th scope="row">제목</th>
+			<td>내용</td>
+			<th scope="row">제목</th>
+			<td>내용</td>
+		</tr>
+		<tr>
+			<th scope="row">제목</th>
+			<td>내용</td>
+			<th scope="row">제목</th>
+			<td>내용</td>
+		</tr>
+		<tr>
+			<th scope="row">제목</th>
+			<td>내용</td>
+			<th scope="row">제목</th>
+			<td>내용</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+<hr />
+
+<h3 class="aa">작성글 없음 <span>검색된 글 없을 때 주석을 풀어서 사용</span></h3>
+<div class="bbs_empty">
+	<p>No Posts Yet</p>
+	<!-- <p>No results found. <br />Please enter a search term in the search box again.</p> -->
+</div>
+<!-- //bbs_empty -->
+
+    </div>
+	<!-- // n1 -->
+
+    <div class="tab_obj n2">
+
+<h3>가로/세로 정렬</h3>
+          <pre>
+&lt;div class="text_left"&gt;왼쪽 정렬&lt;/div&gt;
+&lt;div class="text_center"&gt;중알 정렬&lt;/div&gt;
+&lt;div class="text_right"&gt;오른쪽 정렬&lt;/div&gt;
+&lt;div class="vertical_top"&gt;세로 상단 정렬&lt;/div&gt;
+&lt;div class="vertical_middle"&gt;세로 중앙 정렬&lt;/div&gt;
+&lt;div class="vertical_bottom"&gt;세로 하단 정렬&lt;/div&gt;
+        </pre>
+
+        <h3>여백 - margin</h3>
+        <pre>
+&lt;div class="margin_0"&gt;margin : 0&lt;/div&gt;
+&lt;div class="margin_10"&gt;margin : 10px&lt;/div&gt;
+&lt;div class="margin_20"&gt;margin : 20px&lt;/div&gt;
+&lt;div class="margin_30"&gt;margin : 30px&lt;/div&gt;
+        </pre>
+        <pre>
+&lt;div class="margin_t_5"&gt;margin-top : 5px;&lt;/div&gt;
+&lt;div class="margin_t_10"&gt;margin-top : 10px;&lt;/div&gt;
+               :  (5px 단위 증가)
+&lt;div class="margin_t_45"&gt;margin-top : 45px;&lt;/div&gt;
+&lt;div class="margin_t_50"&gt;margin-top : 50px;&lt;/div&gt;
+
+&lt;div class="margin_b_5"&gt;margin-bottom : 5px;&lt;/div&gt;
+&lt;div class="margin_b_10"&gt;margin-bottom : 10px;&lt;/div&gt;
+               :  (5px 단위 증가)
+&lt;div class="margin_b_45"&gt;margin-bottom : 45px;&lt;/div&gt;
+&lt;div class="margin_b_50"&gt;margin-bottom : 50px;&lt;/div&gt;
+
+&lt;div class="margin_r_5"&gt;margin-right : 5px;&lt;/div&gt;
+&lt;div class="margin_r_10"&gt;margin-right : 10px;&lt;/div&gt;
+               :  (5px 단위 증가)
+&lt;div class="margin_r_45"&gt;margin-right : 45px;&lt;/div&gt;
+&lt;div class="margin_r_50"&gt;margin-right : 50px;&lt;/div&gt;
+
+&lt;div class="margin_l_5"&gt;margin-left : 5px;&lt;/div&gt;
+&lt;div class="margin_l_10"&gt;margin-left : 10px;&lt;/div&gt;
+               :  (5px 단위 증가)
+&lt;div class="margin_l_45"&gt;margin-left : 45px;&lt;/div&gt;
+&lt;div class="margin_l_50"&gt;margin-left : 50px;&lt;/div&gt;
+
+        </pre>
+
+
+        <h3>여백 - padding</h3>
+        <pre>
+&lt;div class="padding_0"&gt;padding : 0&lt;/div&gt;
+&lt;div class="padding_10"&gt;padding : 10px&lt;/div&gt;
+&lt;div class="padding_20"&gt;padding : 20px&lt;/div&gt;
+&lt;div class="padding_30"&gt;padding : 30px&lt;/div&gt;
+        </pre>
+        <pre>
+&lt;div class="padding_t_5"&gt;padding-top : 5px;&lt;/div&gt;
+&lt;div class="padding_t_10"&gt;padding-top : 10px;&lt;/div&gt;
+               :  (5px 단위 증가)
+&lt;div class="padding_t_45"&gt;padding-top : 45px;&lt;/div&gt;
+&lt;div class="padding_t_50"&gt;padding-top : 50px;&lt;/div&gt;
+
+&lt;div class="padding_b_5"&gt;padding-bottom : 5px;&lt;/div&gt;
+&lt;div class="padding_b_10"&gt;padding-bottom : 10px;&lt;/div&gt;
+               :  (5px 단위 증가)
+&lt;div class="padding_b_45"&gt;padding-bottom : 45px;&lt;/div&gt;
+&lt;div class="padding_b_50"&gt;padding-bottom : 50px;&lt;/div&gt;
+
+&lt;div class="padding_r_5"&gt;padding-right : 5px;&lt;/div&gt;
+&lt;div class="padding_r_10"&gt;padding-right : 10px;&lt;/div&gt;
+               :  (5px 단위 증가)
+&lt;div class="padding_r_45"&gt;padding-right : 45px;&lt;/div&gt;
+&lt;div class="padding_r_50"&gt;padding-right : 50px;&lt;/div&gt;
+
+&lt;div class="padding_l_5"&gt;padding-left : 5px;&lt;/div&gt;
+&lt;div class="padding_l_10"&gt;padding-left : 10px;&lt;/div&gt;
+               :  (5px 단위 증가)
+&lt;div class="padding_l_45"&gt;padding-left : 45px;&lt;/div&gt;
+&lt;div class="padding_l_50"&gt;padding-left : 50px;&lt;/div&gt;
+
+        </pre>
+
+	</div>
+	<!-- // n2 -->
+
+    <div class="tab_obj n3">
+        
+<div class="search_box">
+	<div class="contents_box">
+		<form>
+			<fieldset>
+				<legend>Contents Search</legend>
+				<table>
+					<caption>Contents Search - Search, User Type, Period</caption>
+					<colgroup>
+						<col style="width:12%" />
+						<col style="width:38%" />
+						<col style="width:12%" />
+						<col style="width:38%" />
+					</colgroup>
+					<tbody>
+					<tr>
+						<th scope="row">Search</th>
+						<td>
+							<label for="Search_sel" class="skip">category selection</label>
+							<select id="Search_sel">
+								<option value="">All</option>
+								<option value="">All</option>
+								<option value="">All</option>
+							</select>
+							<label for="" class="skip"></label>
+							<input type="text" id="" />
+						</td>
+						<th scope="row">User Type</th>
+						<td>
+							<span class="radio_box">
+								<input type="radio" name="UserType" id="UserType1" />
+								<label for="UserType1">All</label>
+							</span>
+							<span class="radio_box">
+								<input type="radio" name="UserType" id="UserType2" />
+								<label for="UserType2">Job Seeker</label>
+							</span>
+							<span class="radio_box">
+								<input type="radio" name="UserType" id="UserType3" />
+								<label for="UserType3">Student/Intern</label>
+							</span>
+							<span class="radio_box">
+								<input type="radio" name="UserType" id="UserType4" />
+								<label for="UserType4">Employer</label>
+							</span>
+							<span class="radio_box">
+								<input type="radio" name="UserType" id="UserType5" />
+								<label for="UserType5">Trainin Institution</label>
+							</span>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">Period</th>
+						<td colspan="3">
+							<span class="period_box">
+								<span class="date_box">
+									<label for="start_date" class="skip">start date</label>
+									<input type="text" id="start_date" title="Start date Select from calendar" placeholder="start date" />
+									<button type="button">Start date Select from calendar</button>
+								</span>
+								-&nbsp;
+								<span class="date_box">
+									<label for="end_date" class="skip">end date</label>
+									<input type="text" id="end_date" title="End date Select from calendar" placeholder="end date" />
+									<button type="button">End date Select from calendar</button>
+								</span>
+							</span>
+							<span class="period_choose">
+								<button type="button">Today</button>
+								<button type="button">2Week</button>
+								<button type="button">1Month</button>
+								<button type="button">1Year</button>
+								<button type="button">All</button>
+							</span>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+				<div class="detail_table">
+					<table>
+						<caption>Detail Contents Search - </caption>
+						<tbody>
+						<colgroup>
+							<col style="width:12%" />
+							<col style="width:38%" />
+							<col style="width:12%" />
+							<col style="width:38%" />
+						</colgroup>
+						<tr>
+							<th scope="row">111</th>
+							<td>111</td>
+							<th scope="row">1111</th>
+							<td>11111</td>
+						</tr>
+						<tr>
+							<th scope="row">2222</th>
+							<td colspan="3">2222</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="put_box">
+					<button type="button" class="open_detail">Open Detail Search</button>
+					<input type="submit" value="SEARCH" class="btn_submit" />
+				</div>
+			</fieldset>
+		</form>
+	</div>
+	<!-- //contents_box -->
+</div>
+<!-- //search_box -->
+
+    </div>
+    <!-- // n3 -->
+
+    <div class="tab_obj n4">
+
+<div class="bbs_info clearfix">
+	<div class="bbs_left bbs_count">
+		Search Result &nbsp;:
+		<strong class="currently">20</strong>
+		<span class="total">/&nbsp;1,125</span>
+	</div>
+	<div class="bbs_right bbs_category">
+		<label for="list_order" class="skip">Change list order</label>
+		<select id="list_order" title="Select Change list order">
+			<option value="">Latest</option>
+			<option value="" >View</option>
+			<option value="" >like</option>
+		</select>
+		<label for="list_count" class="skip">Change list count</label>
+		<select id="list_count" title="Select Change list count">
+			<option value="">10</option>
+			<option value="" >15</option>
+			<option value="" >20</option>
+		</select>
+		<a href="" class="bbs_btn type03 download">Dounload</a>
+	</div>
+</div>
+<!-- //bbs_info -->
+
+<div class="bbs_basic">
+	<table class="bbs_table list"><!-- 클래스 list 추가 -->
+		<caption>{Board name} Write - 공지사항여부, 부서, 제목, 작성자, 내용, 첨부파일, 이미지첨부파일의 대체텍스트 입력</caption>
+		<colgroup>
+			<col style="width:2%;" />
+			<col style="width:8%;" />
+			<col style="width:10%;" />
+			<col />
+			<col style="width:10%;" />
+			<col style="width:10%;" />
+			<col style="width:10%;" />
+			<col style="width:15%;" />
+			<col style="width:8%;" />
+			<col style="width:8%;" />
+		</colgroup>
+		<thead>
+		<tr>
+			<th scope="col"></th>
+			<th scope="col">No</th>
+			<th scope="col">User ID</th>
+			<th scope="col">Name</th>
+			<th scope="col">Approval Status</th>
+			<th scope="col">Registered Date</th>
+			<th scope="col">Mobile</th>
+			<th scope="col">E-mail</th>
+			<th scope="col">Last Modified</th>
+			<th scope="col">Modify Info</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td><input type="checkbox" id="" /></td>
+			<td>10,250</td>
+			<td>brad.kim</td>
+			<td class="subject">younggu.kim</td><!-- 좌측 정령이어야 할 경우 클래스 subject 추가 -->
+			<td></td>
+			<td>09.09.21019</td>
+			<td>096.222.3333</td>
+			<td>brad.kim@gmail.com</td>
+			<td>09.09.2019</td>
+			<td><a href="" class="bbs_btn type02 small writing">Modify</a></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="" /></td>
+			<td>10,250</td>
+			<td>brad.kim</td>
+			<td class="subject">younggu.kim</td><!-- 좌측 정령이어야 할 경우 클래스 subject 추가 -->
+			<td></td>
+			<td>09.09.21019</td>
+			<td>096.222.3333</td>
+			<td>brad.kim@gmail.com</td>
+			<td>09.09.2019</td>
+			<td><a href="" class="bbs_btn type06 small del">Delete</a></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="" /></td>
+			<td>10,250</td>
+			<td>brad.kim</td>
+			<td class="subject">younggu.kim</td><!-- 좌측 정령이어야 할 경우 클래스 subject 추가 -->
+			<td></td>
+			<td>09.09.21019</td>
+			<td>096.222.3333</td>
+			<td>brad.kim@gmail.com</td>
+			<td>09.09.2019</td>
+			<td><a href="" class="bbs_btn type02 small writing">Modify</a></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="" /></td>
+			<td>10,250</td>
+			<td>brad.kim</td>
+			<td class="subject">younggu.kim</td><!-- 좌측 정령이어야 할 경우 클래스 subject 추가 -->
+			<td></td>
+			<td>09.09.21019</td>
+			<td>096.222.3333</td>
+			<td>brad.kim@gmail.com</td>
+			<td>09.09.2019</td>
+			<td><a href="" class="bbs_btn type02 small writing">Modify</a></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="" /></td>
+			<td>10,250</td>
+			<td>brad.kim</td>
+			<td class="subject">younggu.kim</td><!-- 좌측 정령이어야 할 경우 클래스 subject 추가 -->
+			<td></td>
+			<td>09.09.21019</td>
+			<td>096.222.3333</td>
+			<td>brad.kim@gmail.com</td>
+			<td>09.09.2019</td>
+			<td><a href="" class="bbs_btn type02 small writing">Modify</a></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="" /></td>
+			<td>10,250</td>
+			<td>brad.kim</td>
+			<td class="subject">younggu.kim</td><!-- 좌측 정령이어야 할 경우 클래스 subject 추가 -->
+			<td></td>
+			<td>09.09.21019</td>
+			<td>096.222.3333</td>
+			<td>brad.kim@gmail.com</td>
+			<td>09.09.2019</td>
+			<td><a href="" class="bbs_btn type02 small writing">Modify</a></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="" /></td>
+			<td>10,250</td>
+			<td>brad.kim</td>
+			<td class="subject">younggu.kim</td><!-- 좌측 정령이어야 할 경우 클래스 subject 추가 -->
+			<td></td>
+			<td>09.09.21019</td>
+			<td>096.222.3333</td>
+			<td>brad.kim@gmail.com</td>
+			<td>09.09.2019</td>
+			<td><a href="" class="bbs_btn type02 small writing">Modify</a></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="" /></td>
+			<td>10,250</td>
+			<td>brad.kim</td>
+			<td class="subject">younggu.kim</td><!-- 좌측 정령이어야 할 경우 클래스 subject 추가 -->
+			<td></td>
+			<td>09.09.21019</td>
+			<td>096.222.3333</td>
+			<td>brad.kim@gmail.com</td>
+			<td>09.09.2019</td>
+			<td><a href="" class="bbs_btn type02 small writing">Modify</a></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="" /></td>
+			<td>10,250</td>
+			<td>brad.kim</td>
+			<td class="subject">younggu.kim</td><!-- 좌측 정령이어야 할 경우 클래스 subject 추가 -->
+			<td></td>
+			<td>09.09.21019</td>
+			<td>096.222.3333</td>
+			<td>brad.kim@gmail.com</td>
+			<td>09.09.2019</td>
+			<td><a href="" class="bbs_btn type02 small writing">Modify</a></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+<!-- //bbs_basic list -->
+
+<div class="bbs_empty">
+	<p>No Posts Yet</p>
+	<!-- <p>No results found. <br />Please enter a search term in the search box again.</p> -->
+</div>
+<!-- //bbs_empty -->
+
+<div class="bbs_btn_wrap clearfix">
+	<span class="bbs_left">
+		<a href="" class="bbs_btn approve">Approve</a>
+		<a href="" class="bbs_btn deny">Deny</a>
+	</span>
+	<span class="bbs_right">
+		<a href="" class="bbs_btn type03 registration">User Registration</a>
+	</span>
+</div>
+<!-- //bbs_btn_wrap -->
+
+<div class="pagination">
+	<a href="" class="prev_end">First page</a>
+	<a href="" class="prev_one">Prev page</a>
+	<strong title="Current page">1</strong>
+	<a href="" title="Go to page 2">2</a>
+	<a href="" title="Go to page 3">3</a>
+	<a href="" title="Go to page 4">4</a>
+	<a href="" title="Go to page 5">5</a>
+	<a href="" title="Go to page 6">6</a>
+	<a href="" title="Go to page 7">7</a>
+	<a href="" title="Go to page 8">8</a>
+	<a href="" title="Go to page 9">9</a>
+	<a href="" title="Go to page 10">110</a>
+	<a href="" class="next_one">Next page</a>
+	<a href="" class="next_end">Last page</a>
+</div>
+<!-- //pagination -->
+
+    </div>
+	<!-- // n4 -->
+
+
+    <div class="tab_obj n5">
+
+<div class="bbs_basic">
+	<table class="bbs_table view">
+		<caption>{Board name} View - 공지사항여부, 부서, 제목, 작성자, 내용, 첨부파일, 이미지첨부파일의 대체텍스트</caption>
+		<colgroup>
+			<col style="width:15%;" />
+			<col style="width:35%;" />
+			<col style="width:15%;" />
+			<col style="width:35%;" />
+		</colgroup>
+		<tbody>
+		<tr>
+			<th scope="row">Title</th>
+			<td colspan="3">
+				sdfsdfsdfsdf
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Name</th>
+			<td colspan="3">
+				sdfsdfsdfsdf
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Phone</th>
+			<td colspan="3">
+				sdfsdfsdfsdf
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">E-mail</th>
+			<td colspan="3">
+				sdfsdfsdfsdf
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">E-mail</th>
+			<td colspan="3">
+				sdfsdfsdfsdf
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Password</th>
+			<td colspan="3">
+				sdfsdfsdfsdfsdf
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Category</th>
+			<td>
+				sdfsdfsdfsdfsdf
+			</td>
+			<th scope="row">radio type</th>
+			<td>
+				sdfsdfsdfsdfsdf
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">checkbox type</th>
+			<td colspan="3">
+				sdfsdfsdfsfdsdf
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">date of birth</th>
+			<td colspan="3">
+				sdfsdfdsfdsfdsf
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Current address <br />Detailed address</th>
+			<td colspan="3">
+				sadfsdfsdfsdfsdfsdfsdf
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Contents</th>
+			<td colspan="3">
+				asdsadasdsadsda
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Attach</th>
+			<td colspan="3">
+			
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Keyword</th>
+			<td colspan="3">
+				<div class="form_wrap">
+					<div class="form_contents">
+						<div class="form_box">
+							<div class="form_element keyword active"><!-- 수정일 경우 등록된 키워드가 있다면 클래스 active 추가 -->
+								<div class="view_area">
+									<label for="keyword" class="skip">Keyword input</label>
+									<span class="text_box">
+										<span>#keyword<button type="button">delete</button></span>
+										<span>#keyword<button type="button">delete</button></span>
+										<span>#keyword<button type="button">delete</button></span>
+									</span>
+									<input type="text" id="keyword" class="input_key" />
+								</div>
+							</div>
+							<div class="keyword_info">
+								<strong>※ After entering #+ keyword and press enter button, you can add a keyword.</strong>
+								<span>Please enter keywords about related your interesting and preference. Keyword will be used for searching and  matching CV and referral.</span>
+							</div>
+						</div>
+						<!-- //form_box -->
+					</div>
+					<!-- //form_contents -->
+				</div>
+				<!-- //form_wrap -->
+			</td>
+		</tr>
+		</tbody>
+	</table>
+	<!-- //bbs_table view -->
+	
+	<div class="bbs_btn_wrap clearfix">
+		<span class="bbs_left">
+			<a href="" class="bbs_btn list">list</a>
+		</span>
+		<span class="bbs_right">
+			<a href="" class="bbs_btn modify">Modify</a>
+		</span>
+	</div>
+	<!-- //bbs_btn_wrap -->
+</div>
+<!-- //bbs_basic view -->
+
+    </div>
+	<!-- // n5 -->
+
+    <div class="tab_obj n6">
+        
+<div class="bbs_basic">
+	<form method="post">
+		<fieldset>
+			<legend>Write a post</legend>
+			<div class="bbs_write_top"><span><span class="exactly y">necessary</span>Necessary</span></div>
+			<table class="bbs_table write">
+				<caption>{Board name} Write - 공지사항여부, 부서, 제목, 작성자, 내용, 첨부파일, 이미지첨부파일의 대체텍스트 입력</caption>
+				<colgroup>
+					<col style="width:15%;" />
+					<col style="width:35%;" />
+					<col style="width:15%;" />
+					<col style="width:35%;" />
+				</colgroup>
+				<tbody>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">Title</label></th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3"><input type="text" id="" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">Name</label></th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3"><input type="text" id="" placeholder="User Name"  disabled="disabled" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">Phone</label></th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3"><input type="text" id="" title="Phone number" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">E-mail</label></th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3"><input type="text" id="" title="E-mail" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">E-mail</label></th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3">
+						<input type="text" id="" title="E-mail" />
+						<button type="button" class="bbs_btn type03">Check</button><!-- check 버튼 -->
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">Password</label></th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3">
+						<input type="password" id="" title="Password" />
+						<p class="bbs_description">Password should be combination of 8-15 characters with capital and small letters, number, and special characters (!$$%)</p><!-- 설명 문구 -->
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">Category</label></th>
+					<td>
+						<select id="" title="Category">
+							<option value="Category">Category</option>
+							<option value="Category">Category</option>
+							<option value="Category">Category</option>
+							<option value="Category">Category</option>
+						</select>
+					</td>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">radio type</label></th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td>
+						<span class="bbs_input_box">
+							<input type="radio" name="radio" id="radio1" />
+							<label for="radio1">radio1</label>
+						</span>
+						<span class="bbs_input_box">
+							<input type="radio" name="radio" id="radio2" />
+							<label for="radio2">radio2</label>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> checkbox type</th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3">
+						<span class="bbs_input_box">
+							<input type="checkbox" name="checkbox" id="checkbox1" />
+							<label for="checkbox1">checkbox1</label>
+						</span>
+						<span class="bbs_input_box">
+							<input type="checkbox" name="checkbox" id="checkbox2" />
+							<label for="checkbox2">checkbox2</label>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">date of birth</label></th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3">
+						<span class="bbs_date">
+							<select id="" title="day">
+								<option value="">1</option>
+								<option value="">2</option>
+								<option value="">3</option>
+								<option value="">4</option>
+							</select>
+							<label for="">DD</label>
+						</span>
+						<span class="bbs_date">
+							<select id="" title="month">
+								<option value="">1</option>
+								<option value="">2</option>
+								<option value="">3</option>
+								<option value="">4</option>
+							</select>
+							<label for="">MM</label>
+						</span>
+						<span class="bbs_date">
+							<select id="" title="year">
+								<option value="">1960</option>
+								<option value="">1961</option>
+								<option value="">1962</option>
+								<option value="">1963</option>
+							</select>
+							<label for="">YY</label>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">Current address <br />Detailed address</label></th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3">
+						<div class="bbs_address">
+							<button type="button" class="bbs_btn type03">Location</button>
+							<br />
+							<input type="text" id="" />
+						</div>
+						<p class="bbs_description">Please input your current address. Job Center will be designated based on your current address</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly y">necessary</span> <label for="">Contents</label></th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3">
+						<textarea id="" cols="30" rows="10" title="Contents" class="bbs_write_content"></textarea>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly"></span> Attach</th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3"><input type="file" id="" class="file" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><span class="exactly"></span> Keyword</th><!-- 필수 황목일 경우 exacly 에 클래스 y 추가 -->
+					<td colspan="3">
+						<div class="form_wrap">
+							<div class="form_contents">
+								<div class="form_box">
+									<div class="form_element keyword"><!-- 수정일 경우 등록된 키워드가 있다면 클래스 active 추가 -->
+										<div class="view_area">
+											<label for="keyword" class="skip">Keyword input</label>
+											<span class="text_box">
+											</span>
+											<input type="text" id="keyword" class="input_key" />
+										</div>
+									</div>
+									<div class="keyword_info">
+										<strong>※ After entering #+ keyword and press enter button, you can add a keyword.</strong>
+										<span>Please enter keywords about related your interesting and preference. Keyword will be used for searching and  matching CV and referral.</span>
+									</div>
+								</div>
+								<!-- //form_box -->
+							</div>
+							<!-- //form_contents -->
+						</div>
+						<!-- //form_wrap -->
+					</td>
+				</tr>
+				</tbody>
+			</table>
+			<!-- //bbs_table write -->
+			
+			<p class="bbs_write_bottom">* Only jpg, jpeg, png, gif, bmp and tiff file with maximum size of 20MB is allowed.</p>
+			
+			<div class="bbs_btn_wrap clearfix">
+				<span class="bbs_left">
+					<a href="" class="bbs_btn list">list</a>
+				</span>
+				<span class="bbs_right">
+					<input type="submit" value="Save" class="bbs_btn save" />
+					<input type="submit" value="Modify" class="bbs_btn modify" />
+					<a href="" class="bbs_btn delete">Delete</a>
+				</span>
+			</div>
+			<!-- //bbs_btn_wrap -->
+
+		</fieldset>
+	</form>
+
+</div>
+<!-- //bbs_basic write -->
+
+    </div>
+    <!-- // n6 -->
+
+    <div class="tab_obj n7">
+
+<div class="bbs_popup"><!-- 팝업 가로, 세로 지정하지 않았습니다. 필요에 딸라 지정해서 사용 -->
+	<section class="box_wrap">
+		<div class="title_box">
+			<h1 class="title">팝업 제목</h1>
+		</div>
+		<div class="contents_box">
+
+			팝업 내용(새창으로 열리는 팝업일 경우 사용)
+
+		</div>
+		<button type="button" class="close">close of popup</button>
+	</section>
+</div>
+<!-- //bbs_popup -->
+
+<h4>선택박스 추가된 팝업</h4>
+
+<div class="bbs_popup"><!-- 팝업 가로, 세로 지정하지 않았습니다. 필요에 딸라 지정해서 사용 -->
+	<section class="box_wrap">
+		<div class="title_box">
+			<h1 class="title">Location Selection</h1>
+		</div>
+		<div class="contents_box">
+			<div class="pop_scroll_box count4"><!-- 한줄에 들어갈 개수 변경해야 할 경우 클래스 count2 ~ count5 추가 -->
+				<ul class="clearfix">
+				<li class="dep1">
+					<div class="scroll_box">
+						<div class="scroll_title">
+							<strong>Province</strong>
+						</div>
+						<div class="scroll_cont">
+							<ul>
+							<li class="on"><a href="">adlfjsdljflksdfj</a></li><!-- 활성화 됐을 때 li 에 클래스 on 추가 -->
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							</ul>
+						</div>
+					</div>
+				</li>
+				<li class="dep1">
+					<div class="scroll_box">
+						<div class="scroll_title">
+							<strong>District</strong>
+						</div>
+						<div class="scroll_cont">
+							<ul>
+							<li class="on"><a href="">adlfjsdljflksdfj</a></li><!-- 활성화 됐을 때 li 에 클래스 on 추가 -->
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							</ul>
+						</div>
+					</div>
+				</li>
+				<li class="dep1">
+					<div class="scroll_box">
+						<div class="scroll_title">
+							<strong>Commune</strong>
+						</div>
+						<div class="scroll_cont">
+							<ul>
+							<li class="on"><a href="">adlfjsdljflksdfj</a></li><!-- 활성화 됐을 때 li 에 클래스 on 추가 -->
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							</ul>
+						</div>
+					</div>
+				</li>
+				<li class="dep1">
+					<div class="scroll_box">
+						<div class="scroll_title">
+							<strong>Village</strong>
+						</div>
+						<div class="scroll_cont">
+							<ul>
+							<li class="on"><a href="">adlfjsdljflksdfj</a></li><!-- 활성화 됐을 때 li 에 클래스 on 추가 -->
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							<li><a href="">adlfjsdljflksdfj</a></li>
+							</ul>
+						</div>
+					</div>
+				</li>
+				</ul>
+			</div>
+			<div class="selection_box">
+				<ul class="clearfix">
+				<li><span class="cont">자바프로그래머<button class="bbs_btn btn_del small">delete</button></span></li>
+				<li><span class="cont">웹프로그래머<button class="bbs_btn btn_del small">delete</button></span></li>
+				</ul>
+			</div>
+			<p>※희망직종은 4개까지만 선택 가능합니다.</p>
+
+			<div class="button_box">
+				<button type="button" class="bbs_btn save">Select</button>
+				<button type="button" class="bbs_btn cancel">Cancel</button>
+			</div>
+		</div>
+		<button type="button" class="close">close of popup</button>
+	</section>
+</div>
+<!-- //bbs_popup -->
+
+	</div>
+	<!-- // n7 -->
+
+<script>tabOrg('.template',1,'text'); </script>
+
+                    </div>
+                    <!-- //tempatle -->
+
+
+
+
+
+			</div>
+			<!-- //contents -->
+		</article>
+	</main>
+	<!-- //main.colgroup -->
+</div>
+<!-- //container -->
+
+</div>
+
+</body>
+</html>

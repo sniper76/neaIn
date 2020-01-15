@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="euc-kr"?>
+<!DOCTYPE configuration  PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <settings>
+        <!-- changes from the defaults for testing -->
+        <setting name="cacheEnabled"            value="true" />
+        <setting name="useGeneratedKeys"        value="false" />
+        <setting name="defaultExecutorType"     value="REUSE" />
+        <setting name="defaultStatementTimeout" value="25000" />
+        <setting name="callSettersOnNulls"      value="true"/>
+        <setting name="jdbcTypeForNull"         value="VARCHAR"/>
+        <setting name="mapUnderscoreToCamelCase"   value="true"/>
+    </settings>
+
+    <typeAliases>
+		<typeAlias  alias="Map"                 	type="java.util.Map"/>
+		<typeAlias  alias="hashMap"             	type="java.util.HashMap" />
+		<package 	name="ony.cpes.internal.bulletin.bean"/>
+		<package 	name="ony.cpes.internal.resume.bean"/>
+		<package 	name="ony.cpes.internal.trnng.bean"/>
+		<package 	name="ony.cpes.internal.user.bean"/>
+		<package 	name="ony.cpes.internal.common.bean"/>
+		<package 	name="ony.cpes.internal.jobsk.bean"/>
+		<package 	name="ony.cpes.internal.referral.bean"/>
+		<package 	name="ony.cpes.internal.counsel.bean"/>
+		<package 	name="ony.cpes.internal.program.bean"/>
+		<package 	name="ony.cpes.internal.sitemgmt.bean"/>
+		<package 	name="ony.cpes.internal.vacancy.bean"/>
+		<package 	name="ony.cpes.internal.fair.bean"/>
+		<package 	name="ony.cpes.internal.stat.bean"/>
+		<package 	name="ony.cpes.internal.batch.bean"/>
+		<package 	name="ony.cmm.common.bean"/>
+    </typeAliases>        
+</configuration>

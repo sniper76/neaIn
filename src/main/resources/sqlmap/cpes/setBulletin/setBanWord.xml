@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setBanWord">
+	<insert id="insertBanWord" parameterType="BanWordBean">
+		INSERT INTO CPES_BANWORD
+		(
+			 BANWORD_SEQ
+		   , BANWORD
+		   , REG_USER_SEQ
+		   , REG_DT
+		   , MOD_USER_SEQ
+		   , MOD_DT
+		   , USE_YN
+		 ) VALUES (
+		     #{banwordSeq}
+		   , #{banword}
+		   , #{user.userSeq}
+		   , NOW()
+		   , #{user.userSeq}
+		   , NOW()
+		   , #{useYn}
+		 )
+
+	</insert>
+	
+	
+	<update id="updateBanWord" parameterType="BanWordBean">
+		UPDATE CPES_BANWORD SET 
+			   BANWORD = #{banwordtxt}
+			 , MOD_USER_SEQ = #{user.userSeq}
+			 , MOD_DT = NOW()
+		WHERE BANWORD_SEQ = #{banwordSeq}
+	</update>
+	
+	
+	
+	
+	<delete id="deleteBanWord" parameterType="BanWordBean">
+		DELETE FROM CPES_BANWORD
+		<where>
+				BANWORD_SEQ = #{banwordSeq}
+		</where>
+	</delete>
+	
+</mapper>

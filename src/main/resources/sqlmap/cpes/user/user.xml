@@ -1,0 +1,1058 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="user">
+
+	<select id="selectUserInfoListAjax" resultType="UserBean" parameterType="UserBean">
+		/** selectUserInfoListAjax **/
+		SELECT
+		${totalCount} - ((${pageNo} - 1) * ${length}) - (@ROWNUM := @ROWNUM + 1) + 1 AS ROW_NUM
+		, TAB.USER_AUTH_NM
+		, TAB.USER_SEQ
+		, TAB.USER_ID
+		, TAB.USER_NM
+		, TAB.USER_EMAIL
+		, TAB.USER_CELL
+		, TAB.AGE
+		, TAB.GENDER_NM
+		, TAB.JOBSK_STS_NM
+		, TAB.USER_STS_NM
+		, TAB.REG_DT
+		, TAB.MOD_DT
+		, TAB.ORDER_BY
+		FROM (
+		       	SELECT
+		       	FN_GET_COMMON_NM('USER_AUTH_CD', A.USER_AUTH_CD, #{lang}) AS USER_AUTH_NM
+		       	, A.USER_SEQ
+		       	, A.USER_ID
+		       	, CASE WHEN #{lang} = 'kh' THEN A.USER_NM_KH ELSE A.USER_NM_EN END USER_NM
+			   	, A.USER_EMAIL
+			   	, A.USER_CELL
+			   	, FLOOR((CAST(REPLACE(CURRENT_DATE,'-','') AS UNSIGNED) -
+		       		CAST(REPLACE(A.BIRTH,'-','') AS UNSIGNED)) / 10000 ) AS AGE
+			   	, FN_GET_COMMON_NM('GENDER_CD', A.GENDER_CD, #{lang}) AS GENDER_NM
+			   	, FN_GET_COMMON_NM('JOBSK_STS_CD', A.JOBSK_STS_CD, #{lang}) AS JOBSK_STS_NM
+			   	, FN_GET_COMMON_NM('USER_STS_CD', A.USER_STS_CD, #{lang}) AS USER_STS_NM
+			   	, FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+			   	, FN_GET_BASE_DATE_CHAR(A.MOD_DT, #{lang}) AS MOD_DT
+			   	, A.REG_DT AS ORDER_BY
+			   	FROM CPES_USER A
+		       	<where>
+				    AND A.USER_AUTH_CD		IN ('ROLE_USER', 'ROLE_STDIT')
+					<if test="jcCd != null and jcCd != ''">
+					AND A.JC_CD				LIKE CONCAT('%', #{jcCd}, '%')
+					</if>
+					<if test="lang == 'kh'">
+					AND A.USER_NM_KH		LIKE CONCAT('%', #{userNm}, '%')
+					</if>
+					<if test="lang != 'kh'">
+					AND A.USER_NM_EN		LIKE CONCAT('%', #{userNm}, '%')
+					</if>
+					<if test="userEmail != null and userEmail != ''">
+					AND A.USER_EMAIL		LIKE CONCAT('%', #{userEmail}, '%')
+					</if>
+					<if test="userCell != null and userCell != ''">
+					AND A.USER_CELL			LIKE CONCAT('%', #{userCell}, '%')
+					</if>
+					<if test="userAuthCd != null and userAuthCd != ''">
+					AND A.USER_AUTH_CD		LIKE CONCAT('%', #{userAuthCd}, '%')
+					</if>
+					<if test="jobskStsCd != null and jobskStsCd != ''">
+					AND A.JOBSK_STS_CD		LIKE CONCAT('%', #{jobskStsCd}, '%')
+					</if>
+					<if test="genderCd != null and genderCd != ''">
+					AND A.GENDER_CD			LIKE CONCAT('%', #{genderCd}, '%')
+					</if>
+					<if test="userStsCd != null and userStsCd != ''">
+					AND A.USER_STS_CD		LIKE CONCAT('%', #{userStsCd}, '%')
+					</if>
+					<if test="startDate != null and startDate != ''">
+					<![CDATA[
+					AND A.REG_DT			>= FN_GET_STR_TO_DATE(#{startDate}, 'S')
+					]]>
+					</if>
+					<if test="endDate != null and endDate != ''">
+					<![CDATA[
+					AND A.REG_DT			<= FN_GET_STR_TO_DATE(#{endDate}, 'E')
+					]]>
+					</if>
+				</where>
+	    ) TAB
+	    ,(SELECT @ROWNUM := 0) Z
+		<choose>
+			<when test="orderColumn == 'REG_DT'">
+				ORDER BY TAB.ORDER_BY ${orderColumnSort}
+			</when>
+        	<otherwise>
+            	ORDER BY ${orderColumn} ${orderColumnSort}
+            </otherwise>
+
+        </choose>
+		<if test="length > -1">
+		LIMIT
+			${start} , ${length}
+		</if>
+
+    </select>
+
+	<select id="selectUserInfoListTotalCnt" resultType="java.lang.Integer" parameterType="UserBean">
+		/** selectUserInfoListTotalCnt **/
+       SELECT COUNT(*) AS TOTAL_COUNT
+       FROM CPES_USER A
+		<where>
+		    AND A.USER_AUTH_CD		IN ('ROLE_USER', 'ROLE_STDIT')
+			<if test="jcCd != null and jcCd != ''">
+			AND A.JC_CD				LIKE CONCAT('%', #{jcCd}, '%')
+			</if>
+			<if test="lang == 'kh'">
+			AND A.USER_NM_KH		LIKE CONCAT('%', #{userNm}, '%')
+			</if>
+			<if test="lang == 'en'">
+			AND A.USER_NM_EN		LIKE CONCAT('%', #{userNm}, '%')
+			</if>
+			<if test="userEmail != null and userEmail != ''">
+			AND A.USER_EMAIL		LIKE CONCAT('%', #{userEmail}, '%')
+			</if>
+			<if test="userCell != null and userCell != ''">
+			AND A.USER_CELL			LIKE CONCAT('%', #{userCell}, '%')
+			</if>
+			<if test="userAuthCd != null and userAuthCd != ''">
+			AND A.USER_AUTH_CD		LIKE CONCAT('%', #{userAuthCd}, '%')
+			</if>
+			<if test="jobskStsCd != null and jobskStsCd != ''">
+			AND A.JOBSK_STS_CD		LIKE CONCAT('%', #{jobskStsCd}, '%')
+			</if>
+			<if test="genderCd != null and genderCd != ''">
+			AND A.GENDER_CD			LIKE CONCAT('%', #{genderCd}, '%')
+			</if>
+			<if test="userStsCd != null and userStsCd != ''">
+			AND A.USER_STS_CD		LIKE CONCAT('%', #{userStsCd}, '%')
+			</if>
+			<if test="startDate != null and startDate != ''">
+			<![CDATA[
+			AND A.REG_DT			>= FN_GET_STR_TO_DATE(#{startDate}, 'S')
+			]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+			<![CDATA[
+			AND A.REG_DT			<= FN_GET_STR_TO_DATE(#{endDate}, 'E')
+			]]>
+			</if>
+		</where>
+    </select>
+
+    <select id="selectUserDtlInfo" resultType="UserBean" parameterType="UserBean">
+    	/** selectUserDtlInfo **/
+	    SELECT
+	    	USER_SEQ
+	    	, USER_EMAIL
+	    	, USER_NM_KH
+	    	, USER_NM_EN
+	    	, USER_PWD_OLD
+	    	, PWD_CREAT_DT
+	    	, PWD_FAIL_CNT
+	    	, USER_STS_CD
+	    	, WTHDR_REASON
+	    	, LAST_LOGIN_DT
+	    	, LAST_LOGIN_IP
+	    	, USER_CELL
+			, USER_ID
+			, USER_SEQ
+			, JC_CD
+			, USER_PWD
+			, NEW_PWD_APPLY_YN
+			, REG_USER_SEQ
+			, REG_DT
+			, MOD_USER_SEQ
+			, MOD_DT
+			, WTHDR_REASON_CD
+			, ACCNT_LOCK_STS_CD
+			, PRIVATE_INFO_USE_AGREE_YN
+			, SMS_NTCE_AGREE_YN
+			, EMAIL_NTCE_AGREE_YN
+			, EMAIL_USER_AUTH_VALUE
+			, NID
+			, USER_GRP_CD
+			, FILE_GRP_SEQ
+			, BIRTH
+			, GENDER_CD
+			, ADDR_CD
+			, ADDR_DTL
+			, INFO_OPEN_YN
+			, CONCIL_REQ_YN
+			, MEMB_TAC_AGREE_YN
+			, PRIVATE_INFO_COLLCT_AGREE_YN
+			, INFO_PROVD_INFO_AGREE_YN
+			, USE_YN
+			, MNG_ID
+			, MNG_YN
+			, USER_NM_EN
+			, JOBSK_STS_CD
+			, DORMANCY_YN
+			, SMS_EMAIL_AUTH_DIV_CD
+			, AUTH_CMPLT_YN
+			, JOIN_ROUTE_DIV_CD
+			, DEL_YN
+			, ADDR_FULL_CD
+			, ADDR_FULL_NM
+			, USER_TEL
+			, NEA_JC_DIV_CD
+	    	, CASE WHEN #{lang} = 'kh' THEN USER_NM_KH ELSE USER_NM_EN END USER_NM
+	    	, FN_GET_COMMON_NM('USER_STS_CD', USER_STS_CD, #{lang}) AS USER_STS_NM
+	    	, FN_GET_COMMON_NM('USER_AUTH_CD', USER_AUTH_CD, #{lang}) AS USER_AUTH_NM
+	    	, FN_GET_COMMON_NM('SMS_EMAIL_AUTH_DIV_CD', SMS_EMAIL_AUTH_DIV_CD, #{lang}) AS SMS_EMAIL_AUTH_DIV_NM
+	    	, FN_GET_JOB_CNTR_NM(JC_CD, #{lang}) AS JC_NM
+	    	, FLOOR((CAST(REPLACE(CURRENT_DATE,'-','') AS UNSIGNED) -
+       			CAST(REPLACE(BIRTH,'-','') AS UNSIGNED)) / 10000 ) AS AGE
+	   		, FN_GET_COMMON_NM('GENDER_CD', GENDER_CD, #{lang}) AS GENDER_NM
+	   		, FN_GET_COMMON_NM('JOBSK_STS_CD', JOBSK_STS_CD, #{lang}) AS JOBSK_STS_NM
+	   		, FN_GET_COMMON_NM('RANGE_CD', JOIN_ROUTE_DIV_CD, #{lang}) AS JOIN_ROUTE_DIV_NM
+
+	    FROM CPES_USER
+	    WHERE USER_SEQ 				= #{userSeq}
+    </select>
+
+	<select id="selectUserDtlInfoMain" resultType="UserBean" parameterType="UserBean">
+		/** selectUserDtlInfoMain **/
+	    SELECT
+	    	USER_SEQ
+	    	, CASE WHEN #{lang} = 'kh' THEN USER_NM_KH ELSE USER_NM_EN END USER_NM
+	    	, FN_GET_COMMON_NM('USER_AUTH_CD', USER_AUTH_CD, #{lang}) AS USER_AUTH_NM
+	    	, FN_GET_JOB_CNTR_NM(JC_CD, #{lang}) AS JC_NM
+	    	, USER_CELL
+	    	, FLOOR((CAST(REPLACE(CURRENT_DATE,'-','') AS UNSIGNED) -
+       			CAST(REPLACE(BIRTH,'-','') AS UNSIGNED)) / 10000 ) AS AGE
+	   		, FN_GET_COMMON_NM('GENDER_CD', GENDER_CD, #{lang}) AS GENDER_NM
+	   		, USER_EMAIL
+	   		, FN_GET_COMMON_NM('JOBSK_STS_CD', JOBSK_STS_CD, #{lang}) AS JOBSK_STS_NM
+	   		, ADDR_DTL
+	   		, FN_GET_FILE_PATH(FILE_GRP_SEQ) AS FILE_PATH
+	    FROM CPES_USER
+	    WHERE USER_SEQ 				= #{userSeq}
+    </select>
+
+	<select id="selectUserDtlInfoBaseAjax" resultType="UserBean" parameterType="UserBean">
+		/** selectUserDtlInfoBaseAjax **/
+	    SELECT
+	    	USER_SEQ
+	    	, CASE WHEN #{lang} = 'kh' THEN USER_NM_KH ELSE USER_NM_EN END USER_NM
+	    	, FN_GET_COMMON_NM('USER_STS_CD', USER_STS_CD, #{lang}) AS USER_STS_NM
+	    	, USER_EMAIL
+	   		, USER_CELL
+	   		, AUTH_CMPLT_YN
+	   		, FN_GET_COMMON_NM('SMS_EMAIL_AUTH_DIV_CD', SMS_EMAIL_AUTH_DIV_CD, #{lang}) AS SMS_EMAIL_AUTH_DIV_NM
+	   		, FN_GET_COMMON_NM('JOIN_ROUTE_DIV_CD', JOIN_ROUTE_DIV_CD, #{lang}) AS JOIN_ROUTE_DIV_NM
+	   		, FN_GET_COMMON_NM('GENDER_CD', GENDER_CD, #{lang}) AS GENDER_NM
+	   		, FN_GET_BASE_DATE_CHAR(BIRTH, #{lang}) AS BIRTH
+	   		, NID
+	   		, ADDR_DTL
+	    FROM CPES_USER
+	    WHERE USER_SEQ 				= #{userSeq}
+    </select>
+
+
+	<select id="selectUserDuplAjax" parameterType="UserBean" resultType="int">
+		SELECT
+			COUNT(1) AS totCnt
+		FROM CPES_USER
+			<where>
+				<if test="userEmail != null and userEmail != ''">
+				USER_EMAIL = #{userEmail}
+				</if>
+
+				<if test="userCell != null and userCell != ''">
+				AND USER_CELL = #{userCell}
+				</if>
+			</where>
+	</select>
+
+	<select id="selectResumeHumanInfoAjax" resultType="UserResumeBean" parameterType="UserResumeBean">
+		SELECT
+		A.RESUME_SEQ
+		, A.USER_SEQ
+		, A.BIRTH_ADDR_DTL
+		, FN_GET_COMMON_NM('MARITA_STATUS_ID', A.MARRI_CD, #{lang}) AS MARRI_NM
+		, A.FAMILY_CNT
+		, A.UNDER_AGE15_FAMILY_CNT
+    	, A.OVER_AGE64_FAMILY_CNT
+    	, A.FRSTIME_JOB_SEEKER_YN
+    	, A.STUDYING_YN
+    	, A.RET_MIGRAT_YN
+    	, A.SRVC_YN
+    	, A.ETHNIC_MINOR_YN
+    	, A.DISABL_YN
+    	, FN_GET_COMMON_NM('DISABL_OPTION_CD', A.DISABL_OPTION_CD, #{lang}) AS DISABL_OPTION_NM
+    	, A.DISABL_ETC
+    	, A.SELFEMP_YN
+    	, A.PREFER_JOB_TITLE
+    	, A.PREFER_POSITION
+    	, FN_GET_COMMON_NM('EMPLOY_FORM_CD', A.EMPLOY_FORM_CD, #{lang}) AS EMPLOY_FORM_NM
+    	, FN_GET_COMMON_NM('PREFER_EMPLOYMT_TYPE_CD', A.PREFER_EMPLOY_TYPE_CD, #{lang}) AS PREFER_EMPLOY_TYPE_NM
+    	, A.TYPE_EMPLOY_HOUR_DAY
+    	, A.TYPE_EMPLOY_DAY_WEEK
+    	, A.PREFER_DAY_MON
+    	, A.PREFER_DAY_TUE
+    	, A.PREFER_DAY_WED
+    	, A.PREFER_DAY_THU
+    	, A.PREFER_DAY_FRI
+    	, A.PREFER_DAY_SAT
+    	, A.PREFER_DAY_SUN
+    	, FN_GET_COMMON_NM('EMPLOY_CTRCT_CD', A.PREFER_CRTCT_TYPE, #{lang}) AS PREFER_CRTCT_TYPE_NM
+		, A.NIGHT_WORK_YN
+		, A.OVER_TIME_WORK_YN
+		, A.HLDAY_WORK_YN
+		, A.EXPCT_MIN_SALARY_AMT
+		, A.EXPCT_MAX_SALARY_AMT
+		, A.DIFF_PROVC_WORK_YN
+		, A.WORK_BGN_ABLE_YN
+		, A.WORK_BGN_ABLE_WITHIN
+    	, A.TOT_CAREER_TERM_YEAR_CNT
+		, A.TOT_CAREER_TERM_MONTH_CNT
+		, FN_GET_COMMON_NM('ISCED_CD', C.ISCED_CD, #{lang}) AS EDU_GNRL_ISCED_NM
+		, FN_GET_COMMON_NM('ISCED_CD', D.ISCED_CD, #{lang}) AS EDU_SKILL_ISCED_NM
+		, A.PRO_LICNS_YN
+		, A.PRO_LICNS_SPEC
+		, A.ADDR_FULL_NM
+		, A.WORK_BGN_ABLE_WITHIN
+		FROM CPES_RESUME A
+		JOIN CPES_USER B
+		ON A.USER_SEQ				= B.USER_SEQ
+		LEFT JOIN CPES_RESUME_GENRL_EDU C
+		ON A.RESUME_SEQ				= C.RESUME_SEQ
+		LEFT JOIN CPES_RESUME_TVET_EDU D
+		ON A.RESUME_SEQ				= D.RESUME_SEQ
+		WHERE A.USER_SEQ 					= #{userSeq}
+		  AND A.PRI_RESUME_YN				= 'Y'
+		  AND A.USE_YN						= 'Y'
+    </select>
+
+	<select id="selectDisableOptNm" resultType="UserResumeBean" parameterType="UserResumeBean">
+		SELECT
+		CASE WHEN #{lang} = 'kh' THEN CD_KH_NM ELSE CD_EN_NM END DISABL_OPTION_NM
+		FROM CPES_COMM_DTL_CD
+		WHERE GRP_CD		= 'DISABL_OPTION_CD'
+		AND DTL_CD			= #{disablOptionCd}
+    </select>
+
+	<select id="selectIscoList" resultType="UserResumeIscoBean" parameterType="UserResumeIscoBean">
+		SELECT CASE WHEN #{lang} = 'kh' THEN B.KH_NM ELSE B.EN_NM END AS ISCO_NM
+		FROM CPES_RESUME_ISCO A
+		, CPES_ISCO_CD B
+		WHERE A.ISCO_CD         = B.ISCO_CD
+		AND A.RESUME_SEQ       	= #{resumeSeq}
+    </select>
+
+	<select id="selectPreferWorkLocList" resultType="UserResumeLocBean" parameterType="UserResumeLocBean">
+		SELECT RHWL.ADDR_FULL_NM
+			 , RHWL.ADDR_FULL_CD
+			 , RHWL.ADDR_CD
+			 , (SELECT NM_EN FROM CPES_LOC_CD WHERE LVL_CD = RHWL.ADDR_CD) AS ADDR_CD_NM
+		FROM CPES_RESUME_HOPE_WORK_LOC RHWL
+		WHERE RESUME_SEQ       	= #{resumeSeq}
+    </select>
+
+	<select id="selectResumeOtrTrngInfoAjax" resultType="UserResumeOtrTrnngBean" parameterType="UserResumeOtrTrnngBean">
+		SELECT
+		A.RESUME_OTHER_TRNNG_SEQ
+		, A.RESUME_OTHER_TRNNG_ID
+		, FN_GET_BASE_DATE_CHAR(A.BGN_DT, #{lang}) AS BGN_DT
+		, FN_GET_BASE_DATE_CHAR(A.END_DT, #{lang}) AS END_DT
+		, DATE_FORMAT(A.BGN_DT, '%Y') AS BGN_DT_YY
+		, DATE_FORMAT(A.BGN_DT, '%m') AS BGN_DT_MM
+		, DATE_FORMAT(A.END_DT, '%Y') AS END_DT_YY
+		, DATE_FORMAT(A.END_DT, '%m') AS END_DT_MM
+		, A.TRNNG_EDU_DEGREE_CD
+		, FN_GET_COMMON_NM('EDU_DEGREE_CD', A.TRNNG_EDU_DEGREE_CD, #{lang}) AS TRNNG_EDU_DEGREE_NM
+		, A.INSTT_NM
+		, A.ISCED_CD
+		, CASE WHEN #{lang} = 'kh' THEN B.KH_NM ELSE B.EN_NM END AS ISCED_NM
+		, A.ADDR_PROVC_CD
+		, CASE WHEN #{lang} = 'kh' THEN C.NM_KH ELSE C.NM_EN END AS ADDR_PROVC_NM
+		, A.REG_USER_SEQ
+		, A.REG_DT
+		, A.MOD_USER_SEQ
+		, A.MOD_DT
+		, A.RESUME_SEQ
+		FROM CPES_RESUME_OTHER_TRNNG A
+		LEFT JOIN CPES_ISCED_CD B
+		ON A.ISCED_CD					= B.ISCED_CD
+		LEFT JOIN CPES_LOC_CD C
+		ON A.ADDR_PROVC_CD				= C.LVL_CD
+		WHERE A.RESUME_SEQ				= #{resumeSeq};
+    </select>
+
+	<select id="selectResumeLangInfoAjax" resultType="UserResumeLangBean" parameterType="UserResumeLangBean">
+		SELECT
+		A.RESUME_LANG_SEQ
+		, A.RESUME_LANG_ID
+		, A.LANG_CD
+		, FN_GET_COMMON_NM('LANG_CD', A.LANG_CD, #{lang}) AS LANG_NM
+		, A.LANG_LVL_CD
+		, FN_GET_COMMON_NM('LANG_LVL_CD', A.LANG_LVL_CD, #{lang}) AS LANG_LVL_NM
+		, A.LANG_TYPE_CD
+		, FN_GET_COMMON_NM('LANG_TYPE_CD', A.LANG_TYPE_CD, #{lang}) AS LANG_TYPE_NM
+		, A.RESUME_SEQ
+		, A.REG_USER_SEQ
+		, A.REG_DT
+		, A.MOD_USER_SEQ
+		, A.MOD_DT
+		FROM CPES_RESUME_LANG A
+		WHERE A.RESUME_SEQ				= #{resumeSeq}
+		ORDER BY A.LANG_TYPE_CD ASC;
+    </select>
+
+	<select id="selectResumeSpcEduInfoAjax" resultType="UserResumeSpcEduBean" parameterType="UserResumeSpcEduBean">
+		SELECT
+		A.SPECIAL_STUDY_NM
+		, FN_GET_BASE_DATE_CHAR(A.BGN_DT, #{lang}) AS BGN_DT
+		, FN_GET_BASE_DATE_CHAR(A.END_DT, #{lang}) AS END_DT
+		, DATE_FORMAT(A.BGN_DT, '%Y') AS BGN_DT_YY
+		, DATE_FORMAT(A.BGN_DT, '%m') AS BGN_DT_MM
+		, DATE_FORMAT(A.END_DT, '%Y') AS END_DT_YY
+		, DATE_FORMAT(A.END_DT, '%m') AS END_DT_MM
+		, A.INSTT_NM
+		, A.CNTRY_CD
+		, CASE WHEN #{lang} = 'kh' THEN B.NM_KH ELSE B.NM_EN END AS CNTRY_NM
+		, A.PROVC_CD
+		, CASE WHEN #{lang} = 'kh' THEN C.NM_KH ELSE C.NM_EN END AS PROVC_NM
+		FROM CPES_RESUME_SPECIAL_STUDY A
+		LEFT JOIN CPES_LOC_CD B
+		ON A.CNTRY_CD           = B.LVL_CD
+		LEFT JOIN CPES_LOC_CD C
+		ON A.PROVC_CD           = C.LVL_CD
+		WHERE A.RESUME_SEQ		= #{resumeSeq}
+		;
+
+    </select>
+
+	<select id="selectResumeWorkExpInfoAjax" resultType="UserResumeWorkExpBean" parameterType="UserResumeWorkExpBean">
+		SELECT
+		A.RESUME_WORK_EXP_SEQ
+		, A.RESUME_WORK_EXP_ID
+		, FN_GET_BASE_DATE_CHAR(A.BGN_DT, #{lang}) AS BGN_DT
+		, FN_GET_BASE_DATE_CHAR(A.END_DT, #{lang}) AS END_DT
+		, DATE_FORMAT(A.BGN_DT, '%Y') AS BGN_DT_YY
+		, DATE_FORMAT(A.BGN_DT, '%m') AS BGN_DT_MM
+		, DATE_FORMAT(A.END_DT, '%Y') AS END_DT_YY
+		, DATE_FORMAT(A.END_DT, '%m') AS END_DT_MM
+		, A.ISCO_CD
+		, CASE WHEN #{lang} = 'kh' THEN B.KH_NM ELSE B.EN_NM END AS ISCO_NM
+		, A.ISIC_CD
+		, CASE WHEN #{lang} = 'kh' THEN C.KH_NM ELSE C.EN_NM END AS ISIC_NM
+		, A.ORGNZ_NM
+		, A.LEAVE_REASON
+		, A.ADDR_PROVC_CD
+		, CASE WHEN #{lang} = 'kh' THEN D.NM_KH ELSE D.NM_EN END AS ADDR_PROVC_NM
+		, A.RESUME_SEQ
+		, A.SELFEMP_YN
+		, A.JOB_SECTOR
+		, A.JOB_POSITION
+		FROM CPES_RESUME_WORK_EXP A
+		LEFT JOIN CPES_ISCO_CD B
+		ON A.ISCO_CD					= B.ISCO_CD
+		LEFT JOIN CPES_ISIC_CD C
+		ON A.ISIC_CD					= C.ISIC_CD
+		LEFT JOIN CPES_LOC_CD D
+		ON A.ADDR_PROVC_CD				= D.LVL_CD
+		WHERE A.RESUME_SEQ				= #{resumeSeq}
+		;
+
+    </select>
+
+	<select id="selectResumeSkillInfoAjax" resultType="UserResumeSkillBean" parameterType="UserResumeSkillBean">
+		SELECT
+		A.RESUME_SKILL_SEQ
+		, A.RESUME_SKILL_ID
+		, A.SKILL_CD
+		, FN_GET_COMMON_NM('SKILL_CD', A.SKILL_CD, #{lang}) AS SKILL_NM
+		, A.REG_USER_SEQ
+		, A.REG_DT
+		, A.MOD_USER_SEQ
+		, A.MOD_DT
+		, A.RESUME_SEQ
+		FROM CPES_RESUME_SKILL A
+		WHERE A.RESUME_SEQ			= #{resumeSeq}
+		AND A.SKILL_CD				LIKE CONCAT ('%', '00', '')
+		ORDER BY A.SKILL_CD ASC
+		;
+
+    </select>
+
+	<select id="selectResumeSkillInfoDtlAjax" resultType="UserResumeSkillBean" parameterType="UserResumeSkillBean">
+		SELECT
+		A.RESUME_SKILL_SEQ
+		, A.RESUME_SKILL_ID
+		, A.SKILL_CD
+		, FN_GET_COMMON_NM('SKILL_CD', A.SKILL_CD, #{lang}) AS SKILL_NM
+		, A.REG_USER_SEQ
+		, A.REG_DT
+		, A.MOD_USER_SEQ
+		, A.MOD_DT
+		, A.RESUME_SEQ
+		FROM CPES_RESUME_SKILL A
+		WHERE A.RESUME_SEQ			= #{resumeSeq}
+		AND A.SKILL_CD				LIKE CONCAT ('', #{skillCd}, '%')
+		ORDER BY A.SKILL_CD ASC
+		;
+
+    </select>
+
+	<select id="selectResumeRefmanInfoAjax" resultType="UserResumeRefmanBean" parameterType="UserResumeRefmanBean">
+		SELECT
+		A.RESUME_REF_MAN_SEQ
+		, A.RESUME_REF_MAN_ID
+		, A.NM
+		, A.ORGNZ_NM
+		, A.POSITION
+		, A.REF
+		, A.CELL
+		, A.EMAIL
+		, A.ADDR_FULL_NM
+		, A.REG_USER_SEQ
+		, A.REG_DT
+		, A.MOD_USER_SEQ
+		, A.MOD_DT
+		, A.RESUME_SEQ
+		FROM CPES_RESUME_REF_MAN A
+		WHERE A.RESUME_SEQ				= #{resumeSeq}
+		;
+
+    </select>
+
+	<select id="selectUserDtlInfoJobskAjax" resultType="UserJobskBean" parameterType="UserJobskBean">
+		SELECT
+		${totalCount} - ((${pageNo} - 1) * ${length}) - (@ROWNUM := @ROWNUM + 1) + 1 AS ROW_NUM
+		, TAB.JOBSK_REQ_SEQ
+		, TAB.RESUME_SEQ
+		, TAB.USER_SEQ
+		, TAB.USER_ID
+		, TAB.RESUME_TITLE
+		, TAB.URGENT_JOBSEEK_YN
+		, TAB.NOW_WORK_YN
+		, TAB.REG_DT
+		, TAB.JC_AGREE_STS_CD
+		, TAB.JC_AGREE_STS_NM
+		, TAB.JC_AGREE_DT
+		, TAB.JC_USER_NM
+		, TAB.JOBSK_STS_CD
+		, TAB.JOBSK_STS_NM
+		, TAB.ORDER_BY
+		FROM (
+				SELECT
+				A.JOBSK_REQ_SEQ
+				, B.RESUME_SEQ
+				, C.USER_SEQ
+				, C.USER_ID
+				, A.RESUME_TITLE
+				, B.URGENT_JOBSEEK_YN
+				, B.NOW_WORK_YN
+			   	, FN_GET_BASE_DATE_TIME(A.REG_DT, 'I', #{lang}) AS REG_DT
+				, A.JC_AGREE_STS_CD
+				, FN_GET_COMMON_NM('JC_AGREE_STS_CD', A.JC_AGREE_STS_CD, #{lang}) AS JC_AGREE_STS_NM
+			   	, FN_GET_BASE_DATE_TIME(A.JC_AGREE_DT, 'I', #{lang}) AS JC_AGREE_DT
+			   	, C.JOBSK_STS_CD
+				, FN_GET_COMMON_NM('JOBSK_STS_CD', C.JOBSK_STS_CD, #{lang}) AS JOBSK_STS_NM
+				, CASE WHEN #{lang} = 'kh' THEN D.USER_NM_KH ELSE D.USER_NM_EN END JC_USER_NM
+				, A.REG_DT AS ORDER_BY
+				FROM CPES_JOBSK_REQ A
+				INNER JOIN CPES_RESUME B
+				ON A.RESUME_SEQ          	= B.RESUME_SEQ
+				INNER JOIN CPES_USER C
+				ON B.USER_SEQ              	= C.USER_SEQ
+				LEFT JOIN CPES_USER D
+				ON A.JC_USER_SEQ				= D.USER_SEQ
+				<where>
+					AND C.USER_SEQ              = #{userSeq}
+					AND A.DEL_YN				!= 'Y'
+				</where>
+	    ) TAB
+	    , (SELECT @ROWNUM := 0) Z
+		<choose>
+        	<when test="orderColumn == 'REG_DT'">
+               	ORDER BY TAB.ORDER_BY ${orderColumnSort}
+            </when>
+        	<otherwise>
+            	ORDER BY ${orderColumn} ${orderColumnSort}
+            </otherwise>
+
+        </choose>
+		<if test="length > -1">
+		LIMIT
+			${start} , ${length}
+		</if>
+
+    </select>
+
+	<select id="selectUserDtlInfoJobskTotalCnt" resultType="java.lang.Integer" parameterType="UserJobskBean">
+		SELECT COUNT(*) AS TOTAL_COUNT
+		FROM CPES_JOBSK_REQ A
+		, CPES_RESUME B
+		, CPES_USER C
+		WHERE A.RESUME_SEQ          	= B.RESUME_SEQ
+		AND B.USER_SEQ              	= C.USER_SEQ
+		AND C.USER_SEQ              	= #{userSeq}
+		;
+    </select>
+
+	<select id="selectUserDtlInfoAplcList" resultType="UserAplcBean" parameterType="UserAplcBean">
+		SELECT
+		${totalCount} - ((${pageNo} - 1) * ${length}) - (@ROWNUM := @ROWNUM + 1) + 1 AS ROW_NUM
+		, TAB.USER_SEQ
+		, TAB.RESUME_SEQ
+		, TAB.VACANCY_SEQ
+		, TAB.COMPNY_SEQ
+		, TAB.VACANCY_ID
+		, TAB.COMPNY_NM
+		, TAB.EMPLOY_FORM_CD
+		, TAB.VACANCY_TYPE_NM
+		, TAB.VACANCY_TITLE
+		, TAB.RESUME_TITLE
+		, TAB.REG_DT
+		, TAB.RESUME_OPEN_DT
+		, TAB.APLC_STS_NM
+		, TAB.APPLIC_PROC_CD
+		, TAB.APPLIC_PROC_NM
+		, TAB.ORDER_BY
+		FROM (
+				SELECT
+				A.USER_SEQ
+				, B.RESUME_SEQ
+				, D.VACANCY_SEQ
+				, E.COMPNY_SEQ
+				, D.VACANCY_ID
+				, CASE WHEN #{lang} = 'kh' THEN E.COMPNY_NM_KH ELSE E.COMPNY_NM_EN END AS COMPNY_NM
+				, D.EMPLOY_FORM_CD
+				, FN_GET_COMMON_NM('EMPLOY_FORM_CD', D.EMPLOY_FORM_CD, #{lang}) AS VACANCY_TYPE_NM
+				, D.VACANCY_TITLE
+				, B.RESUME_TITLE
+				, FN_GET_BASE_DATE_TIME(C.REG_DT, 'I', #{lang}) AS REG_DT
+				, CASE WHEN ISNULL(C.RESUME_OPEN_DT) OR C.RESUME_OPEN_DT = '' THEN
+							FN_GET_COMMON_NM('RESUME_OPEN_CD', 'ROC0000000002', #{lang})
+				  ELSE
+				  			FN_GET_BASE_DATE_TIME(C.RESUME_OPEN_DT, 'I', #{lang})
+				  END AS RESUME_OPEN_DT
+				, CASE WHEN C.APPLIC_CANCEL_YN = 'Y' THEN
+							FN_GET_COMMON_NM('APPLIC_STS_CD', 'ASC0000000001', #{lang})
+				  ELSE
+				  			FN_GET_COMMON_NM('APPLIC_STS_CD', 'ASC0000000002', #{lang})
+				  END AS APLC_STS_NM
+				, C.APPLIC_PROC_CD
+				, FN_GET_COMMON_NM('APPLIC_PROC_CD', C.APPLIC_PROC_CD, #{lang}) AS APPLIC_PROC_NM
+				, A.REG_DT AS ORDER_BY
+				FROM CPES_USER A
+				INNER JOIN CPES_RESUME B
+				ON A.USER_SEQ         = B.USER_SEQ
+				INNER JOIN CPES_APPLIC C
+				ON B.RESUME_SEQ       = C.RESUME_SEQ
+				INNER JOIN CPES_VACANCY D
+				ON C.VACANCY_SEQ      = D.VACANCY_SEQ
+				INNER JOIN CPES_COMPNY E
+				ON D.COMPNY_SEQ       = E.COMPNY_SEQ
+				<where>
+					AND A.USER_SEQ				= #{userSeq}
+				</where>
+	    ) TAB
+	    , (SELECT @ROWNUM := 0) Z
+		<choose>
+            <when test="orderColumn == 'REG_DT'">
+               	ORDER BY TAB.ORDER_BY ${orderColumnSort}
+            </when>
+        	<otherwise>
+            	ORDER BY ${orderColumn} ${orderColumnSort}
+            </otherwise>
+        </choose>
+		<if test="length > -1">
+		LIMIT
+			${start} , ${length}
+		</if>
+    </select>
+
+	<select id="selectUserDtlInfoAplcListTotalCnt" resultType="java.lang.Integer" parameterType="UserAplcBean">
+		SELECT
+		COUNT(*) AS TOTAL_CNT
+		FROM CPES_USER A
+		INNER JOIN CPES_RESUME B
+		ON A.USER_SEQ         = B.USER_SEQ
+		INNER JOIN CPES_APPLIC C
+		ON B.RESUME_SEQ       = C.RESUME_SEQ
+		INNER JOIN CPES_VACANCY D
+		ON C.VACANCY_SEQ      = D.VACANCY_SEQ
+		INNER JOIN CPES_COMPNY E
+		ON D.COMPNY_SEQ       = E.COMPNY_SEQ
+		<where>
+			AND A.USER_SEQ				= #{userSeq}
+		</where>
+
+    </select>
+
+	<select id="selectUserDtlInfoOfferList" resultType="UserOfferBean" parameterType="UserOfferBean">
+		SELECT
+		${totalCount} - ((${pageNo} - 1) * ${length}) - (@ROWNUM := @ROWNUM + 1) + 1 AS ROW_NUM
+		, TAB.COMPNY_SEQ
+		, TAB.RESUME_SEQ
+		, TAB.USER_SEQ
+		, TAB.COMPNY_NM
+		, TAB.MNGER_NM
+		, TAB.MNGER_EMAIL
+		, TAB.MNGER_TEL
+		, TAB.RESUME_TITLE
+		, TAB.OFFER_DT
+		, TAB.OFFER_OPEN_YN
+		, TAB.OFFER_OPEN_DT
+		, TAB.APLC_YN
+		, TAB.ORDER_BY
+		FROM (
+				SELECT
+				E.COMPNY_SEQ
+		    	, A.RESUME_SEQ
+				, C.USER_SEQ
+				, CASE WHEN #{lang} = 'kh' THEN E.COMPNY_NM_KH ELSE E.COMPNY_NM_EN END AS COMPNY_NM
+				, E.MNGER_NM
+				, E.MNGER_EMAIL
+				, E.MNGER_TEL
+				, B.RESUME_TITLE
+				, FN_GET_BASE_DATE_TIME(A.REG_DT, 'I', #{lang}) AS OFFER_DT
+				, A.OFFER_OPEN_YN
+				, FN_GET_BASE_DATE_TIME(A.OFFER_OPEN_DT, 'I', #{lang}) AS OFFER_OPEN_DT
+				, CASE WHEN ISNULL(F.REG_DT) OR F.REG_DT = '' THEN
+							FN_GET_COMMON_NM('FIELD_YN_CD', 'N', #{lang})
+				  ELSE
+				  			FN_GET_COMMON_NM('FIELD_YN_CD', 'Y', #{lang})
+				  END AS APLC_YN
+				, A.REG_DT AS ORDER_BY
+				FROM CPES_OFFER A
+				INNER JOIN CPES_RESUME B
+				ON A.RESUME_SEQ 		= B.RESUME_SEQ
+				INNER JOIN CPES_USER C
+				ON B.USER_SEQ 			= C.USER_SEQ
+				INNER JOIN CPES_VACANCY D
+				ON A.VACANCY_SEQ = D.VACANCY_SEQ
+				INNER JOIN CPES_COMPNY E
+				ON D.COMPNY_SEQ 		= E.COMPNY_SEQ
+				LEFT JOIN CPES_APPLIC F
+				ON A.RESUME_SEQ 		= F.RESUME_SEQ
+				AND A.VACANCY_SEQ		= F.VACANCY_SEQ
+				<where>
+					AND C.USER_SEQ		= #{userSeq}
+				</where>
+		) TAB
+		, (SELECT @ROWNUM := 0) Z
+		<choose>
+            <when test="orderColumn == 'OFFER_DT'">
+               	ORDER BY TAB.ORDER_BY ${orderColumnSort}
+            </when>
+        	<otherwise>
+            	ORDER BY ${orderColumn} ${orderColumnSort}
+            </otherwise>
+        </choose>
+		<if test="length > -1">
+		LIMIT
+			${start} , ${length}
+		</if>
+    </select>
+
+	<select id="selectUserDtlInfoOfferListTotalCnt" resultType="java.lang.Integer" parameterType="UserOfferBean">
+		SELECT
+		COUNT(*) AS TOTAL_CNT
+		FROM CPES_OFFER A
+		INNER JOIN CPES_RESUME B
+		ON A.RESUME_SEQ 		= B.RESUME_SEQ
+		INNER JOIN CPES_USER C
+		ON B.USER_SEQ 			= C.USER_SEQ
+		INNER JOIN CPES_VACANCY D
+		ON A.VACANCY_SEQ = D.VACANCY_SEQ
+		INNER JOIN CPES_COMPNY E
+		ON D.COMPNY_SEQ 		= E.COMPNY_SEQ
+		LEFT JOIN CPES_APPLIC F
+		ON B.RESUME_SEQ 		= F.RESUME_SEQ
+		<where>
+			AND C.USER_SEQ				= #{userSeq}
+		</where>
+
+    </select>
+
+	<select id="selectUserDtlInfoIntvwList" resultType="UserIntvwBean" parameterType="UserIntvwBean">
+		SELECT
+		${totalCount} - ((${pageNo} - 1) * ${length}) - (@ROWNUM := @ROWNUM + 1) + 1 AS ROW_NUM
+		, TAB.RESUME_SEQ
+		, TAB.VACANCY_SEQ
+		, TAB.USER_SEQ
+		, TAB.COMPNY_SEQ
+		, TAB.VACANCY_ID
+		, TAB.COMPNY_NM
+		, TAB.EMPLOY_FORM_CD
+		, TAB.VACANCY_TYPE_NM
+		, TAB.VACANCY_TITLE
+		, TAB.APLC_DT
+		, TAB.INTVW_DT
+		, TAB.INTVW_TYPE_CD
+		, TAB.INTVW_TYPE_NM
+		, TAB.APPLIC_PROC_CD
+		, TAB.APPLIC_PROC_NM
+		, TAB.ORDER_BY
+		FROM (
+				SELECT
+				C.RESUME_SEQ
+				, D.VACANCY_SEQ
+				, E.USER_SEQ
+				, F.COMPNY_SEQ
+				, D.VACANCY_ID
+				, CASE WHEN #{lang} = 'kh' THEN F.COMPNY_NM_KH ELSE F.COMPNY_NM_EN END AS COMPNY_NM
+				, D.EMPLOY_FORM_CD
+				, FN_GET_COMMON_NM('EMPLOY_FORM_CD', D.EMPLOY_FORM_CD, #{lang}) AS VACANCY_TYPE_NM
+				, D.VACANCY_TITLE
+				, FN_GET_BASE_DATE_CHAR(B.REG_DT, #{lang}) AS APLC_DT
+				, FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS INTVW_DT
+				, A.INTVW_TYPE_CD
+				, FN_GET_COMMON_NM('INTVW_TYPE_CD', A.INTVW_TYPE_CD, #{lang}) AS INTVW_TYPE_NM
+				, B.APPLIC_PROC_CD
+				, FN_GET_COMMON_NM('APPLIC_PROC_CD', B.APPLIC_PROC_CD, #{lang}) AS APPLIC_PROC_NM
+				, A.REG_DT AS ORDER_BY
+				FROM CPES_INTVW A
+				INNER JOIN CPES_APPLIC B
+				ON A.APPLIC_SEQ = B.APPLIC_SEQ
+				INNER JOIN CPES_RESUME C
+				ON B.RESUME_SEQ = C.RESUME_SEQ
+				INNER JOIN CPES_VACANCY D
+				ON B.VACANCY_SEQ = D.VACANCY_SEQ
+				INNER JOIN CPES_USER E
+				ON C.USER_SEQ = E.USER_SEQ
+				INNER JOIN CPES_COMPNY F
+				ON D.COMPNY_SEQ = F.COMPNY_SEQ
+				<where>
+					AND E.USER_SEQ		= #{userSeq}
+				</where>
+		) TAB
+		, (SELECT @ROWNUM := 0) Z
+		<choose>
+        	<when test="orderColumn == 'INTVW_DT'">
+               	ORDER BY TAB.ORDER_BY ${orderColumnSort}
+            </when>
+        	<otherwise>
+            	ORDER BY ${orderColumn} ${orderColumnSort}
+            </otherwise>
+        </choose>
+		<if test="length > -1">
+		LIMIT
+			${start} , ${length}
+		</if>
+    </select>
+
+	<select id="selectUserDtlInfoIntvwListTotalCnt" resultType="java.lang.Integer" parameterType="UserIntvwBean">
+		SELECT
+		COUNT(*) AS TOTAL_CNT
+		FROM CPES_INTVW A
+		INNER JOIN CPES_APPLIC B
+		ON A.APPLIC_SEQ = B.APPLIC_SEQ
+		INNER JOIN CPES_RESUME C
+		ON B.RESUME_SEQ = C.RESUME_SEQ
+		INNER JOIN CPES_VACANCY D
+		ON B.VACANCY_SEQ = D.VACANCY_SEQ
+		INNER JOIN CPES_USER E
+		ON C.USER_SEQ = E.USER_SEQ
+		INNER JOIN CPES_COMPNY F
+		ON D.COMPNY_SEQ = F.COMPNY_SEQ
+		<where>
+			AND E.USER_SEQ				= #{userSeq}
+		</where>
+
+    </select>
+
+	<select id="selectUserDtlInfoReferralList" resultType="UserReferralBean" parameterType="UserReferralBean">
+		SELECT
+		${totalCount} - ((${pageNo} - 1) * ${length}) - (@ROWNUM := @ROWNUM + 1) + 1 AS ROW_NUM
+		, TAB.USER_SEQ
+		, TAB.VACANCY_SEQ
+		, TAB.COMPNY_SEQ
+		, TAB.VACANCY_ID
+		, TAB.COMPNY_NM
+		, TAB.EMPLOY_FORM_CD
+		, TAB.VACANCY_TYPE_NM
+		, TAB.VACANCY_TITLE
+		, TAB.RECRUMT_MEMB
+		, TAB.WORK_PLACE
+		, TAB.SALARY_AMT
+		, TAB.REFERRAL_DT
+		, TAB.REFERRAL_STS_CD
+		, TAB.REFERRAL_STS_NM
+		, TAB.REFERRAL_REJECT_CD
+		, TAB.REFERRAL_REJECT_NM
+		, TAB.APPLIC_PROC_CD
+		, TAB.APPLIC_PROC_NM
+		, TAB.ORDER_BY
+		FROM (
+				SELECT
+				A.USER_SEQ
+				, B.RESUME_SEQ
+				, D.VACANCY_SEQ
+				, E.COMPNY_SEQ
+		    	, D.VACANCY_ID
+		    	, CASE WHEN #{lang} = 'kh' THEN E.COMPNY_NM_KH ELSE E.COMPNY_NM_EN END AS COMPNY_NM
+		    	, D.EMPLOY_FORM_CD
+				, FN_GET_COMMON_NM('EMPLOY_FORM_CD', D.EMPLOY_FORM_CD, #{lang}) AS VACANCY_TYPE_NM
+				, D.VACANCY_TITLE
+				, D.RECRUMT_MEMB
+		    	, CASE WHEN #{lang} = 'kh' THEN H.NM_KH ELSE H.NM_EN END WORK_PLACE
+		    	, CONCAT(D.MIN_SALARY_AMT, ' $', ' ~ ' , D.MAX_SALARY_AMT, ' $') AS SALARY_AMT
+		    	, FN_GET_BASE_DATE_TIME(C.REG_DT, 'I', #{lang}) AS REFERRAL_DT
+		    	, C.REFERRAL_STS_CD
+		    	, FN_GET_COMMON_NM('REFERRAL_STS_CD', C.REFERRAL_STS_CD, #{lang}) AS REFERRAL_STS_NM
+				, C.REFERRAL_REJECT_CD
+				, FN_GET_COMMON_NM('REFERRAL_REJECT_CD', C.REFERRAL_REJECT_CD, #{lang}) AS REFERRAL_REJECT_NM
+				, F.APPLIC_PROC_CD
+		    	, FN_GET_COMMON_NM('APPLIC_PROC_CD', F.APPLIC_PROC_CD, #{lang}) AS APPLIC_PROC_NM
+		    	, C.REG_DT AS ORDER_BY
+				FROM CPES_USER A
+				INNER JOIN CPES_RESUME B
+				ON A.USER_SEQ         	= B.USER_SEQ
+				INNER JOIN CPES_REFERRAL C
+				ON B.RESUME_SEQ       	= C.RESUME_SEQ
+				INNER JOIN CPES_VACANCY D
+				ON C.VACANCY_SEQ        = D.VACANCY_SEQ
+		    	INNER JOIN CPES_COMPNY E
+		    	ON D.COMPNY_SEQ 		= E.COMPNY_SEQ
+		    	LEFT JOIN CPES_APPLIC F
+		    	ON C.VACANCY_SEQ		= F.VACANCY_SEQ
+		    	AND C.RESUME_SEQ		= F.RESUME_SEQ
+		    	LEFT JOIN (
+		    				SELECT VACANCY_SEQ
+		    						, MAX(ADDR_CD) AS ADDR_CD
+		    				  FROM CPES_VACANCY_LOC
+		    				 GROUP BY VACANCY_SEQ
+		    				) G
+		    	ON D.VACANCY_SEQ		= G.VACANCY_SEQ
+		    	LEFT JOIN CPES_LOC_CD H
+		    	ON G.ADDR_CD			= H.LVL_CD
+		    	<where>
+					AND A.USER_SEQ		= #{userSeq}
+				</where>
+		) TAB
+		, (SELECT @ROWNUM := 0) Z
+		<choose>
+        	<when test="orderColumn == 'REFERRAL_DT'">
+               	ORDER BY TAB.ORDER_BY ${orderColumnSort}
+            </when>
+            <otherwise>
+            	ORDER BY ${orderColumn} ${orderColumnSort}
+            </otherwise>
+        </choose>
+		<if test="length > -1">
+		LIMIT
+			${start} , ${length}
+		</if>
+
+    </select>
+
+	<select id="selectUserDtlInfoReferralListTotalCnt" resultType="java.lang.Integer" parameterType="UserReferralBean">
+		SELECT
+		COUNT(*) AS TOTAL_CNT
+		FROM CPES_USER A
+		INNER JOIN CPES_RESUME B
+		ON A.USER_SEQ         	= B.USER_SEQ
+		INNER JOIN CPES_REFERRAL C
+		ON B.RESUME_SEQ       	= C.RESUME_SEQ
+		INNER JOIN CPES_VACANCY D
+		ON C.VACANCY_SEQ        = D.VACANCY_SEQ
+    	INNER JOIN CPES_COMPNY E
+    	ON D.COMPNY_SEQ 		= E.COMPNY_SEQ
+     	LEFT JOIN CPES_APPLIC F
+    	ON C.VACANCY_SEQ		= F.VACANCY_SEQ
+    	AND C.RESUME_SEQ		= F.RESUME_SEQ
+		<where>
+			AND A.USER_SEQ		= #{userSeq}
+		</where>
+
+    </select>
+
+	<select id="selectUserDtlInfoFairList" resultType="UserFairBean" parameterType="UserFairBean">
+		SELECT
+		${totalCount} - ((${pageNo} - 1) * ${length}) - (@ROWNUM := @ROWNUM + 1) + 1 AS ROW_NUM
+		, TAB.USER_SEQ
+		, TAB.FAIR_SEQ
+		, TAB.FAIR_DIV_CD
+		, TAB.FAIR_DIV_NM
+		, TAB.FAIR_NM
+		, TAB.ADDR_CD
+		, TAB.ADDR_NM
+		, TAB.JC_CD
+		, TAB.JC_NM
+		, TAB.RECRUMT_TERM
+		, TAB.FAIR_TERM
+		, TAB.FAIR_STS_CD
+		, TAB.FAIR_STS_NM
+		, TAB.JC_AGREE_STS_CD
+		, TAB.JC_AGREE_STS_NM
+		, TAB.REG_DT
+		, TAB.ORDER_BY
+		FROM (
+				SELECT
+				A.USER_SEQ
+				, B.FAIR_SEQ
+				, C.FAIR_DIV_CD
+				, FN_GET_COMMON_NM('FAIR_DIV_CD', C.FAIR_DIV_CD, '') AS FAIR_DIV_NM
+				, CASE WHEN '' = 'kh' THEN C.FAIR_NM_KH ELSE C.FAIR_NM_EN END AS FAIR_NM
+				, C.ADDR_CD
+				, CASE WHEN '' = 'kh' THEN D.NM_KH ELSE D.NM_EN END AS ADDR_NM
+				, C.JC_CD
+				, CASE WHEN '' = 'kh' THEN E.JC_KH ELSE E.JC_EN END AS JC_NM
+				, CONCAT(FN_GET_BASE_DATE_TIME(C.RECURMT_BGN_DT, 'D', ''), ' '
+				        , C.RECURMT_BGN_HOUR, ':', C.RECURMT_BGN_MINUTE, ' ', C.RECURMT_BGN_AMPM, ' ~ '
+				        , FN_GET_BASE_DATE_TIME(C.RECURMT_END_DT, 'D', ''), ' '
+				        , C.RECURMT_END_HOUR, ':', C.RECURMT_END_MINUTE, ' ', C.RECURMT_END_AMPM) AS RECRUMT_TERM
+				, CONCAT(FN_GET_BASE_DATE_TIME(C.FAIR_BGN_DT, 'D', ''), ' '
+				        , C.FAIR_BGN_HOUR, ':', C.FAIR_BGN_MINUTE, ' ', C.FAIR_BGN_AMPM, ' ~ '
+				        , FN_GET_BASE_DATE_TIME(C.RECURMT_END_DT, 'D', ''), ' '
+				        , C.FAIR_END_HOUR, ':', C.FAIR_END_MINUTE, ' ', C.FAIR_END_AMPM) AS FAIR_TERM
+				, C.FAIR_STS_CD
+				, FN_GET_COMMON_NM('FAIR_STS_CD', C.FAIR_STS_CD, '') AS FAIR_STS_NM
+				, B.JC_AGREE_STS_CD
+				, FN_GET_COMMON_NM('JC_AGREE_STS_CD', B.JC_AGREE_STS_CD, '') AS JC_AGREE_STS_NM
+				, FN_GET_BASE_DATE_TIME(B.REG_DT, 'I', '') AS REG_DT
+				, A.REG_DT AS ORDER_BY
+				FROM CPES_USER A
+				INNER JOIN CPES_FAIR_ONLINE_PATCPTN B
+				ON A.USER_SEQ       	= B.USER_SEQ
+				INNER JOIN CPES_FAIR_MST C
+				ON B.FAIR_SEQ       	= C.FAIR_SEQ
+				LEFT JOIN CPES_LOC_CD D
+				ON C.ADDR_CD          = D.LVL_CD
+				LEFT JOIN CPES_JOB_CENTER E
+				ON C.FAIR_SEQ = E.JC_CD
+				<where>
+					AND A.USER_SEQ		= #{userSeq}
+				</where>
+		 ) TAB
+		 , (SELECT @ROWNUM := 0) Z
+		<choose>
+        	<when test="orderColumn == 'REG_DT'">
+               	ORDER BY TAB.ORDER_BY ${orderColumnSort}
+            </when>
+        	<otherwise>
+            	ORDER BY ${orderColumn} ${orderColumnSort}
+            </otherwise>
+        </choose>
+		<if test="length > -1">
+		LIMIT
+			${start} , ${length}
+		</if>
+
+    </select>
+
+	<select id="selectUserDtlInfoFairListTotalCnt" resultType="java.lang.Integer" parameterType="UserFairBean">
+		SELECT
+		COUNT(*) AS TOTAL_CNT
+		FROM CPES_USER A
+		INNER JOIN CPES_FAIR_ONLINE_PATCPTN B
+		ON A.USER_SEQ       	= B.USER_SEQ
+		INNER JOIN CPES_FAIR_MST C
+		ON B.FAIR_SEQ       	= C.FAIR_SEQ
+		LEFT JOIN CPES_LOC_CD D
+		ON C.ADDR_CD          = D.LVL_CD
+		LEFT JOIN CPES_JOB_CENTER E
+		ON C.FAIR_SEQ = E.JC_CD
+		<where>
+			AND A.USER_SEQ		= #{userSeq}
+		</where>
+
+    </select>
+
+</mapper>

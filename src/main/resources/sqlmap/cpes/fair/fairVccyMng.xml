@@ -1,0 +1,898 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fairVccyMng">
+
+	<sql id="selectEmpmnAncmtMngColumn">
+		A.COMPNY_SEQ,
+		A.VACANCY_SEQ,
+		A.FAIR_SEQ,
+		A.REG_USER_SEQ,
+		A.REG_DT,
+		B.VACANCY_CERT_NO,
+		B.EMPLOY_FORM_CD,
+		B.VACANCY_TITLE,
+		B.BGN_DT,
+		B.END_DT,
+		B.VACANCY_STS_CD,
+		B.JC_AGREE_STS_CD,
+		B.JC_AGREE_DT,
+		B.RECRUMT_MEMB,
+		B.JC_CD,
+		B.RECRUMT_DIFFCLT_YN,
+		FN_GET_COMPNY_NM(C.COMPNY_SEQ, #{lang}) AS COMPNY_NM,
+		C.MNGER_NM,
+		C.MNGER_CELL,
+		C.MNGER_EMAIL,
+		C.ADDR_FULL_CD,
+		D.MST_JC_CD
+	</sql>		
+	
+	<sql id="whereEmpmnAncmtMng">
+		AND A.FAIR_SEQ = #{fairSeq}
+		
+		<!-- 관할JC  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+		
+		<!-- 지역 코드 2 Depth (Province) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrCd2Depth)">
+			AND TRIM(SUBSTRING_INDEX(A.ADDR_FULL_CD, ',', 1)) = #{addrCd2Depth}
+		</if>
+		
+		<!-- 검색어 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND A.MNGER_EMAIL = #{searchValue}
+				</when>				
+				<when test="searchKeyword == 'SDC0000000003'">
+					AND A.MNGER_CELL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000005'">
+					AND A.MNGER_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000007'">
+					AND A.COMPNY_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000008'">
+					AND A.VACANCY_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+			</choose>
+		</if>
+		
+		<!-- 공고 TYPE 코드 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(employFormCd)">
+			AND A.EMPLOY_FORM_CD = #{employFormCd}
+		</if>
+
+		<!-- 모집상태 코드 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(vacancyStsCd)">
+			AND A.VACANCY_STS_CD = #{vacancyStsCd}
+		</if>
+
+		<!-- 승인상태 코드 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcAgreeStsCd)">
+			AND A.JC_AGREE_STS_CD = #{jcAgreeStsCd}
+		</if>
+		
+		<!-- 알림 신청 여부 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recrumtDiffcltYn)">
+			AND A.RECRUMT_DIFFCLT_YN = #{recrumtDiffcltYn}
+		</if>
+		
+		<!-- 우대 조건 검색 -->
+		<if test="preferntCondCdList.size != 0">
+			AND ( 
+					SELECT COUNT(*) FROM  CPES_VACANCY_PREFERNT_COND
+					WHERE VACANCY_SEQ = A.VACANCY_SEQ
+					<foreach collection="preferntCondCdList" item="item" index="index" open="AND (" close=")">
+					<if test="index > 0"> OR </if>
+					<if test="item == 'PCC0000000001'">
+						( PREFERNT_COND_CD = 'PCC0000000001' ) 
+					</if>
+					<if test="item == 'PCC0000000002'">
+						( PREFERNT_COND_CD = 'PCC0000000002' ) 
+					</if>
+					<if test="item == 'PCC0000000003'">
+						( PREFERNT_COND_CD = 'PCC0000000003' ) 
+					</if>
+
+					</foreach>
+				) > 0
+		</if>
+
+		<!-- 기간 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+			AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S')
+		</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+			AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+		</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+			AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S') 
+			AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+		</if>
+	</sql>
+	
+	<select id="selectEmpmnAncmtMngTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM (
+			SELECT 
+				* 
+			FROM (
+				SELECT 
+					<include refid="selectEmpmnAncmtMngColumn"/>
+				FROM
+					CPES_FAIR_PATCPTN_COMPNY_VACANCY A
+				JOIN
+					CPES_VACANCY B
+				ON
+					A.VACANCY_SEQ = B.VACANCY_SEQ
+				JOIN
+					CPES_COMPNY C
+				ON
+					A.COMPNY_SEQ = C.COMPNY_SEQ
+				JOIN
+					CPES_FAIR_MST D
+				ON
+						A.FAIR_SEQ = D.FAIR_SEQ
+			) A		
+			<where>
+				<include refid="whereEmpmnAncmtMng"/>
+			</where>
+		) T
+	</select>
+	
+	<select id="selectEmpmnAncmtMngList" resultType="FairMngBean" parameterType="FairMngBean">
+		SELECT 
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.* 
+		FROM (	
+				SELECT 
+					* 
+				FROM (
+					SELECT 
+						<include refid="selectEmpmnAncmtMngColumn"/>
+					FROM
+						CPES_FAIR_PATCPTN_COMPNY_VACANCY A
+					JOIN
+						CPES_VACANCY B
+					ON
+						A.VACANCY_SEQ = B.VACANCY_SEQ
+					JOIN
+						CPES_COMPNY C
+					ON
+						A.COMPNY_SEQ = C.COMPNY_SEQ
+					JOIN
+						CPES_FAIR_MST D
+					ON
+						A.FAIR_SEQ = D.FAIR_SEQ
+				) A
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) E
+				<where>
+					<include refid="whereEmpmnAncmtMng"/>
+				</where>
+				<choose>
+					<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+						ORDER BY ${orderColumn} ${orderColumnSort}
+	               	</when>
+					<otherwise>
+						ORDER BY A.REG_DT DESC
+					</otherwise>
+				</choose>
+				<if test="length > -1">
+				LIMIT 
+					${start} , ${length}				
+				</if>
+		) T		
+	</select>
+ 
+ 	<select id="selectEmpmnAncmtMngDetail" resultType="FairMngBean" parameterType="FairMngBean">
+		SELECT 
+			* 
+		FROM (
+			SELECT 
+				<include refid="selectEmpmnAncmtMngColumn"/>
+			FROM
+				CPES_FAIR_PATCPTN_COMPNY_VACANCY A
+			JOIN
+				CPES_VACANCY B
+			ON
+				A.VACANCY_SEQ = B.VACANCY_SEQ
+			JOIN
+				CPES_COMPNY C
+			ON
+				A.COMPNY_SEQ = C.COMPNY_SEQ
+			JOIN
+				CPES_FAIR_MST D
+			ON
+				A.FAIR_SEQ = D.FAIR_SEQ
+		) A
+		<where>
+			AND A.FAIR_SEQ = #{fairSeq}
+			AND A.VACANCY_SEQ = #{vacancySeq}
+		</where>
+ 	</select>
+	
+	<sql id="selectEmpmnAncmtJoinColumn">
+		A.VACANCY_SEQ,
+		A.COMPNY_SEQ,
+		A.REG_USER_SEQ,
+		A.REG_DT,
+		A.VACANCY_CERT_NO,
+		A.EMPLOY_FORM_CD,
+		A.VACANCY_TITLE,
+		A.BGN_DT,
+		A.END_DT,
+		A.VACANCY_STS_CD,
+		A.RECRUMT_MEMB,
+		A.JC_CD,
+		A.RECRUMT_DIFFCLT_YN,
+		FN_GET_COMPNY_NM(A.COMPNY_SEQ, #{lang}) AS COMPNY_NM,
+		B.MNGER_NM,
+		B.MNGER_CELL,
+		B.MNGER_EMAIL,
+		B.ADDR_FULL_CD,
+		C.FAIR_SEQ,
+		D.MST_JC_CD
+	</sql>		
+	
+	<sql id="whereEmpmnAncmtJoin">
+		AND A.FAIR_SEQ = #{fairSeq}
+		
+		<!-- 관할JC  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+		
+		<!-- 지역 코드 2 Depth (Province) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrCd2Depth)">
+			AND TRIM(SUBSTRING_INDEX(A.ADDR_FULL_CD, ',', 1)) = #{addrCd2Depth}
+		</if>
+		
+		<!-- 검색어 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND A.MNGER_EMAIL = #{searchValue}
+				</when>				
+				<when test="searchKeyword == 'SDC0000000003'">
+					AND A.MNGER_CELL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000005'">
+					AND A.MNGER_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000007'">
+					AND A.COMPNY_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000008'">
+					AND A.VACANCY_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+			</choose>
+		</if>
+		
+		<!-- 공고 TYPE 코드 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(employFormCd)">
+			AND A.EMPLOY_FORM_CD = #{employFormCd}
+		</if>
+
+		<!-- 모집상태 코드 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(vacancyStsCd)">
+			AND A.VACANCY_STS_CD = #{vacancyStsCd}
+		</if>
+
+		<!-- 우대 조건 검색 -->
+		<if test="preferntCondCdList.size != 0">
+			AND ( 
+					SELECT COUNT(*) FROM  CPES_VACANCY_PREFERNT_COND
+					WHERE VACANCY_SEQ = A.VACANCY_SEQ
+					<foreach collection="preferntCondCdList" item="item" index="index" open="AND (" close=")">
+					<if test="index > 0"> OR </if>
+					<if test="item == 'PCC0000000001'">
+						( PREFERNT_COND_CD = 'PCC0000000001' ) 
+					</if>
+					<if test="item == 'PCC0000000002'">
+						( PREFERNT_COND_CD = 'PCC0000000002' ) 
+					</if>
+					<if test="item == 'PCC0000000003'">
+						( PREFERNT_COND_CD = 'PCC0000000003' ) 
+					</if>
+
+					</foreach>
+				) > 0
+		</if>
+
+		<!-- 기간 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+			AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S')
+		</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+			AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+		</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+			AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S') 
+			AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+		</if>
+	</sql>	
+	
+	<select id="selectEmpmnAncmtJoinTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM (
+			SELECT 
+				* 
+			FROM (
+				SELECT 
+					<include refid="selectEmpmnAncmtJoinColumn"/>
+				FROM
+					CPES_VACANCY A
+				JOIN
+					CPES_COMPNY B
+				ON
+					A.COMPNY_SEQ = B.COMPNY_SEQ
+				JOIN
+					CPES_FAIR_PATCPTN_COMPNY C
+				ON
+					A.COMPNY_SEQ = C.COMPNY_SEQ
+				JOIN
+					CPES_FAIR_MST D
+				ON
+					C.FAIR_SEQ = D.FAIR_SEQ
+			) A		
+			<where>
+				<include refid="whereEmpmnAncmtJoin"/>
+				AND A.VACANCY_SEQ NOT IN (
+					SELECT VACANCY_SEQ FROM CPES_FAIR_PATCPTN_COMPNY_VACANCY
+					WHERE FAIR_SEQ = #{fairSeq}
+				)				
+			</where>
+		) T
+	</select>
+	
+	<select id="selectEmpmnAncmtJoinList" resultType="FairMngBean" parameterType="FairMngBean">
+		SELECT 
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.* 
+		FROM (	
+				SELECT 
+					* 
+				FROM (
+					SELECT 
+						<include refid="selectEmpmnAncmtJoinColumn"/>
+					FROM
+						CPES_VACANCY A
+					JOIN
+						CPES_COMPNY B
+					ON
+						A.COMPNY_SEQ = B.COMPNY_SEQ
+					JOIN
+						CPES_FAIR_PATCPTN_COMPNY C
+					ON
+						A.COMPNY_SEQ = C.COMPNY_SEQ
+					JOIN
+						CPES_FAIR_MST D
+					ON
+						C.FAIR_SEQ = D.FAIR_SEQ
+				) A
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) E
+				<where>
+					<include refid="whereEmpmnAncmtJoin"/>
+					AND A.VACANCY_SEQ NOT IN (
+						SELECT VACANCY_SEQ FROM CPES_FAIR_PATCPTN_COMPNY_VACANCY
+						WHERE FAIR_SEQ = #{fairSeq}
+					)
+				</where>
+				<choose>
+					<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+						ORDER BY ${orderColumn} ${orderColumnSort}
+	               	</when>
+					<otherwise>
+						ORDER BY A.REG_DT DESC
+					</otherwise>
+				</choose>
+				<if test="length > -1">
+				LIMIT 
+					${start} , ${length}				
+				</if>
+		) T		
+	</select>
+	
+ 	<select id="selectEmpmnAncmtJoinDetail" resultType="FairMngBean" parameterType="FairMngBean">
+		SELECT 
+			* 
+		FROM (
+			SELECT 
+				<include refid="selectEmpmnAncmtJoinColumn"/>
+			FROM
+				CPES_VACANCY A
+			JOIN
+				CPES_COMPNY B
+			ON
+				A.COMPNY_SEQ = B.COMPNY_SEQ
+			JOIN
+				CPES_FAIR_PATCPTN_COMPNY C
+			ON
+				A.COMPNY_SEQ = C.COMPNY_SEQ
+			JOIN
+				CPES_FAIR_MST D
+			ON
+				C.FAIR_SEQ = D.FAIR_SEQ
+		) A
+		<where>
+			AND A.FAIR_SEQ = #{fairSeq}
+			AND A.VACANCY_SEQ = #{vacancySeq}
+		</where>
+ 	</select>
+	
+	<sql id="selectApplicMngColumn">
+		A.APPLIC_SEQ,
+		(SELECT USER_AUTH_CD FROM CPES_USER WHERE USER_SEQ = B.USER_SEQ) AS USER_AUTH_CD,
+		B.JC_CD, <!-- 이력서 기준 -->
+		<!-- C.JC_CD, --> <!-- 채용공고 기준 -->
+		B.USER_SEQ,
+		FN_GET_USER_NM_BY_USER_SEQ(B.USER_SEQ, #{lang}) AS USER_NM,
+		B.RESUME_TITLE,
+		(SELECT USER_CELL FROM CPES_USER WHERE USER_SEQ = B.USER_SEQ) AS USER_CELL,
+		(SELECT USER_EMAIL FROM CPES_USER WHERE USER_SEQ = B.USER_SEQ) AS USER_EMAIL,
+		FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE((SELECT BIRTH FROM CPES_USER WHERE USER_SEQ = B.USER_SEQ), '/', ''), '-', '') AS UNSIGNED)) / 10000 ) AS AGE,
+		(SELECT GENDER_CD FROM CPES_USER WHERE USER_SEQ = B.USER_SEQ) AS GENDER_CD,
+		C.EMPLOY_FORM_CD,
+		C.VACANCY_TITLE,
+		FN_GET_COMPNY_NM(D.COMPNY_SEQ, #{lang}) AS COMPNY_NM,
+		D.MNGER_CELL,
+		D.MNGER_EMAIL,
+		A.REG_DT,
+		CASE WHEN A.APPLIC_PROC_CD != 'APC0000000001' THEN 'Y' ELSE 'N' END AS RESUME_OPEN_YN,
+		A.RESUME_OPEN_DT,
+		A.REFERRAL_YN,
+		A.APPLIC_PROC_CD,
+		F.FAIR_SEQ,
+		A.VACANCY_SEQ,
+		A.RESUME_SEQ
+	</sql>		
+	
+	<sql id="whereApplicMng">
+		AND A.FAIR_SEQ = #{fairSeq}
+		
+		<!-- 관할JC  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+		
+		<!-- 검색어 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000001'">
+					AND A.USER_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>				
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND A.USER_EMAIL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000003'">
+					AND A.USER_CELL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000007'">
+					AND A.COMPNY_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000008'">
+					AND A.VACANCY_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000010'">
+					AND A.RESUME_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+			</choose>
+		</if>
+		
+		<!-- 회원구분  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(userAuthCd)">AND A.USER_AUTH_CD = #{userAuthCd}</if>
+
+		<!-- 성별  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(genderCd)">AND A.GENDER_CD = #{genderCd}</if>
+
+		<!-- 공고 TYPE 코드 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(employFormCd)">
+			AND A.EMPLOY_FORM_CD = #{employFormCd}
+		</if>
+		
+		<!-- 우대 조건 검색 - 이력서 기준 -->
+		<if test="preferntCondCdList.size != 0">
+			AND ( 
+					SELECT COUNT(*) FROM  CPES_RESUME
+					WHERE RESUME_SEQ = A.RESUME_SEQ
+					<foreach collection="preferntCondCdList" item="item" index="index" open="AND (" close=")">
+					<if test="index > 0"> OR </if>
+					<if test="item == 'PCC0000000001'">
+						( IFNULL(DISABL_YN, 'N') = 'Y' ) 
+					</if>
+					<if test="item == 'PCC0000000002'">
+						( IFNULL(RET_MIGRAT_YN, 'N') = 'Y' ) 
+					</if>
+					<if test="item == 'PCC0000000003'">
+						( 
+							FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE((SELECT BIRTH FROM CPES_USER WHERE USER_SEQ = A.USER_SEQ), '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ >= ]]> 17 
+							AND	
+							FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE((SELECT BIRTH FROM CPES_USER WHERE USER_SEQ = A.USER_SEQ), '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ <= ]]> 25
+						) 
+					</if>
+					</foreach>
+				) > 0
+		</if>
+		
+		<!-- 우대 조건 검색 - 채용공고 기준
+		<if test="preferntCondCdList.size != 0">
+			AND ( 
+					SELECT COUNT(*) FROM  CPES_VACANCY_PREFERNT_COND
+					WHERE VACANCY_SEQ = A.VACANCY_SEQ
+					<foreach collection="preferntCondCdList" item="item" index="index" open="AND (" close=")">
+					<if test="index > 0"> OR </if>
+					<if test="item == 'PCC0000000001'">
+						( PREFERNT_COND_CD = 'PCC0000000001' ) 
+					</if>
+					<if test="item == 'PCC0000000002'">
+						( PREFERNT_COND_CD = 'PCC0000000002' ) 
+					</if>
+					<if test="item == 'PCC0000000003'">
+						( PREFERNT_COND_CD = 'PCC0000000003' ) 
+					</if>
+
+					</foreach>
+				) > 0
+		</if>
+		 -->
+		
+		<!-- 열람여부 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(resumeOpenYn)">
+			<choose>
+				<when test="resumeOpenYn != 'Y'">
+				AND A.APPLIC_PROC_CD = 'APC0000000001'
+				</when>
+				<otherwise>
+				AND A.APPLIC_PROC_CD != 'APC0000000001' 
+				</otherwise> 
+			</choose>
+		</if>
+
+		<!-- 심사상태 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(applicProcCd)">AND A.APPLIC_PROC_CD = #{applicProcCd}</if>
+
+		<!-- 알선여부 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(referralYn)">AND IFNULL(A.REFERRAL_YN, 'N') = #{referralYn}</if>
+
+		<!-- 기간 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+			AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S')
+		</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+			AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+		</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+			AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S') 
+			AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+		</if>
+	</sql>	
+	
+	<select id="selectApplicMngTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM (
+			SELECT 
+				* 
+			FROM (
+				SELECT 
+					<include refid="selectApplicMngColumn"/>
+				FROM
+					CPES_APPLIC A
+				JOIN
+					CPES_RESUME B
+				ON
+					A.RESUME_SEQ = B.RESUME_SEQ
+				JOIN
+					CPES_VACANCY C
+				ON
+					A.VACANCY_SEQ = C.VACANCY_SEQ
+				JOIN
+					CPES_COMPNY D
+				ON
+					C.COMPNY_SEQ = D.COMPNY_SEQ
+				JOIN
+					CPES_FAIR_PATCPTN_COMPNY_VACANCY E
+				ON
+					A.VACANCY_SEQ = E.VACANCY_SEQ
+				JOIN
+					CPES_FAIR_MST F
+				ON
+					E.FAIR_SEQ = F.FAIR_SEQ
+				) A	
+			<where>
+				<include refid="whereApplicMng"/>
+			</where>
+		) T	
+	</select>
+	
+	<select id="selectApplicMngList" resultType="FairMngBean" parameterType="FairMngBean">
+		SELECT 
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.* 
+		FROM (	
+				SELECT 
+					* 
+				FROM (
+					SELECT 
+						<include refid="selectApplicMngColumn"/>
+					FROM
+						CPES_APPLIC A
+					JOIN
+						CPES_RESUME B
+					ON
+						A.RESUME_SEQ = B.RESUME_SEQ
+					JOIN
+						CPES_VACANCY C
+					ON
+						A.VACANCY_SEQ = C.VACANCY_SEQ
+					JOIN
+						CPES_COMPNY D
+					ON
+						C.COMPNY_SEQ = D.COMPNY_SEQ
+					JOIN
+						CPES_FAIR_PATCPTN_COMPNY_VACANCY E
+					ON
+						A.VACANCY_SEQ = E.VACANCY_SEQ
+					JOIN
+						CPES_FAIR_MST F
+					ON
+						E.FAIR_SEQ = F.FAIR_SEQ
+				) A
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) E
+				<where>
+					<include refid="whereApplicMng"/>
+				</where>
+				<choose>
+					<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+						ORDER BY ${orderColumn} ${orderColumnSort}
+	               	</when>
+					<otherwise>
+						ORDER BY A.REG_DT DESC
+					</otherwise>
+				</choose>
+				<if test="length > -1">
+				LIMIT 
+					${start} , ${length}				
+				</if>
+		) T		
+	</select>
+	
+	<sql id="selectIntvwMngColumn">
+		A.INTVW_SEQ,
+		C.JC_CD, <!-- 채용공고 기준 -->
+		<!-- D.JC_CD, --> <!-- 이력서 기준 -->
+		FN_GET_COMPNY_NM(E.COMPNY_SEQ, #{lang}) AS COMPNY_NM,
+		C.EMPLOY_FORM_CD,
+		C.VACANCY_TITLE,
+		E.MNGER_CELL,
+		E.MNGER_EMAIL,
+		(SELECT USER_AUTH_CD FROM CPES_USER WHERE USER_SEQ = D.USER_SEQ) AS USER_AUTH_CD,
+		FN_GET_USER_NM_BY_USER_SEQ(D.USER_SEQ, #{lang}) AS USER_NM,
+		(SELECT USER_CELL FROM CPES_USER WHERE USER_SEQ = D.USER_SEQ) AS USER_CELL,
+		(SELECT USER_EMAIL FROM CPES_USER WHERE USER_SEQ = D.USER_SEQ) AS USER_EMAIL,
+		(SELECT GENDER_CD FROM CPES_USER WHERE USER_SEQ = D.USER_SEQ) AS GENDER_CD,
+		A.INTVW_DT,
+		A.INTVW_TYPE_CD,
+		A.INTVW_AGREE_YN,
+		A.INTVW_OPEN_DT,
+		A.REFERRAL_YN,
+		A.REG_DT,
+		G.FAIR_SEQ,
+		B.APPLIC_SEQ,
+		C.VACANCY_SEQ,
+		D.RESUME_SEQ,
+		D.RESUME_TITLE,
+		D.USER_SEQ
+	</sql>
+	
+	<sql id="whereIntvwMng">
+		AND A.FAIR_SEQ = #{fairSeq}
+		
+		<!-- 관할JC  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+		
+		<!-- 검색어 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000001'">
+					AND A.USER_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>				
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND A.USER_EMAIL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000003'">
+					AND A.USER_CELL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000007'">
+					AND A.COMPNY_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000008'">
+					AND A.VACANCY_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000010'">
+					AND A.RESUME_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+			</choose>
+		</if>
+		
+		<!-- 회원구분  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(userAuthCd)">AND A.USER_AUTH_CD = #{userAuthCd}</if>
+
+		<!-- 성별  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(genderCd)">AND A.GENDER_CD = #{genderCd}</if>
+
+		<!-- 공고 TYPE 코드 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(employFormCd)">
+			AND A.EMPLOY_FORM_CD = #{employFormCd}
+		</if>
+		
+		<!-- 우대 조건 검색 - 이력서 기준 -->
+		<if test="preferntCondCdList.size != 0">
+			AND ( 
+					SELECT COUNT(*) FROM  CPES_RESUME
+					WHERE RESUME_SEQ = A.RESUME_SEQ
+					<foreach collection="preferntCondCdList" item="item" index="index" open="AND (" close=")">
+					<if test="index > 0"> OR </if>
+					<if test="item == 'PCC0000000001'">
+						( IFNULL(DISABL_YN, 'N') = 'Y' ) 
+					</if>
+					<if test="item == 'PCC0000000002'">
+						( IFNULL(RET_MIGRAT_YN, 'N') = 'Y' ) 
+					</if>
+					<if test="item == 'PCC0000000003'">
+						( 
+							FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE((SELECT BIRTH FROM CPES_USER WHERE USER_SEQ = A.USER_SEQ), '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ >= ]]> 17 
+							AND	
+							FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE((SELECT BIRTH FROM CPES_USER WHERE USER_SEQ = A.USER_SEQ), '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ <= ]]> 25
+						) 
+					</if>
+					</foreach>
+				) > 0
+		</if>
+		
+		<!-- 우대 조건 검색 - 채용공고 기준 
+		<if test="preferntCondCdList.size != 0">
+			AND ( 
+					SELECT COUNT(*) FROM  CPES_VACANCY_PREFERNT_COND
+					WHERE VACANCY_SEQ = A.VACANCY_SEQ
+					<foreach collection="preferntCondCdList" item="item" index="index" open="AND (" close=")">
+					<if test="index > 0"> OR </if>
+					<if test="item == 'PCC0000000001'">
+						( PREFERNT_COND_CD = 'PCC0000000001' ) 
+					</if>
+					<if test="item == 'PCC0000000002'">
+						( PREFERNT_COND_CD = 'PCC0000000002' ) 
+					</if>
+					<if test="item == 'PCC0000000003'">
+						( PREFERNT_COND_CD = 'PCC0000000003' ) 
+					</if>
+
+					</foreach>
+				) > 0
+		</if>
+		 -->
+		
+		<!-- 면접수락여부 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(intvwAgreeYn)">AND IFNULL(A.INTVW_AGREE_YN, 'N') = #{intvwAgreeYn}</if>
+
+		<!-- 면접방법 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(intvwTypeCd)">AND A.INTVW_TYPE_CD = #{intvwTypeCd}</if>
+
+		<!-- 알선여부 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(referralYn)">AND IFNULL(A.REFERRAL_YN, 'N') = #{referralYn}</if>
+
+		<!-- 기간 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+			AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S')
+		</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+			AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+		</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+			AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S') 
+			AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+		</if>	
+	</sql>
+	
+	<select id="selectIntvwMngTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM (
+			SELECT 
+				* 
+			FROM (
+				SELECT 
+					<include refid="selectIntvwMngColumn"/>
+				FROM
+					CPES_INTVW A
+				JOIN
+					CPES_APPLIC B
+				ON
+					A.APPLIC_SEQ = B.APPLIC_SEQ
+				JOIN
+					CPES_VACANCY C
+				ON
+					B.VACANCY_SEQ = C.VACANCY_SEQ
+				JOIN
+					CPES_RESUME D
+				ON
+					B.RESUME_SEQ = D.RESUME_SEQ
+				JOIN
+					CPES_COMPNY E
+				ON
+					C.COMPNY_SEQ = E.COMPNY_SEQ
+				JOIN
+					CPES_FAIR_PATCPTN_COMPNY_VACANCY F
+				ON
+					C.VACANCY_SEQ = F.VACANCY_SEQ
+				JOIN
+					CPES_FAIR_MST G
+				ON
+					F.FAIR_SEQ = G.FAIR_SEQ
+			) A
+			<where>
+				<include refid="whereIntvwMng"/>
+			</where>
+		) T		
+	</select>
+	
+	<select id="selectIntvwMngList" resultType="FairMngBean" parameterType="FairMngBean">
+		SELECT 
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.* 
+		FROM (	
+				SELECT 
+					* 
+				FROM (
+					SELECT 
+						<include refid="selectIntvwMngColumn"/>
+					FROM
+						CPES_INTVW A
+					JOIN
+						CPES_APPLIC B
+					ON
+						A.APPLIC_SEQ = B.APPLIC_SEQ
+					JOIN
+						CPES_VACANCY C
+					ON
+						B.VACANCY_SEQ = C.VACANCY_SEQ
+					JOIN
+						CPES_RESUME D
+					ON
+						B.RESUME_SEQ = D.RESUME_SEQ
+					JOIN
+						CPES_COMPNY E
+					ON
+						C.COMPNY_SEQ = E.COMPNY_SEQ
+					JOIN
+						CPES_FAIR_PATCPTN_COMPNY_VACANCY F
+					ON
+						C.VACANCY_SEQ = F.VACANCY_SEQ
+					JOIN
+						CPES_FAIR_MST G
+					ON
+						F.FAIR_SEQ = G.FAIR_SEQ
+				) A
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) E
+				<where>
+					<include refid="whereIntvwMng"/>
+				</where>
+				<choose>
+					<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+						ORDER BY ${orderColumn} ${orderColumnSort}
+	               	</when>
+					<otherwise>
+						ORDER BY A.REG_DT DESC
+					</otherwise>
+				</choose>
+				<if test="length > -1">
+				LIMIT 
+					${start} , ${length}				
+				</if>
+		) T		
+	</select>
+</mapper>

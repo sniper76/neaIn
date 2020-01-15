@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eduTrnngMng">
+	<select id="selectUUID" resultType="java.lang.String">
+		SELECT REPLACE(UUID(),'-','') AS uuid FROM DUAL
+	</select>
+		
+	<select id="selectInsttMajorCodeList" parameterType="CommDtlCdBean" resultType="CommDtlCdBean">		
+		SELECT 
+				GRP_CD
+			  , DTL_CD
+			  , CD_KH_NM
+			  , CD_EN_NM
+			  , CD_CONTENT
+			  , USE_YN
+			  , SORT
+			  , REG_USER_SEQ
+			  , REG_DT
+			  , MOD_USER_SEQ
+			  , MOD_DT
+	     FROM CPES_INSTT_MAJOR_CD
+	     <where>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(grpCd)">AND GRP_CD = #{grpCd}</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(commGrpUseYn)">AND USE_YN = #{commGrpUseYn}</if>
+		</where>
+	 ORDER BY SORT 
+	</select>
+
+	<sql id="selectEduTrnngColumn">
+		A.EDU_TRNNG_SEQ,
+		A.EDU_DIV_CD,
+		A.EDU_TRNNG_NM,
+		A.TRNNG_NATNEXP_DIV_CD,
+		A.SPONSOR,
+		A.RECRUMT_STS_CD,
+		DATE_FORMAT(A.RECURMT_BGN_DT, '%d/%m/%Y') AS RECURMT_BGN_DT,
+		DATE_FORMAT(A.RECURMT_END_DT, '%d/%m/%Y') AS RECURMT_END_DT,
+		DATE_FORMAT(A.EDU_BGN_DT, '%d/%m/%Y') AS EDU_BGN_DT,
+		DATE_FORMAT(A.EDU_END_DT, '%d/%m/%Y') AS EDU_END_DT,
+		A.EDU_DURA,
+		A.DAY_TIME,
+		A.ADDR_CD,
+		A.PROVC_CD,
+		A.JC_AGREE_STS_CD,
+		A.JC_CD,
+		A.JC_USER_SEQ,
+		FN_GET_USER_NM_BY_USER_SEQ(A.JC_USER_SEQ, #{lang}) AS JC_USER_NM,
+		A.CATE_CD,
+		A.PROC_PROGRAM_STUDY,
+		A.DEGREE_AWARDS,
+		A.PROSPECT_OCCUP_CATE,
+		A.TUITION,
+		A.DEL_YN,
+		DATE_FORMAT(A.JC_AGREE_DT, '%d/%m/%Y %h:%i %p') AS JC_AGREE_DT,
+		DATE_FORMAT(A.JC_REJECT_DT, '%d/%m/%Y %h:%i %p') AS JC_REJECT_DT,
+		A.REG_USER_SEQ,
+		DATE_FORMAT(A.REG_DT, '%d/%m/%Y %h:%i %p') AS REG_DT,
+		A.MOD_USER_SEQ,
+		A.MOD_DT,
+		B.EDU_TRNNG_SUB_SEQ,
+		B.EDU_TARGET,
+		B.ADMSS_CRITERIA,
+		B.CONTENT,
+		B.ENROL_METHOD,
+		B.SIGN,
+		B.EDU_PROVD,
+		B.FILE_GRP_SEQ AS FILE_GRP_SEQ_EDU,
+		B.PROGRAM_CORS_TYPE_CD,
+		B.MAJOR_1DEPTH_CD,
+		B.MAJOR_2DEPTH_CD,
+		B.SKILL_JOB_PROGRAM_CORS_CD,
+		B.HIGH_GENRL_EDU_CORS_CD,
+		B.TIME_WEEK,
+		C.INSTT_SEQ,
+		FN_GET_INSTT_NM(C.INSTT_SEQ, #{lang}) AS INSTT_NM,
+		C.INSTT_NM_EN,
+		C.INSTT_NM_KH,
+		C.INSTT_OWNER_NM,
+		C.INSTT_TYPE_CD,
+		C.INSTT_REG_NUM,
+		C.INSTT_ADDR_CD,
+		C.INSTT_CONTENT,
+		C.INSTT_MNGER_NM,
+		C.INSTT_OFFICE_TEL,
+		C.INSTT_CELL,
+		C.INSTT_FAX,
+		C.INSTT_EMAIL,
+		C.INSTT_WEBSITE,
+		C.FILE_GRP_SEQ AS FILE_GRP_SEQ_INSTT,
+		C.INSTT_STS_CD,
+		C.INSTT_OWNER_CD,
+		D.USER_SEQ,
+		D.USER_AUTH_CD,
+		D.USER_STS_CD,
+		FN_GET_USER_NM_BY_USER_SEQ(D.USER_SEQ, #{lang}) AS USER_NM,
+		D.USER_EMAIL,
+		D.USE_YN
+	</sql>		
+	
+	<sql id="whereEduTrnng">
+
+		<!-- NEA/학원 구분코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(eduDivCd)">AND A.EDU_DIV_CD = #{eduDivCd}</if>
+
+
+		<!-- job center  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+
+
+		<!-- 검색어 (insttNm :C.INSTT_NM, eduTrnngNm : A.EDU_TRNNG_NM_EN or A.EDU_TRNNG_NM_KH) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'insttNmKh'">
+					AND A.INSTT_NM_KH LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'insttNmEn'">
+					AND A.INSTT_NM_EN LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'eduTrnngNm'">
+					AND A.EDU_TRNNG_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+			</choose>
+		</if>
+		
+		<!-- 교육 훈련 구분 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(trnngNatnexpDivCd)">AND A.TRNNG_NATNEXP_DIV_CD = #{trnngNatnexpDivCd}</if>
+
+
+		<!-- 기관 유형 구분 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(insttTypeCd)">AND A.INSTT_TYPE_CD = #{insttTypeCd}</if>
+
+
+		<!-- 프로그램/코스 유형 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(tvcDivCd)">AND A.PROGRAM_CORS_TYPE_CD = #{pcTypeCd}</if>
+
+
+		<!-- 전공 유형 1Depth 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(major1DepthCd)">AND A.MAJOR_1DEPTH_CD = #{major1DepthCd}</if>
+
+
+		<!-- 전공 유형 2Depth 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(major2DepthCd)">AND A.MAJOR_2DEPTH_CD = #{major2DepthCd}</if>
+
+
+		<!-- 승인 여부 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcAgreeStsCd)">AND A.JC_AGREE_STS_CD = #{jcAgreeStsCd}</if>
+
+
+		<!-- 모집 상태 여부 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recrumtStsCd)">AND A.RECRUMT_STS_CD = #{recrumtStsCd}</if>
+
+
+		<!-- 기관 소유 유형 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recrumtStsCd)">AND A.INSTT_OWNER_CD = #{insttOwnershipCd}</if>
+
+
+		<!-- 기술/직업훈련/프로그램/코스 구분 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(tvcDivCd)">AND A.SKILL_JOB_PROGRAM_CORS_CD = #{tvcDivCd}</if>
+
+
+		<!-- 고등/일반 교육 프로그램 구분 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(hgepDivCd)">AND A.HIGH_GENRL_EDU_CORS_CD = #{hgepDivCd}</if>
+
+
+		<!-- 분류 기간 조회  -->
+		<choose>
+			<!-- 신청일일 경우 -->
+			<when test="periodKeyword == 'regDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND STR_TO_DATE(A.REG_DT, '%d/%m/%Y') <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y') 
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND STR_TO_DATE(A.REG_DT, '%d/%m/%Y') <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y') 
+				</if>
+			</when>
+
+			<!-- 모집기간일 경우 -->
+			<when test="periodKeyword == 'recurmtDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND STR_TO_DATE(#{startDate}, '%d/%m/%Y') BETWEEN STR_TO_DATE(A.RECURMT_BGN_DT, '%d/%m/%Y') AND STR_TO_DATE(A.RECURMT_END_DT, '%d/%m/%Y') 
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND STR_TO_DATE(#{endDate}, '%d/%m/%Y') BETWEEN STR_TO_DATE(A.RECURMT_BGN_DT, '%d/%m/%Y') AND STR_TO_DATE(A.RECURMT_END_DT, '%d/%m/%Y') 
+				</if>
+			</when>
+
+			<!-- 수강기간일 경우 -->
+			<when test="periodKeyword == 'eduDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND STR_TO_DATE(#{endDate}, '%d/%m/%Y') BETWEEN STR_TO_DATE(A.EDU_BGN_DT, '%d/%m/%Y') AND STR_TO_DATE(A.EDU_END_DT, '%d/%m/%Y')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND STR_TO_DATE(#{endDate}, '%d/%m/%Y') BETWEEN STR_TO_DATE(A.EDU_BGN_DT, '%d/%m/%Y') AND STR_TO_DATE(A.EDU_END_DT, '%d/%m/%Y') 
+				</if>
+			</when>
+
+			<!-- 승인일일 경우 -->
+			<when test="periodKeyword == 'jcAgreeDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND STR_TO_DATE(A.JC_AGREE_DT, '%d/%m/%Y') <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y') 
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND STR_TO_DATE(A.JC_AGREE_DT, '%d/%m/%Y') <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y') 
+				</if>
+			</when>
+		</choose>
+
+		<!-- 해당 교육 기관의 관리자는 소속 된 JOB CENTER 코드만 볼 수 있다. 아직 미확정 확정 후 통보하겠다 함.
+		AND A.JC_CD = ( 
+			SELECT JC_CD FROM CPES_USER 
+			WHERE 
+				USER_AUTH_CD = 'ROLE_ADMIN' 
+			AND 
+				JC_CD = #{user.jcCd}
+			AND 
+				USER_SEQ = #{user.userSeq}
+		) 
+		-->
+		
+		<!-- NEA 직원은 모든 JOB CENTER 코드를 볼수 있다. NEA 코드는 아직 미정 추후 추가 필요 -->
+		
+		<!-- 삭제여부가 아닌 것 -->
+		AND A.DEL_YN != 'Y'
+	</sql>
+	
+	<select id="selectEduTrnngTotalCount" resultType="java.lang.Integer" parameterType="EduTrnngMngBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM (
+			SELECT
+				* 
+			FROM (
+				SELECT 
+					<include refid="selectEduTrnngColumn"/>
+				FROM
+					CPES_EDU_TRNNG A
+				JOIN
+					CPES_EDU_TRNNG_SUB B
+				ON
+					A.EDU_TRNNG_SEQ = B.EDU_TRNNG_SEQ
+				JOIN
+					CPES_INSTT C
+				ON
+					A.INSTT_SEQ = C.INSTT_SEQ
+				JOIN
+					CPES_USER D
+				ON
+					C.USER_SEQ = D.USER_SEQ
+			) A
+			<where>
+				<include refid="whereEduTrnng"/>
+			</where>
+		) T
+	</select>
+	
+	<select id="selectEduTrnngList" resultType="EduTrnngMngBean" parameterType="EduTrnngMngBean">
+		SELECT 
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.* 
+		FROM (	
+			SELECT
+				* 
+			FROM (
+				SELECT 
+					<include refid="selectEduTrnngColumn"/>
+				FROM
+					CPES_EDU_TRNNG A
+				JOIN
+					CPES_EDU_TRNNG_SUB B
+				ON
+					A.EDU_TRNNG_SEQ = B.EDU_TRNNG_SEQ
+				JOIN
+					CPES_INSTT C
+				ON
+					A.INSTT_SEQ = C.INSTT_SEQ
+				JOIN
+					CPES_USER D
+				ON
+					C.USER_SEQ = D.USER_SEQ
+			) A
+			JOIN
+				(SELECT @ROWNUM := 0 AS ROW_NUM) E
+			<where>
+				<include refid="whereEduTrnng"/>
+			</where>
+			<choose>
+				<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+					ORDER BY ${orderColumn} ${orderColumnSort}
+				</when>
+				<otherwise>
+					ORDER BY A.REG_DT DESC
+				</otherwise>
+			</choose>
+			<if test="length > -1">
+			LIMIT 
+				${start} , ${length}				
+			</if>
+		) T		
+	</select>
+	
+	<select id="selectEduTrnngDetail" resultType="EduTrnngMngBean" parameterType="EduTrnngMngBean">
+		SELECT 
+			<include refid="selectEduTrnngColumn"/>
+		FROM
+			CPES_EDU_TRNNG A
+		JOIN
+			CPES_EDU_TRNNG_SUB B
+		ON
+			A.EDU_TRNNG_SEQ = B.EDU_TRNNG_SEQ
+		JOIN
+			CPES_INSTT C
+		ON
+			A.INSTT_SEQ = C.INSTT_SEQ
+		JOIN
+			CPES_USER D
+		ON
+			C.USER_SEQ = D.USER_SEQ
+		<where>
+			A.EDU_TRNNG_SEQ = #{eduTrnngSeq}
+			<!-- 해당 교육 기관의 관리자는 소속 된 JOB CENTER 코드만 볼 수 있다. 아직 미확정 확정 후 통보하겠다 함.
+			AND A.JC_CD = ( 
+				SELECT JC_CD FROM CPES_USER 
+				WHERE 
+					USER_AUTH_CD = 'ROLE_ADMIN' 
+				AND 
+					JC_CD = #{user.jcCd}
+				AND 
+					USER_SEQ = #{user.userSeq}
+			) 
+			-->
+			
+			<!-- NEA 직원은 모든 JOB CENTER 코드를 볼수 있다. NEA 코드는 아직 미정 추후 추가 필요 -->
+			
+			<!-- 삭제여부가 아닌 것 -->
+			AND A.DEL_YN != 'Y'
+		</where>	
+	</select>
+
+	<select id="selectEduTrnngDtlInfo" resultType="EduTrnngBean" parameterType="EduTrnngBean">
+		SELECT
+		A.EDU_TRNNG_SEQ
+		, A.EDU_TRNNG_NM
+		, A.EDU_DIV_CD
+		, FN_GET_COMMON_NM('EDU_DIV_CD', A.EDU_DIV_CD, #{lang}) AS EDU_DIV_NM
+		, B.SKILL_JOB_PROGRAM_CORS_CD
+		, FN_GET_COMMON_NM('TVC_DIV_CD', B.SKILL_JOB_PROGRAM_CORS_CD, #{lang}) AS SKILL_JOB_PROGRAM_CORS_NM
+		, B.HIGH_GENRL_EDU_CORS_CD
+		, FN_GET_COMMON_NM('HGEP_DIV_CD', B.HIGH_GENRL_EDU_CORS_CD, #{lang}) AS HIGH_GENRL_EDU_CORS_NM
+		, CONCAT(FN_GET_BASE_DATE_TIME(A.RECURMT_BGN_DT, 'D', #{lang}), ' ~ ', FN_GET_BASE_DATE_TIME(A.RECURMT_END_DT, 'D', #{lang})) AS RECURMT_TERM
+		, CONCAT(FN_GET_BASE_DATE_TIME(A.EDU_BGN_DT, 'D', #{lang}), ' ~ ', FN_GET_BASE_DATE_TIME(A.EDU_END_DT, 'D', #{lang})) AS EDU_TERM
+		, A.EDU_DURA
+		, B.TEACH_DT
+		, CASE WHEN B.TEACH_BGN_HOUR IS NULL OR B.TEACH_BGN_HOUR = '' THEN
+		            ''
+		  ELSE
+		      CONCAT(B.TEACH_BGN_HOUR, ':', B.TEACH_BGN_MINUTE, ' ', B.TEACH_BGN_AMPM, ' ~ ',
+		            B.TEACH_END_HOUR, ':', B.TEACH_END_MINUTE, ' ', B.TEACH_END_AMPM)
+		  END AS TEACH_TIME
+		, B.TIME_WEEK
+		, A.ADDR_FULL_NM
+		, B.PROGRAM_CORS_TYPE_CD
+		, FN_GET_COMMON_NM('PC_TYPE_CD', B.PROGRAM_CORS_TYPE_CD, #{lang}) AS PROGRAM_CORS_TYPE_NM
+		, B.MAJOR_2DEPTH_CD
+		, CASE WHEN #{lang} = 'kh' THEN C.CD_KH_NM ELSE C.CD_EN_NM END AS MAJOR_2DEPTH_NM
+		, B.MAJOR_1DEPTH_CD
+		, CASE WHEN #{lang} = 'kh' THEN D.CD_KH_NM ELSE D.CD_EN_NM END AS MAJOR_1DEPTH_NM
+		, A.FREE_PAID_YN
+		, A.TUITION
+		, B.EDU_TARGET
+		, B.ADMSS_CRITERIA
+		, B.CONTENT
+		, B.ENROL_METHOD
+		, FN_GET_BASE_DATE_TIME(A.REG_DT, 'I', #{lang}) AS REG_DT
+		, CASE WHEN A.JC_AGREE_STS_CD = 'JAS0000000003' THEN
+		      		FN_GET_BASE_DATE_TIME(A.JC_REJECT_DT, 'I', #{lang})
+		  	   WHEN  A.JC_AGREE_STS_CD = 'JAS0000000002' THEN
+		  	   		''
+		  ELSE
+		      FN_GET_BASE_DATE_TIME(A.JC_AGREE_DT, 'I', #{lang}) 
+		  END AS JC_AGREE_DT
+		, A.JC_AGREE_STS_CD
+		, FN_GET_COMMON_NM('JC_AGREE_STS_CD', A.JC_AGREE_STS_CD, #{lang}) AS JC_AGREE_STS_NM
+		, A.JC_USER_SEQ
+		, CASE WHEN #{lang} = 'kh' THEN E.USER_NM_KH ELSE E.USER_NM_EN END JC_USER_NM
+		FROM CPES_EDU_TRNNG A
+		INNER JOIN CPES_EDU_TRNNG_SUB B
+		ON A.EDU_TRNNG_SEQ = B.EDU_TRNNG_SEQ
+		LEFT JOIN CPES_INSTT_MAJOR_CD C
+		ON B.MAJOR_2DEPTH_CD = C.DTL_CD
+		AND C.GRP_CD != C.DTL_CD
+		LEFT JOIN CPES_INSTT_MAJOR_CD D
+		ON B.MAJOR_1DEPTH_CD = D.GRP_CD
+		AND D.GRP_CD = D.DTL_CD
+		LEFT JOIN CPES_USER E
+		ON A.JC_USER_SEQ = E.USER_SEQ
+		WHERE A.EDU_TRNNG_SEQ			= #{eduTrnngSeq}
+		
+    </select>
+
+</mapper>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="userChg">
+
+	<sql id="whereUserChg">
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+		<if test="searchKeyword == 'SDC0000000001'.toString()">
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchValue)">AND B.USER_NM_KH = LIKE CONCAT('%',#{searchValue},'%')</if>
+		</if>
+		<if test="searchKeyword == 'SDC0000000002'.toString()">
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchValue)">AND B.USER_EMAIL = LIKE CONCAT('%',#{searchValue},'%')</if>
+		</if>
+		<if test="searchKeyword == 'SDC0000000003'.toString()">
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchValue)">AND B.USER_CELL = LIKE CONCAT('%',#{searchValue},'%')</if>
+		</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(user.userAuthCd)">AND B.USER_AUTH_CD = #{user.userAuthCd}</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate)">AND date_format(B.REG_DT,'%d/%m/%y') &gt;= #{startDate}</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate)">AND date_format(B.REG_DT,'%d/%m/%y') &lt;= #{endDate}</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(user.genderCd)">AND B.GENDER_CD = #{user.genderCd}</if>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(chgAgreeStsCd)">AND A.CHG_AGREE_STS_CD = #{chgAgreeStsCd}</if>
+		
+	</sql>
+	
+	<resultMap id="UserChgMap" type="UserChgBean">
+		<result column="ROW_NUM" property="rowNum" />
+		<result column="USER_CHG_SEQ" property="userChgSeq" />
+		<result column="CHG_PREV_CD" property="chgPrevCd" />
+		<result column="CHG_PREV_NM" property="chgPrevNm" />
+		<result column="CHG_NEXT_CD" property="chgNextCd" />
+		<result column="CHG_NEXT_NM" property="chgNextNm" />
+		<result column="CHG_REASON" property="chgReason" />
+		<result column="CHG_AGREE_STS_CD" property="chgAgreeStsCd" />
+		<result column="CHG_AGREE_STS_NM" property="chgAgreeStsNm" />
+		<result column="JC_USER_SEQ" property="jcUserSeq" />
+		<result column="JC_CD" property="jcCd" />
+		<result column="JC_CD_NM" property="jcNm" />
+		<result column="REG_USER_SEQ" property="regUserSeq" />
+		<result column="REG_DT" property="regDt" />
+		<result column="MOD_USER_SEQ" property="modUserSeq" />
+		<result column="MOD_DT" property="modDt" />
+		<result column="USER_EMAIL" property="user.userEmail" />
+		<result column="USER_NM_KH" property="user.userNmKh" />
+		<result column="USER_NM_EN" property="user.userNmEn" />
+		<result column="USER_CELL" property="user.userCell" />
+		<result column="GENDER_NM" property="user.genderNm" />
+		<result column="GENDER_CD" property="user.genderCd" />
+		<result column="AGE" property="user.age" />
+		<result column="STS_CHG_DT" property="stsChgDt" />
+		<result column="USER_AUTH_NM" property="user.userAuthNm" />
+		<result column="USER_AUTH_CD" property="user.userAuthCd" />
+		<result column="ADDR_DTL" property="user.addrDtl" />
+		<result column="AGREE_REJECT_REASON" property="agreeRejectReason" />
+	</resultMap>
+	
+	<select id="selectUserChgListTotalCount" resultType="java.lang.Integer" parameterType="UserChgBean">
+					SELECT 
+						COUNT(1) AS totalCount 
+					FROM CPES_USER_CHG A 
+						 INNER JOIN CPES_USER B ON A.USER_SEQ = B.USER_SEQ
+					<where>
+						<include refid="whereUserChg"/>
+					</where>
+	</select>
+		
+	<select id="selectUserChgList" resultMap="UserChgMap" parameterType="UserChgBean">
+			SELECT
+				   ${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM
+				   , A.*
+				   FROM (
+				   	SELECT
+					   A.USER_CHG_SEQ
+					 , A.USER_SEQ
+					 , A.CHG_PREV_CD
+					 , FN_GET_COMMON_NM('USER_AUTH_CD',A.CHG_PREV_CD,#{lang}) AS CHG_PREV_NM
+					 , A.CHG_NEXT_CD
+					 , FN_GET_COMMON_NM('USER_AUTH_CD',A.CHG_NEXT_CD,#{lang}) AS CHG_NEXT_NM
+					 , A.CHG_REASON
+					 , A.CHG_AGREE_STS_CD
+					 , FN_GET_COMMON_NM('CHG_AGREE_STS_CD',A.CHG_AGREE_STS_CD,#{lang}) AS CHG_AGREE_STS_NM
+					 , A.JC_USER_SEQ
+					 , A.JC_CD
+					 , FN_GET_JOB_CNTR_NM(A.JC_CD,#{lang}) AS JC_NM
+					 , A.REG_USER_SEQ
+					 , date_format(A.REG_DT,'%d/%m/%y %r')  AS REG_DT
+					 , A.MOD_USER_SEQ
+					 , A.MOD_DT
+					 , B.USER_EMAIL
+					 , B.USER_NM_EN
+					 , B.USER_NM_KH
+					 , B.USER_CELL
+					 , B.GENDER_CD
+					 , B.USER_AUTH_CD
+					 , FN_GET_COMMON_NM('USER_AUTH_CD',B.USER_AUTH_CD,#{lang}) AS USER_AUTH_NM
+					 , FN_GET_COMMON_NM('GENDER_CD',B.GENDER_CD,#{lang}) AS GENDER_NM
+					 , FLOOR( (CAST(REPLACE(CURRENT_DATE,'-','') AS UNSIGNED) - CAST(REPLACE(REPLACE(B.BIRTH,'/',''),'-','') AS UNSIGNED)) / 10000 ) AS AGE
+					 , date_format(A.STS_CHG_DT,'%d/%m/%y %r')  AS STS_CHG_DT
+					 , B.ADDR_DTL
+					 , A.AGREE_REJECT_REASON
+				FROM 
+					CPES_USER_CHG A 
+					INNER JOIN CPES_USER B ON A.USER_SEQ = B.USER_SEQ
+					,(SELECT @ROWNUM := 0) C
+					<where>
+						<include refid="whereUserChg"/>
+					</where>
+					<if test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+					ORDER BY 
+						${orderColumn} ${orderColumnSort}
+					</if>
+					<if test="length > -1">
+						LIMIT 
+							${start} , ${length}				
+					</if>
+					) A
+	</select>
+
+	<select id="selectUserChgDetail" resultMap="UserChgMap" parameterType="UserChgBean">
+		SELECT
+					   A.USER_CHG_SEQ
+					 , A.USER_SEQ
+					 , A.CHG_PREV_CD
+					 , FN_GET_COMMON_NM('USER_AUTH_CD',A.CHG_PREV_CD,#{lang}) AS CHG_PREV_NM
+					 , A.CHG_NEXT_CD
+					 , FN_GET_COMMON_NM('USER_AUTH_CD',A.CHG_NEXT_CD,#{lang}) AS CHG_NEXT_NM
+					 , A.CHG_REASON
+					 , A.CHG_AGREE_STS_CD
+					 , FN_GET_COMMON_NM('CHG_AGREE_STS_CD',A.CHG_AGREE_STS_CD,#{lang}) AS CHG_AGREE_STS_NM
+					 , A.JC_USER_SEQ
+					 , A.JC_CD
+					 , FN_GET_JOB_CNTR_NM(A.JC_CD,#{lang}) AS JC_NM
+					 , A.REG_USER_SEQ
+					 , date_format(A.REG_DT,'%d/%m/%y %r')  AS REG_DT
+					 , A.MOD_USER_SEQ
+					 , A.MOD_DT
+					 , B.USER_EMAIL
+					 , B.USER_NM_EN
+					 , B.USER_NM_KH
+					 , B.USER_CELL
+					 , B.GENDER_CD
+					 , B.USER_AUTH_CD
+					 , FN_GET_COMMON_NM('USER_AUTH_CD',B.USER_AUTH_CD,#{lang}) AS USER_AUTH_NM
+					 , FN_GET_COMMON_NM('GENDER_CD',B.GENDER_CD,#{lang}) AS GENDER_NM
+					 , FLOOR( (CAST(REPLACE(CURRENT_DATE,'-','') AS UNSIGNED) - CAST(REPLACE(REPLACE(B.BIRTH,'/',''),'-','') AS UNSIGNED)) / 10000 ) AS AGE
+					 , date_format(A.STS_CHG_DT,'%d/%m/%y %r') AS STS_CHG_DT
+					 , B.ADDR_DTL
+					 , A.AGREE_REJECT_REASON
+			FROM CPES_USER_CHG A 	
+	  INNER JOIN CPES_USER B ON A.USER_SEQ = B.USER_SEQ	
+		   WHERE 
+				 A.USER_CHG_SEQ = #{userChgSeq}
+	</select>
+	
+	<update id="updateUserChgSts"  parameterType="UserChgBean">
+			UPDATE CPES_USER_CHG
+			   SET CHG_AGREE_STS_CD = #{chgAgreeStsCd}
+			     , AGREE_REJECT_REASON = #{agreeRejectReason}
+			     , STS_CHG_DT	= now()
+			 WHERE USER_CHG_SEQ = #{userChgSeq}
+	</update>
+	
+	<update id="updateUserChgAuthCd" parameterType="UserChgBean">
+			UPDATE CPES_USER
+				SET USER_AUTH_CD = #{chgNextCd}
+			WHERE USER_SEQ = #{user.userSeq} 
+	</update>
+	
+</mapper>

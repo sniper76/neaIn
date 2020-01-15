@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="popUp">
+	
+	<select id="selectPopUpList" resultType="PopUpBean" parameterType="PopUpBean">
+        SELECT 
+			 A.*
+		FROM
+        	  (
+				SELECT POPUP_SEQ
+			     , WIDTH
+			     , HEIGHT
+			     , TOP_POSITION
+			     , LEFT_POSITION
+			     , BGN_DT
+			     , END_DT
+			     , CONTENT
+			     , USE_YN
+			     , FN_GET_USER_NM_BY_USER_SEQ(REG_USER_SEQ, #{lang}) AS REG_USER_NM
+			     , FN_GET_BASE_DATE_CHAR(REG_DT, #{lang}) AS REG_DT
+			     , FN_GET_USER_NM_BY_USER_SEQ(MOD_USER_SEQ, #{lang}) AS MOD_USER_NM
+			     , FN_GET_BASE_DATE_CHAR(MOD_DT, #{lang}) AS MOD_DT
+			     , TITLE
+			     , BGN_HOUR
+			     , END_HOUR
+			     , BGN_MINUTE
+			     , END_MINUTE
+			     , BGN_AMPM
+			     , END_AMPM
+			     , CASE WHEN BGN_DT = NULL OR BGN_DT = ''
+			     		THEN '9999'
+			     		ELSE CONCAT(BGN_HOUR,':',BGN_MINUTE,' ',BGN_AMPM,' ',BGN_DT)
+			     		END BGN_DATE
+			     , CASE WHEN END_DT = NULL OR END_DT = ''
+			     		THEN '9999'
+			     		ELSE CONCAT(END_HOUR,':',END_MINUTE,' ',END_AMPM,' ',END_DT)
+			     		END END_DATE
+			     , RESV_YN
+			     , TODAY_OPEN_YN
+			FROM CPES_POPUP	
+			<where>
+				<if test='keyword != null and keyword != ""'>
+		            <if test='keywordSel == "1"'> 
+						TITLE LIKE CONCAT('%',#{keyword},'%')
+					</if>
+					<if test='keywordSel == "2"'> 
+						AND REG_USER_NM LIKE CONCAT('%',#{keyword},'%')
+					</if>
+				</if>
+				<!-- keyword search -->
+				
+				<if test="useYn != null and useYn != ''">
+					AND USE_YN = #{useYn}
+				</if>
+				
+				<if test="startDate != null and startDate != ''">
+				<![CDATA[
+				AND REG_DT	>= FN_GET_STR_TO_DATE(#{startDate}, 'S')
+				]]>
+				</if>
+				<if test="endDate != null and endDate != ''">
+				<![CDATA[			
+				AND REG_DT	<= FN_GET_STR_TO_DATE(#{endDate}, 'E')
+				]]>
+				</if>
+			</where>
+         
+		) A
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+			ORDER BY ${orderColumn} ${orderColumnSort}
+		</if>
+        LIMIT ${start} , ${length}
+    </select>
+	
+	
+    
+    <select id="getUUID" resultType="java.lang.String" parameterType="PopUpBean">
+		select FN_GET_UUID_SEQ() AS uuid FROM DUAL
+	</select>
+    
+    <select id="selectPopUpTotalCount" resultType="java.lang.Integer" parameterType="PopUpBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM 
+			(
+			
+			SELECT POPUP_SEQ
+			     , WIDTH
+			     , HEIGHT
+			     , TOP_POSITION
+			     , LEFT_POSITION
+			     , BGN_DT
+			     , END_DT
+			     , CONTENT
+			     , USE_YN
+			     , FN_GET_USER_NM_BY_USER_SEQ(REG_USER_SEQ, #{lang}) AS REG_USER_NM
+			     , FN_GET_BASE_DATE_CHAR(REG_DT, #{lang}) AS REG_DT
+			     , FN_GET_USER_NM_BY_USER_SEQ(MOD_USER_SEQ, #{lang}) AS MOD_USER_NM
+			     , FN_GET_BASE_DATE_CHAR(MOD_DT, #{lang}) AS MOD_DT
+			     , TITLE
+			     , BGN_HOUR
+			     , END_HOUR
+			     , BGN_MINUTE
+			     , END_MINUTE
+			     , BGN_AMPM
+			     , END_AMPM
+			     , CASE WHEN BGN_DT = NULL OR BGN_DT = ''
+			     		THEN '9999'
+			     		ELSE CONCAT(BGN_HOUR,':',BGN_MINUTE,' ',BGN_AMPM,' ',BGN_DT)
+			     		END BGN_DATE
+			     , CASE WHEN END_DT = NULL OR END_DT = ''
+			     		THEN '9999'
+			     		ELSE CONCAT(END_HOUR,':',END_MINUTE,' ',END_AMPM,' ',END_DT)
+			     		END END_DATE
+			     , RESV_YN
+			     , TODAY_OPEN_YN
+			FROM CPES_POPUP	
+			<where>
+				<if test='keyword != null and keyword != ""'>
+		            <if test='keywordSel == "1"'> 
+						TITLE LIKE CONCAT('%',#{keyword},'%')
+					</if>
+					<if test='keywordSel == "2"'> 
+						AND REG_USER_NM LIKE CONCAT('%',#{keyword},'%')
+					</if>
+				</if>
+				<!-- keyword search -->
+				
+				<if test="useYn != null and useYn != ''">
+					AND USE_YN = #{useYn}
+				</if>
+				
+				<if test="startDate != null and startDate != ''">
+				<![CDATA[
+				AND REG_DT	>= FN_GET_STR_TO_DATE(#{startDate}, 'S')
+				]]>
+				</if>
+				<if test="endDate != null and endDate != ''">
+				<![CDATA[			
+				AND REG_DT	<= FN_GET_STR_TO_DATE(#{endDate}, 'E')
+				]]>
+				</if>
+			</where>
+		
+		) A
+	</select>
+	
+	<select id="selectUserInfo" resultType="java.lang.String" parameterType="map">
+		SELECT CASE WHEN #{sysLangCd} = 'KH' THEN A.USER_NM_KH ELSE A.USER_NM_EN END USER_NM
+		FROM CPES_USER A
+		WHERE A.MNG_ID = #{id}
+	</select>
+	
+	<select id="selectPopUpDtl" resultType="PopUpBean" parameterType="PopUpBean">
+		SELECT POPUP_SEQ
+			     , WIDTH
+			     , HEIGHT
+			     , TOP_POSITION
+			     , LEFT_POSITION
+			     , BGN_DT
+			     , END_DT
+			     , CONTENT
+			     , USE_YN
+			     , FN_GET_USER_NM_BY_USER_SEQ(REG_USER_SEQ, #{lang}) AS REG_USER_NM
+			     , FN_GET_BASE_DATE_CHAR(REG_DT, #{lang}) AS REG_DT
+			     , FN_GET_USER_NM_BY_USER_SEQ(MOD_USER_SEQ, #{lang}) AS MOD_USER_NM
+			     , FN_GET_BASE_DATE_CHAR(MOD_DT, #{lang}) AS MOD_DT
+			     , TITLE
+			     , BGN_HOUR
+			     , END_HOUR
+			     , BGN_MINUTE
+			     , END_MINUTE
+			     , BGN_AMPM
+			     , END_AMPM
+			     , CONCAT(BGN_HOUR,':',BGN_MINUTE,' ',BGN_AMPM,' ',BGN_DT) AS BGN_DATE
+			     , CASE WHEN END_DT = NULL OR END_DT = ''
+			     		THEN '9999'
+			     		ELSE CONCAT(END_HOUR,':',END_MINUTE,' ',END_AMPM,' ',END_DT)
+			     		END END_DATE
+			     , RESV_YN
+			     , TODAY_OPEN_YN
+			FROM CPES_POPUP  
+			WHERE POPUP_SEQ = #{popupSeq}
+	</select>
+	
+</mapper>

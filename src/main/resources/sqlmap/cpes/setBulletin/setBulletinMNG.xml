@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setBulletinMNG">
+	<insert id="insertBulletinMNG" parameterType="BulletinMNGBean">
+		/* insertBulletinMNG */
+		INSERT INTO CPES_BULLETIN_MNG (
+		      BULLETIN_MNG_SEQ,
+		      FILE_GRP_CD,
+		      BULLETIN_NM,
+		      CONTENT,
+		      CREATE_DT,
+		      USE_YN,
+		      COMMENT_YN,
+		      FILE_YN,
+		      DEL_YN,
+		      MENU_CD,
+		      MENU_CD_DIV,
+		      BULLETIN_TYPE_CD,
+		      BANNER_USE_YN,
+		      BULLETIN_RANGE_CD,
+		      JOBSK_YN,
+		      STDT_YN,
+		      EMPLOY_YN,
+		      TRNNG_INSTT_YN,
+		      FILE_QTY,
+		      FILE_SIZE,
+		      LIKE_YN,
+		      REG_USER_SEQ,
+		      REG_DT,
+		      MOD_USER_SEQ,
+		      MOD_DT
+		) VALUES (
+		      #{bulletinMngSeq},
+		      #{fileGrpCd},
+		      #{bulletinNm},
+		      #{content},
+		      NOW(),
+		      #{useYn},
+		      #{commentYn},
+		      #{fileYn},
+		      #{delYn},
+		      #{menuCd},
+		      #{menuCdDiv},
+		      #{bulletinTypeCd},
+		      #{bannerUseYn},
+		      #{bulletinRangeCd},
+		      #{jobskYn},
+			  #{stdtYn},
+			  #{employYn},
+			  #{trnngInsttYn},
+			  #{fileQty},
+			  #{fileSize},
+			  #{likeYn},
+		      #{user.userSeq},
+		      NOW(),
+		      #{user.userSeq},
+		      NOW()
+		)
+
+	</insert>
+	
+	<insert id="insertProgram" parameterType="BulletinMNGBean">
+		/* insertProgram */
+		INSERT INTO CPES_PROGRAM (
+				PROGRAM_SEQ,
+				PROGRAM_NM_KH,
+				PROGRAM_NM_EN,
+				PROGRAM_ID,
+				REG_USER_SEQ,
+				REG_DT,
+				MOD_USER_SEQ,
+				MOD_DT,
+				PROGRAM_URL,
+				BULLETIN_MNG_SEQ,
+				USE_YN,
+				RANGE_CD
+		) VALUES (
+				#{programSeq},
+				#{programNm},
+				#{programNm},
+				#{programId},
+				#{regUserSeq},
+				NOW(),
+				#{modUserSeq},
+				NOW(),
+				#{programUrl},
+				#{bulletinMngSeq},
+				#{useYn},
+				#{rangeCd}
+		)
+
+	</insert>
+	
+	<delete id="deleteBulletinMNG" parameterType="BulletinMNGBean">
+		/* deleteBulletinMNG */
+		UPDATE
+			CPES_BULLETIN_MNG
+		SET
+		    DEL_YN           = #{delYn},   
+			MOD_USER_SEQ = #{user.userSeq},
+			MOD_DT = NOW()
+		WHERE
+			BULLETIN_MNG_SEQ = #{bulletinMngSeq}
+	</delete>
+	
+	<update id="updateBulletinMNG" parameterType="BulletinMNGBean">
+		/* updateBulletinMNG */
+		UPDATE
+			CPES_BULLETIN_MNG
+		SET
+		<if test="fileGrpCd      != null "> FILE_GRP_CD      = #{fileGrpCd},      </if>
+		<if test="bulletinNm     != null "> BULLETIN_NM      = #{bulletinNm},     </if>
+		<if test="content        != null "> CONTENT          = #{content},        </if>
+		<if test="useYn          != null "> USE_YN           = #{useYn},          </if>
+		<if test="commentYn      != null "> COMMENT_YN       = #{commentYn},      </if>
+		<if test="fileYn         != null "> FILE_YN          = #{fileYn},         </if>
+		<if test="delYn          != null "> DEL_YN           = #{delYn},          </if>
+		<if test="menuCd         != null "> MENU_CD          = #{menuCd},         </if>
+		<if test="menuCdDiv      != null "> MENU_CD_DIV      = #{menuCdDiv},      </if>
+		<if test="bulletinTypeCd != null "> BULLETIN_TYPE_CD = #{bulletinTypeCd}, </if>
+		<if test="bannerUseYn    != null "> BANNER_USE_YN    = #{bannerUseYn},    </if>
+		<if test="bulletinRangeCd    != null "> BULLETIN_RANGE_CD    = #{bulletinRangeCd},    </if>
+		<if test="jobskYn    != null "> JOBSK_YN    = #{jobskYn},    </if>
+		<if test="stdtYn    != null "> STDT_YN    = #{stdtYn},    </if>
+		<if test="employYn    != null "> EMPLOY_YN    = #{employYn},    </if>
+		<if test="trnngInsttYn    != null "> TRNNG_INSTT_YN    = #{trnngInsttYn},    </if>
+		<if test="fileQty    != null "> FILE_QTY    = #{fileQty},    </if>
+		<if test="fileSize    != null "> FILE_SIZE    = #{fileSize},    </if>
+		<if test="likeYn    != null "> LIKE_YN    = #{likeYn},    </if>
+			MOD_USER_SEQ = #{user.userSeq},
+			MOD_DT = NOW()
+		WHERE
+			BULLETIN_MNG_SEQ = #{bulletinMngSeq}
+	</update>
+	
+	<insert id="insertBulletinCate" parameterType="BulletinCateBean">
+		/* insertBulletinCate */
+		INSERT INTO CPES_BULLETIN_CATE
+		(
+			BULLETIN_CATE_SEQ, 
+			BULLETIN_CATE_NM, 
+			BULLETIN_MNG_SEQ,
+			SORT
+		)VALUES
+		(
+			#{bulletinCateSeq}, 
+			#{bulletinCateNm}, 
+			#{bulletinMngSeq},
+			#{sort}
+		)
+
+	</insert>
+	
+	<update id="updateBulletinCate" parameterType="BulletinCateBean">
+		/* updateBulletinCate */
+		UPDATE CPES_BULLETIN_CATE SET 
+			 BULLETIN_CATE_NM = #{bulletinCateNm}
+		WHERE BULLETIN_CATE_SEQ = #{bulletinCateSeq}
+	</update>
+	
+	
+	<delete id="deleteBulletinCate" parameterType="BulletinCateBean">
+		/* deleteBulletinCate */
+		DELETE FROM CPES_BULLETIN_CATE
+		<where>
+				BULLETIN_MNG_SEQ = #{bulletinMngSeq}
+		</where>
+	</delete>
+	
+</mapper>

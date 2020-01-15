@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setJobCenter">
+	<insert id="insertJobCenter" parameterType="JobCenterBean">
+		INSERT INTO CPES_JOB_CENTER
+				(
+				    JC_CD
+				  , JC_EN
+				  , JC_KH
+				  , ADDR_EN
+				  , ADDR_KH
+				  , TEL1
+				  , TEL2
+				  , TEL3
+				  , TEL4
+				  , EMAIL
+				  , FACEBOOK
+				  , WEBSITE
+				  , FILE_GRP_SEQ
+				  , ADDR_CD
+				  , EXPLN_EN
+				  , EXPLN_KH
+				  , REG_USER_SEQ
+				  , REG_DT
+				  , MOD_USER_SEQ
+				  , MOD_DT
+				  , USE_YN
+				  , MAP_LINK
+				  , ADDR_FULL_CD
+				  , ADDR_FULL_NM
+				) VALUES
+				(
+					 #{jcCd}
+					,#{jcEn}
+					,#{jcKh}
+					,#{addrEn}
+					,#{addrKh}
+					,#{tel1}
+					,#{tel2}
+					,#{tel3}
+					,#{tel4}
+					,#{email}
+					,#{facebook}
+					,#{website}
+					,#{fileGrpSeq}
+					,#{addrCd}
+					,#{explnEn}
+					,#{explnKh}
+					,#{user.userSeq}
+					, NOW()
+					,#{user.userSeq}
+					, NOW()
+					,#{useYn}
+					,#{mapLink}
+					,#{addrFullCd}
+					,#{addrFullNm}
+				)
+
+	</insert>
+	
+	
+	<update id="updateJobCenter" parameterType="JobCenterBean">
+		UPDATE CPES_JOB_CENTER SET 
+				  JC_EN = #{jcEn}
+				, JC_KH = #{jcKh}
+				, ADDR_EN = #{addrEn}
+				, ADDR_KH = #{addrKh}
+				, TEL1 = #{tel1}
+				, TEL2 = #{tel2}
+				, EMAIL = #{email}
+				, FILE_GRP_SEQ = #{fileGrpSeq}
+				, ADDR_CD = #{addrCd}
+				, MOD_USER_SEQ = #{user.userSeq}
+				, MOD_DT = NOW()
+				, USE_YN = #{useYn}
+				, MAP_LINK = #{mapLink}
+				, ADDR_FULL_CD = #{addrFullCd}
+				, ADDR_FULL_NM = #{addrFullNm}
+		WHERE JC_CD = #{jcCd}
+	</update>
+	
+	<delete id="deleteJobCenterDtl" parameterType="JobCenterBean">
+		DELETE FROM CPES_JOB_CENTER WHERE JC_CD = #{jcCd}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="userInstt">
+
+	<select id="selectUserInsttInfoListAjax" resultType="UserInsttBean" parameterType="UserInsttBean">
+		SELECT
+		${totalCount} - ((${pageNo} - 1) * ${length}) - (@ROWNUM := @ROWNUM + 1) + 1 AS ROW_NUM
+		, TAB.INSTT_SEQ
+		, TAB.USER_SEQ
+		, TAB.USER_ID
+		, TAB.INSTT_NM
+		, TAB.INSTT_OWNERSHIP_NM
+		, TAB.INSTT_TYPE_NM
+		, TAB.INSTT_REG_NUM
+		, TAB.INSTT_MNGER_NM
+		, TAB.INSTT_EMAIL
+		, TAB.INSTT_CELL
+		, TAB.USER_STS_NM
+		, TAB.REG_DT
+		, TAB.MOD_DT
+		, TAB.ORDER_BY				
+		FROM (
+				SELECT 
+				B.INSTT_SEQ
+				, B.USER_SEQ
+				, A.USER_ID
+				, CASE WHEN #{lang} = 'kh' THEN B.INSTT_NM_KH ELSE B.INSTT_NM_EN END AS INSTT_NM
+				, FN_GET_COMMON_NM('INSTT_OWNERSHIP_CD', B.INSTT_OWNER_CD, #{lang}) AS INSTT_OWNERSHIP_NM
+				, FN_GET_COMMON_NM('INSTT_TYPE_CD', B.INSTT_TYPE_CD, #{lang}) AS INSTT_TYPE_NM
+				, B.INSTT_REG_NUM
+				, B.INSTT_MNGER_NM
+				, B.INSTT_EMAIL
+				, B.INSTT_CELL
+				, FN_GET_COMMON_NM('USER_STS_CD', A.USER_STS_CD, #{lang}) AS USER_STS_NM
+				, FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT 
+			   	, FN_GET_BASE_DATE_CHAR(A.MOD_DT, #{lang}) AS MOD_DT
+			   	, A.REG_DT AS ORDER_BY 
+				FROM CPES_USER A
+				INNER JOIN CPES_INSTT B
+				ON A.USER_SEQ          		= B.USER_SEQ
+				<where>
+				    AND A.USER_AUTH_CD				= 'ROLE_TRNCT'
+					<if test="jcCd != null and jcCd != ''">
+					AND A.JC_CD						LIKE CONCAT('%', #{jcCd}, '%') 
+					</if>			
+					<if test="lang == 'kh' and insttNm != null and insttNm != ''">
+					AND B.INSTT_NM_KH				LIKE CONCAT('%', #{insttNm}, '%') 
+					</if>
+					<if test="lang != 'kh' and insttNm != null and insttNm != ''">
+					AND B.INSTT_NM_EN				LIKE CONCAT('%', #{insttNm}, '%') 
+					</if>
+					<if test="insttMngerNm != null and insttMngerNm != ''">
+					AND B.INSTT_MNGER_NM			LIKE CONCAT('%', #{insttMngerNm}, '%') 
+					</if>
+					<if test="insttEmail != null and insttEmail != ''">
+					AND B.INSTT_EMAIL				LIKE CONCAT('%', #{insttEmail}, '%') 
+					</if>
+					<if test="insttCell != null and insttCell != ''">
+					AND B.INSTT_CELL				LIKE CONCAT('%', #{insttCell}, '%') 
+					</if>
+					<if test="insttRegNum != null and insttRegNum != ''">
+					AND B.INSTT_REG_NUM				LIKE CONCAT('%', #{insttRegNum}, '%')
+					</if>						
+					<if test="insttOwnerCd != null and insttOwnerCd != ''">
+					AND B.INSTT_OWNER_CD 			LIKE CONCAT('%', #{insttOwnerCd}, '%')
+					</if>	
+					<if test="insttTypeCd != null and insttTypeCd != ''">
+					AND B.INSTT_TYPE_CD				LIKE CONCAT('%', #{insttTypeCd}, '%')
+					</if>	
+					<if test="userStsCd != null and userStsCd != ''">
+					AND A.USER_STS_CD				LIKE CONCAT('%', #{userStsCd}, '%')
+					</if>											
+					<if test="startDate != null and startDate != ''">
+					<![CDATA[
+					AND A.REG_DT			>= FN_GET_STR_TO_DATE(#{startDate}, 'S')
+					]]>
+					</if>
+					<if test="endDate != null and endDate != ''">
+					<![CDATA[			
+					AND A.REG_DT			<= FN_GET_STR_TO_DATE(#{endDate}, 'E')
+					]]>
+					</if>											
+				</where>
+		) TAB
+		, (SELECT @ROWNUM := 0) Z
+		<choose>
+        	<when test="orderColumn == 'REG_DT'">
+               	ORDER BY TAB.ORDER_BY ${orderColumnSort}
+            </when>
+            <otherwise>
+            	ORDER BY ${orderColumn} ${orderColumnSort}
+            </otherwise>
+        </choose>		
+		<if test="length > -1">
+		LIMIT 
+			${start} , ${length}				
+		</if>
+            
+    </select>
+      
+	<select id="selectUserInsttInfoListTotalCnt" resultType="java.lang.Integer" parameterType="UserInsttBean">
+       	SELECT COUNT(*) AS TOTAL_COUNT
+		FROM CPES_USER A
+		INNER JOIN CPES_INSTT B
+		ON A.USER_SEQ          		= B.USER_SEQ 
+		<where>
+		    AND A.USER_AUTH_CD				= 'ROLE_TRNCT'
+			<if test="jcCd != null and jcCd != ''">
+			AND A.JC_CD						LIKE CONCAT('%', #{jcCd}, '%') 
+			</if>			
+			<if test="lang == 'kh' and insttNm != null and insttNm != ''">
+			AND B.INSTT_NM_KH				LIKE CONCAT('%', #{insttNm}, '%') 
+			</if>
+			<if test="lang != 'kh' and insttNm != null and insttNm != ''">
+			AND B.INSTT_NM_EN				LIKE CONCAT('%', #{insttNm}, '%') 
+			</if>
+			<if test="insttMngerNm != null and insttMngerNm != ''">
+			AND B.INSTT_MNGER_NM			LIKE CONCAT('%', #{insttMngerNm}, '%') 
+			</if>
+			<if test="insttEmail != null and insttEmail != ''">
+			AND B.INSTT_EMAIL				LIKE CONCAT('%', #{insttEmail}, '%') 
+			</if>
+			<if test="insttCell != null and insttCell != ''">
+			AND B.INSTT_CELL				LIKE CONCAT('%', #{insttCell}, '%') 
+			</if>
+			<if test="insttRegNum != null and insttRegNum != ''">
+			AND B.INSTT_REG_NUM				LIKE CONCAT('%', #{insttRegNum}, '%')
+			</if>						
+			<if test="insttOwnerCd != null and insttOwnerCd != ''">
+			AND B.INSTT_OWNER_CD 			LIKE CONCAT('%', #{insttOwnerCd}, '%')
+			</if>	
+			<if test="insttTypeCd != null and insttTypeCd != ''">
+			AND B.INSTT_TYPE_CD				LIKE CONCAT('%', #{insttTypeCd}, '%')
+			</if>	
+			<if test="userStsCd != null and userStsCd != ''">
+			AND A.USER_STS_CD				LIKE CONCAT('%', #{userStsCd}, '%')
+			</if>											
+			<if test="startDate != null and startDate != ''">
+			<![CDATA[
+			AND A.REG_DT			>= FN_GET_STR_TO_DATE(#{startDate}, 'S')
+			]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+			<![CDATA[			
+			AND A.REG_DT			<= FN_GET_STR_TO_DATE(#{endDate}, 'E')
+			]]>
+			</if>												
+		</where>		
+    </select>
+
+	<select id="selectUserInsttDtlInfoMain" resultType="UserInsttBean" parameterType="UserInsttBean">
+		SELECT
+		INSTT_SEQ 
+		, USER_SEQ
+		, CASE WHEN #{lang} = 'kh' THEN INSTT_NM_KH ELSE INSTT_NM_EN END AS INSTT_NM
+		, FN_GET_COMMON_NM('INSTT_OWNERSHIP_CD', INSTT_OWNER_CD, #{lang}) AS INSTT_OWNERSHIP_NM
+		, FN_GET_COMMON_NM('INSTT_TYPE_CD', INSTT_TYPE_CD, #{lang}) AS INSTT_TYPE_NM
+		, INSTT_MNGER_NM
+		, INSTT_EMAIL
+		, INSTT_ADDR_DTL
+		, FN_GET_FILE_PATH(FILE_GRP_SEQ) AS FILE_PATH
+		FROM CPES_INSTT
+		WHERE INSTT_SEQ        = #{insttSeq}
+    </select>
+    
+	<select id="selectUserInsttDtlInfoBaseAjax" resultType="UserInsttBean" parameterType="UserInsttBean">
+		SELECT 
+		CASE WHEN #{lang} = 'kh' THEN A.INSTT_NM_KH ELSE A.INSTT_NM_EN END AS INSTT_NM
+		, FN_GET_COMMON_NM('INSTT_OWNERSHIP_CD', A.INSTT_OWNER_CD, #{lang}) AS INSTT_OWNERSHIP_NM
+		, FN_GET_COMMON_NM('INSTT_TYPE_CD', A.INSTT_TYPE_CD, #{lang}) AS INSTT_TYPE_NM
+		, A.INSTT_REG_NUM
+		, A.INSTT_ADDR_DTL
+		, A.INSTT_MNGER_NM
+		, A.INSTT_CELL
+		, A.INSTT_EMAIL
+		, B.AUTH_CMPLT_YN
+		, FN_GET_COMMON_NM('SMS_EMAIL_AUTH_DIV_CD', B.SMS_EMAIL_AUTH_DIV_CD, #{lang}) AS SMS_EMAIL_AUTH_DIV_NM
+		, A.INSTT_OFFICE_TEL
+		, A.INSTT_FAX
+		, A.INSTT_WEBSITE
+		FROM CPES_INSTT A
+		, CPES_USER B
+		WHERE A.USER_SEQ        = B.USER_SEQ 
+		  AND A.INSTT_SEQ       = #{insttSeq}
+    </select>    
+
+	<select id="selectUserInsttDtlInfoProfile" resultType="UserInsttBean" parameterType="UserInsttBean">
+       	SELECT
+       	INSTT_SEQ
+       	, INSTT_PROFILE
+       	, INSTT_HIS
+       	, INSTT_MAP_LINK
+       	FROM CPES_INSTT
+		<where>
+			AND INSTT_SEQ		= #{insttSeq}
+		</where>		
+    </select>
+
+	<select id="selectUserInsttDtlInfoEduList" resultType="UserInsttEduBean" parameterType="UserInsttEduBean">
+		SELECT
+		${totalCount} - ((${pageNo} - 1) * ${length}) - (@ROWNUM := @ROWNUM + 1) + 1 AS ROW_NUM
+		, TAB.INSTT_SEQ
+		, TAB.EDU_TRNNG_SEQ
+		, TAB.EDU_TRNNG_ID
+		, TAB.EDU_DIV_CD
+		, TAB.EDU_DIV_NM
+		, TAB.EDU_TRNNG_NM
+		, TAB.RECURMT_TERM
+		, TAB.REG_DT
+		, TAB.EDU_CLOSE_DT
+		, TAB.EDU_TERM
+		, TAB.ADDR_CD
+		, TAB.EDU_ADDR
+		, TAB.JC_AGREE_STS_CD
+		, TAB.JC_AGREE_STS_NM
+		, TAB.BKMK_CNT
+		, TAB.VIEW_CNT
+		, TAB.ORDER_BY	
+		FROM (
+				SELECT
+				A.INSTT_SEQ
+				, B.EDU_TRNNG_SEQ
+				, B.EDU_TRNNG_ID
+				, B.EDU_DIV_CD
+				, FN_GET_COMMON_NM('EDU_DIV_CD', B.EDU_DIV_CD, #{lang}) AS EDU_DIV_NM
+				, B.EDU_TRNNG_NM
+				, CONCAT(FN_GET_BASE_DATE_CHAR(B.RECURMT_BGN_DT, #{lang}), ' ~ ', FN_GET_BASE_DATE_CHAR(B.RECURMT_END_DT, #{lang})) AS RECURMT_TERM
+				, FN_GET_BASE_DATE_CHAR(B.REG_DT, #{lang}) AS REG_DT
+				, FN_GET_BASE_DATE_CHAR(B.EDU_CLOSE_DT, #{lang}) AS EDU_CLOSE_DT
+				, CONCAT(FN_GET_BASE_DATE_CHAR(B.EDU_BGN_DT, #{lang}), ' ~ ', FN_GET_BASE_DATE_CHAR(B.EDU_END_DT, #{lang})) AS EDU_TERM
+				, B.ADDR_CD
+				, CASE WHEN #{lang} = 'kh' THEN D.NM_KH ELSE D.NM_EN END EDU_ADDR
+				, B.JC_AGREE_STS_CD
+				, FN_GET_COMMON_NM('JC_AGREE_STS_CD', B.JC_AGREE_STS_CD, #{lang}) AS JC_AGREE_STS_NM
+				, B.BKMK_CNT
+				, B.VIEW_CNT
+				, A.REG_DT AS ORDER_BY
+				FROM CPES_INSTT A
+				INNER JOIN CPES_EDU_TRNNG B
+				ON A.INSTT_SEQ 			= B.INSTT_SEQ
+				INNER JOIN CPES_EDU_TRNNG_SUB C
+				ON B.EDU_TRNNG_SEQ 		= C.EDU_TRNNG_SEQ
+				LEFT JOIN CPES_LOC_CD D
+				ON B.ADDR_CD			= D.LVL_CD
+				<where>
+					AND A.INSTT_SEQ				= #{insttSeq}
+				</where>
+		) TAB
+		, (SELECT @ROWNUM := 0) Z			
+		<choose>
+        	<when test="orderColumn == 'REG_DT'">
+               	ORDER BY TAB.ORDER_BY ${orderColumnSort}
+            </when>
+            <otherwise>
+            	ORDER BY ${orderColumn} ${orderColumnSort}
+            </otherwise>
+        </choose>
+		<if test="length > -1">
+		LIMIT 
+			${start} , ${length}				
+		</if>
+						
+    </select>
+    
+	<select id="selectUserInsttDtlInfoEduListTotalCnt" resultType="java.lang.Integer" parameterType="UserInsttEduBean">
+		SELECT 
+		COUNT(*) AS TOTAL_CNT
+		FROM CPES_INSTT A
+		INNER JOIN CPES_EDU_TRNNG B
+		ON A.INSTT_SEQ 			= B.INSTT_SEQ
+		INNER JOIN CPES_EDU_TRNNG_SUB C
+		ON B.EDU_TRNNG_SEQ 		= C.EDU_TRNNG_SEQ
+		LEFT JOIN CPES_LOC_CD D
+		ON B.ADDR_CD			= D.LVL_CD		
+		<where>
+			AND A.INSTT_SEQ			= #{insttSeq}
+		</where>			
+    </select>
+    
+	<select id="selectUserInsttDtlInfoJobfairList" resultType="UserInsttFairBean" parameterType="UserInsttFairBean">
+		SELECT
+		${totalCount} - ((${pageNo} - 1) * ${length}) - (@ROWNUM := @ROWNUM + 1) + 1 AS ROW_NUM
+		, TAB.INSTT_SEQ
+		, TAB.FAIR_SEQ
+		, TAB.FAIR_DIV_CD
+		, TAB.FAIR_DIV_NM
+		, TAB.FAIR_NM
+		, TAB.FAIR_LOC
+		, TAB.JC_CD
+		, TAB.JC_NM
+		, TAB.RECURMT_TERM
+		, TAB.FAIR_TERM
+		, TAB.FAIR_STS_CD
+		, TAB.FAIR_STS_NM
+		, TAB.JC_AGREE_STS_CD
+		, TAB.JC_AGREE_STS_NM
+		, TAB.REG_DT
+		, TAB.ORDER_BY
+		FROM (
+				SELECT
+				A.INSTT_SEQ
+				, B.FAIR_SEQ
+				, B.FAIR_DIV_CD
+				, FN_GET_COMMON_NM('FAIR_DIV_CD', B.FAIR_DIV_CD, #{lang}) AS FAIR_DIV_NM
+				, CASE WHEN #{lang} = 'kh' THEN B.FAIR_NM_KH ELSE B.FAIR_NM_EN END AS FAIR_NM
+				, CASE WHEN #{lang} = 'kh' THEN E.NM_KH ELSE E.NM_EN END AS FAIR_LOC
+				, B.JC_CD
+				, CASE WHEN #{lang} = 'kh' THEN D.JC_KH ELSE D.JC_EN END AS JC_NM
+				, CONCAT(FN_GET_BASE_DATE_TIME(B.RECURMT_BGN_DT, 'D', #{lang}), ' ~ ', FN_GET_BASE_DATE_TIME(B.RECURMT_END_DT, 'D', #{lang})) AS RECURMT_TERM
+				, CONCAT(FN_GET_BASE_DATE_TIME(B.FAIR_BGN_DT, 'D', #{lang}), ' ~ ', FN_GET_BASE_DATE_TIME(B.FAIR_END_DT, 'D', #{lang})) AS FAIR_TERM
+				, B.FAIR_STS_CD
+				, FN_GET_COMMON_NM('FAIR_STS_CD', B.FAIR_STS_CD, #{lang}) AS FAIR_STS_NM
+				, A.JC_AGREE_STS_CD
+				, FN_GET_COMMON_NM('JC_AGREE_STS_CD', A.JC_AGREE_STS_CD, #{lang}) AS JC_AGREE_STS_NM
+				, FN_GET_BASE_DATE_TIME(A.REG_DT, 'I', #{lang}) AS REG_DT
+				, A.REG_DT AS ORDER_BY
+				FROM CPES_FAIR_PATCPTN_INSTT A
+				INNER JOIN CPES_FAIR_MST B
+				ON A.FAIR_SEQ = B.FAIR_SEQ
+				INNER JOIN CPES_INSTT C
+				ON A.INSTT_SEQ = C.INSTT_SEQ
+				INNER JOIN CPES_JOB_CENTER D
+				ON B.JC_CD = D.JC_CD
+				LEFT JOIN CPES_LOC_CD E
+				ON B.ADDR_CD = E.LVL_CD
+				<where>
+					AND C.INSTT_SEQ				= #{insttSeq}
+				</where>
+		) TAB
+		, (SELECT @ROWNUM := 0) Z			
+		<choose>
+        	<when test="orderColumn == 'REG_DT'">
+               	ORDER BY TAB.ORDER_BY ${orderColumnSort}
+            </when>
+            <otherwise>
+            	ORDER BY ${orderColumn} ${orderColumnSort}
+            </otherwise>
+        </choose>
+		<if test="length > -1">
+		LIMIT 
+			${start} , ${length}				
+		</if>
+						
+    </select>
+    
+	<select id="selectUserInsttDtlInfoJobfairListTotalCnt" resultType="java.lang.Integer" parameterType="UserInsttFairBean">
+		SELECT 
+		COUNT(*) AS TOTAL_CNT
+		FROM CPES_FAIR_PATCPTN_INSTT A
+		INNER JOIN CPES_FAIR_MST B
+		ON A.FAIR_SEQ = B.FAIR_SEQ
+		INNER JOIN CPES_INSTT C
+		ON A.INSTT_SEQ = C.INSTT_SEQ
+		INNER JOIN CPES_JOB_CENTER D
+		ON B.JC_CD = D.JC_CD
+		LEFT JOIN CPES_LOC_CD E
+		ON B.ADDR_CD = E.LVL_CD
+		<where>
+			AND C.INSTT_SEQ				= #{insttSeq}
+		</where>			
+    </select>      
+                         
+</mapper>

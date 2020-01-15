@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setFairWorkshop">
+
+	<insert id="insertFairWorkshop" parameterType="ony.cpes.internal.fair.bean.FairWorkshopBean">
+		/*setFairWorkshop.insertFairWorkshop*/
+		<selectKey resultType="string" keyProperty="fairWorkshopSeq" order="BEFORE">
+        	SELECT FN_GET_UUID_SEQ() AS STR FROM DUAL
+    	</selectKey>
+		INSERT INTO CPES_FAIR_WORKSHOP (
+		FAIR_WORKSHOP_SEQ
+		, FAIR_SEQ
+		, WORKSHOP_NM
+		, EXPLN
+		, WORKSHOP_THUM_FILE_GRP_SEQ
+		, WORKSHOP_DT
+		, BGN_HOUR
+		, BGN_MINUTE
+		, BGN_AMPM
+		, END_HOUR
+		, END_MINUTE
+		, END_AMPM
+		, WORKSHOP_ADDR_CD
+		, WORKSHOP_ADDR_FULL_CD
+		, WORKSHOP_ADDR_FULL_NM
+		, WORKSHOP_ADDR_DTL
+		, LECTURE_ROOM
+		, TUITION_GRP_CD
+		, TUITION
+		, GOOGLE_MAP_LINK
+		, MNGER_NM
+		, MNGER_TEL
+		, MNGER_EMAIL
+		, REG_USER_SEQ
+		, REG_DT
+		, MOD_USER_SEQ
+		, MOD_DT
+		, TARGET
+		, RECURMT_MAN
+		, TEACHER_NM1
+		, TEACHER_NM2
+		, TEACHER_PHOTO1_FILE_GRP_SEQ
+		, TEACHER_PHOTO2_FILE_GRP_SEQ
+		, TEACHER_BHIST1
+		, TEACHER_BHIST2
+		, TEACH_FILE_GRP_SEQ
+		, USE_YN
+		, WORKSHOP_STS_CD
+		, DEL_YN
+		) VALUES (
+		#{fairWorkshopSeq}
+		, #{fairSeq}
+		, #{workshopNm}
+		, #{expln}
+		, #{workshopThumFileGrpSeq}
+		, #{workshopDtDate}
+		, #{bgnHour}
+		, #{bgnMinute}
+		, #{bgnAmpm}
+		, #{endHour}
+		, #{endMinute}
+		, #{endAmpm}
+		, #{workshopAddrCd}
+		, #{workshopAddrFullCd}
+		, #{workshopAddrFullNm}
+		, #{workshopAddrDtl}
+		, #{lectureRoom}
+		, #{tuitionGrpCd}
+		, #{tuition}
+		, #{googleMapLink}
+		, #{mngerNm}
+		, #{mngerTel}
+		, #{mngerEmail}
+		, #{regUserSeq}
+		, NOW()
+		, #{modUserSeq}
+		, NOW()
+		, #{target}
+		, #{recurmtMan}
+		, #{teacherNm1}
+		, #{teacherNm2}
+		, #{teacherPhoto1FileGrpSeq}
+		, #{teacherPhoto2FileGrpSeq}
+		, #{teacherBhist1}
+		, #{teacherBhist2}
+		, #{teachFileGrpSeq}
+		, #{useYn}
+		, 'WSC0000000001'
+		, 'N'
+		)
+	</insert>
+
+	<update id="updateFairWorkshop" parameterType="ony.cpes.internal.fair.bean.FairWorkshopBean">
+		/*setFairWorkshop.updateFairWorkshop*/
+		UPDATE CPES_FAIR_WORKSHOP
+		SET MOD_DT = NOW()
+		, MOD_USER_SEQ = #{modUserSeq}
+		<if test="workshopNm != null and workshopNm != ''">, WORKSHOP_NM = #{workshopNm}</if>
+		<if test="expln != null and expln != ''">, EXPLN = #{expln}</if>
+		<if test="workshopThumFileGrpSeq != null and workshopThumFileGrpSeq != ''">, WORKSHOP_THUM_FILE_GRP_SEQ = #{workshopThumFileGrpSeq}</if>
+		<if test="workshopDtDate != null and workshopDtDate != ''">, WORKSHOP_DT = #{workshopDtDate}</if>
+		<if test="bgnHour != null and bgnHour != ''">, BGN_HOUR = #{bgnHour}</if>
+		<if test="bgnMinute != null and bgnMinute != ''">, BGN_MINUTE = #{bgnMinute}</if>
+		<if test="bgnAmpm != null and bgnAmpm != ''">, BGN_AMPM = #{bgnAmpm}</if>
+		<if test="endHour != null and endHour != ''">, END_HOUR = #{endHour}</if>
+		<if test="endMinute != null and endMinute != ''">, END_MINUTE = #{endMinute}</if>
+		<if test="endAmpm != null and endAmpm != ''">, END_AMPM = #{endAmpm}</if>
+		<if test="workshopAddrCd != null and workshopAddrCd != ''">, WORKSHOP_ADDR_CD = #{workshopAddrCd}</if>
+		<if test="workshopAddrFullCd != null and workshopAddrFullCd != ''">, WORKSHOP_ADDR_FULL_CD = #{workshopAddrFullCd}</if>
+		<if test="workshopAddrFullNm != null and workshopAddrFullNm != ''">, WORKSHOP_ADDR_FULL_NM = #{workshopAddrFullNm}</if>
+		<if test="workshopAddrDtl != null and workshopAddrDtl != ''">, WORKSHOP_ADDR_DTL = #{workshopAddrDtl}</if>
+		<if test="lectureRoom != null and lectureRoom != ''">, LECTURE_ROOM = #{lectureRoom}</if>
+		<if test="tuitionGrpCd != null and tuitionGrpCd != ''">, TUITION_GRP_CD = #{tuitionGrpCd}</if>
+		<if test="tuition != null and tuition != ''">, TUITION = #{tuition}</if>
+		<if test="googleMapLink != null and googleMapLink != ''">, GOOGLE_MAP_LINK = #{googleMapLink}</if>
+		<if test="mngerNm != null and mngerNm != ''">, MNGER_NM = #{mngerNm}</if>
+		<if test="mngerTel != null and mngerTel != ''">, MNGER_TEL = #{mngerTel}</if>
+		<if test="mngerEmail != null and mngerEmail != ''">, MNGER_EMAIL = #{mngerEmail}</if>
+		<if test="target != null and target != ''">, TARGET = #{target}</if>
+		<if test="recurmtMan != null and recurmtMan != ''">, RECURMT_MAN = #{recurmtMan}</if>
+		<if test="teacherNm1 != null and teacherNm1 != ''">, TEACHER_NM1 = #{teacherNm1}</if>
+		<if test="teacherNm2 != null and teacherNm2 != ''">, TEACHER_NM2 = #{teacherNm2}</if>
+		<if test="teacherPhoto1FileGrpSeq != null and teacherPhoto1FileGrpSeq != ''">, TEACHER_PHOTO1_FILE_GRP_SEQ = #{teacherPhoto1FileGrpSeq}</if>
+		<if test="teacherPhoto2FileGrpSeq != null and teacherPhoto2FileGrpSeq != ''">, TEACHER_PHOTO2_FILE_GRP_SEQ = #{teacherPhoto2FileGrpSeq}</if>
+		<if test="teacherBhist1 != null and teacherBhist1 != ''">, TEACHER_BHIST1 = #{teacherBhist1}</if>
+		<if test="teacherBhist2 != null and teacherBhist2 != ''">, TEACHER_BHIST2 = #{teacherBhist2}</if>
+		<if test="teachFileGrpSeq != null and teachFileGrpSeq != ''">, TEACH_FILE_GRP_SEQ = #{teachFileGrpSeq}</if>
+		<if test="useYn != null and useYn != ''">, USE_YN = #{useYn}</if>
+		<if test="workshopStsCd != null and workshopStsCd != ''">, WORKSHOP_STS_CD = #{workshopStsCd}</if>
+		<if test="delYn != null and delYn != ''">, DEL_YN = #{delYn}</if>
+		WHERE FAIR_WORKSHOP_SEQ = #{fairWorkshopSeq}
+	</update>
+
+	<delete id="deleteFairWorkshopPatcptn" parameterType="ony.cpes.internal.fair.bean.FairWorkshopBean">
+		/*setFairWorkshop.deleteFairWorkshopPatcptn*/
+		DELETE FROM CPES_FAIR_WORKSHOP_PATCPTN
+		WHRER FAIR_WORKSHOP_SEQ = #{fairWorkshopSeq}
+	</delete>
+
+	<update id="updateWorkshopPatcptnJcAgreeCd" parameterType="ony.cpes.internal.fair.bean.FairWorkshopPatcptnBean">
+		/*setFairWorkshop.updateWorkshopPatcptnJcAgreeCd*/
+		UPDATE CPES_FAIR_WORKSHOP_PATCPTN
+		SET JC_AGREE_STS_CD = #{jcAgreeStsCd}
+		<if test="jcAgreeStsCd == 'JAS0000000001'">
+			, JC_AGREE_DT = NOW()
+		</if>
+		WHERE FAIR_WORKSHOP_PATCPTN_SEQ = #{fairWorkshopPatcptnSeq}
+	</update>
+
+</mapper>

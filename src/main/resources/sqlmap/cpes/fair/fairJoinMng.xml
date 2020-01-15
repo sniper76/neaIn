@@ -1,0 +1,1230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fairJoinMng">
+
+	<select id="selectUUID" resultType="java.lang.String" >
+		SELECT REPLACE(UUID(),'-','') AS uuid FROM DUAL
+	</select>
+
+
+	<sql id="selectJobFairJoinMngColumn">
+	<!-- 채용행사 참가현황 컬럼 -->
+		A.FAIR_SEQ,
+		A.FAIR_NM_KH,
+		A.FAIR_NM_EN,
+		<choose>
+			<when test="lang == 'kh'">
+				A.FAIR_NM_KH AS FAIR_NM,
+			</when>
+			<otherwise>
+				A.FAIR_NM_EN AS FAIR_NM,
+			</otherwise>
+		</choose>
+		FN_GET_COMMON_NM('FAIR_STS_CD',A.FAIR_STS_CD, #{lang}) AS FAIR_STS_NM,
+		A.FAIR_STS_CD,
+		A.ADDR_CD,
+		A.ADDR_FULL_CD,
+		A.FAIR_VIEW_YN,
+		FN_GET_COMMON_NM('FAIR_DIV_CD',A.FAIR_DIV_CD, #{lang}) AS FAIR_DIV_NM,
+		A.FAIR_DIV_CD,
+		FN_GET_JOB_CNTR_NM(A.MST_JC_CD,#{lang}) AS MST_JC_NM,
+		FN_GET_JOB_CNTR_NM(A.JC_CD,#{lang}) AS JC_NM,
+		A.MST_JC_CD,
+		A.JC_CD,
+		(
+			SELECT COUNT(*) FROM CPES_FAIR_ONLINE_PATCPTN AA
+			JOIN CPES_USER BB
+			ON AA.USER_SEQ = BB.USER_SEQ
+			WHERE AA.FAIR_SEQ = A.FAIR_SEQ
+			AND IFNULL(AA.PATCPTN_YN, 'N') = 'Y'
+			AND IFNULL(BB.DEL_YN, 'N') != 'Y'
+			AND BB.USER_AUTH_CD IN ('ROLE_LOWJS', 'ROLE_STDIT', 'ROLE_USER')
+		) AS JOBSK_TOT, <!-- 구직자수(개인회원신청자수) -->
+		(
+			SELECT COUNT(*) FROM CPES_FAIR_PATCPTN_COMPNY AA
+			JOIN CPES_COMPNY BB
+			ON AA.COMPNY_SEQ = BB.COMPNY_SEQ
+			WHERE AA.FAIR_SEQ = A.FAIR_SEQ
+			AND IFNULL(BB.DEL_YN, 'N') != 'Y'
+		) AS COMPNY_TOT, <!-- 기업수 -->
+		(
+			SELECT COUNT(*) FROM CPES_FAIR_PATCPTN_COMPNY_VACANCY AA
+			LEFT JOIN CPES_VACANCY BB
+			ON AA.VACANCY_SEQ = BB.VACANCY_SEQ
+			LEFT JOIN CPES_COMPNY CC
+			ON AA.COMPNY_SEQ = CC.COMPNY_SEQ
+			WHERE AA.FAIR_SEQ = A.FAIR_SEQ
+			AND IFNULL(CC.DEL_YN, 'N') != 'Y'
+		) AS VACANCY_ANCMT_TOT, <!-- 채용공고수 -->
+		(
+			SELECT COUNT(*) FROM CPES_FAIR_PATCPTN_INSTT AA
+			JOIN CPES_INSTT BB
+			ON AA.INSTT_SEQ = BB.INSTT_SEQ
+			WHERE AA.FAIR_SEQ = A.FAIR_SEQ
+			AND IFNULL(BB.DEL_YN, 'N') != 'Y'
+		) AS INSTT_TOT,	<!-- 교육기관수 -->
+		(
+			SELECT COUNT(*) FROM CPES_FAIR_PATCPTN_INSTT_TRNNG AA
+			JOIN CPES_EDU_TRNNG BB
+			ON AA.EDU_TRNNG_SEQ = BB.EDU_TRNNG_SEQ
+			JOIN CPES_INSTT CC
+			ON BB.INSTT_SEQ = CC.INSTT_SEQ
+			WHERE AA.FAIR_SEQ = A.FAIR_SEQ
+			AND IFNULL(BB.DEL_YN, 'N') != 'Y'
+			AND IFNULL(CC.DEL_YN, 'N') != 'Y'
+		) AS EDU_PROGRAM_TOT, <!-- 교육프로그램수 -->
+		(
+			SELECT COUNT(*) FROM CPES_APPLIC AA
+			JOIN CPES_VACANCY BB
+			ON AA.VACANCY_SEQ = BB.VACANCY_SEQ
+			JOIN CPES_FAIR_PATCPTN_COMPNY_VACANCY CC
+			ON BB.VACANCY_SEQ = CC.VACANCY_SEQ
+			WHERE CC.FAIR_SEQ = A.FAIR_SEQ
+			AND IFNULL(BB.DEL_YN, 'N') != 'Y'
+		) AS APPLIC_TOT, <!-- 입사지원수 -->
+		(
+			SELECT COUNT(*) FROM CPES_APPLIC AA
+			JOIN CPES_VACANCY BB
+			ON AA.VACANCY_SEQ = BB.VACANCY_SEQ
+			JOIN CPES_FAIR_PATCPTN_COMPNY_VACANCY CC
+			ON BB.VACANCY_SEQ = CC.VACANCY_SEQ
+			WHERE CC.FAIR_SEQ = A.FAIR_SEQ
+			AND AA.APPLIC_PROC_CD = 'APC0000000004'
+			AND IFNULL(BB.DEL_YN, 'N') != 'Y'
+		) AS VACANCY_TOT, <!-- 채용확정수 -->
+		DATE_FORMAT(A.FAIR_BGN_DT, '%d/%m/%Y') AS FAIR_BGN_DT,
+		A.FAIR_BGN_HOUR,
+		A.FAIR_BGN_MINUTE,
+		A.FAIR_BGN_AMPM,
+		DATE_FORMAT(A.FAIR_END_DT, '%d/%m/%Y') AS FAIR_END_DT,
+		A.FAIR_END_HOUR,
+		A.FAIR_END_MINUTE,
+		A.FAIR_END_AMPM,
+		A.DEL_YN,
+		A.REG_USER_SEQ,
+		FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ, #{lang}) AS REG_USER_NM,
+		A.REG_DT
+	</sql>
+
+	<sql id="whereJobFairJoinMng">
+	<!-- 채용행사 참가현황 조회 조건 -->
+
+		AND IFNULL(A.DEL_YN, 'N') != 'Y'
+
+		<!-- 주관 기관 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+
+		<!-- 검색어 (fairNm : A.FAIR_NM_KH or A.FAIR_NM_EN, regUserNm :CPES_USER.USER_NM_KH or CPES_USER.USER_NM_EN) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'fairNm'">
+					<choose>
+						<when test="lang == 'kh'">
+							AND A.FAIR_NM_KH LIKE CONCAT('%', #{searchValue}, '%')
+						</when>
+						<otherwise>
+							AND A.FAIR_NM_EN LIKE CONCAT('%', #{searchValue}, '%')
+						</otherwise>
+					</choose>
+				</when>
+				<when test="searchKeyword == 'regUserNm'">
+					<choose>
+						<when test="lang == 'kh'">
+							AND REG_USER_SEQ IN (
+								SELECT USER_SEQ FROM CPES_USER
+								WHERE USER_NM_KH LIKE CONCAT('%', #{searchValue}, '%')
+							)
+						</when>
+						<otherwise>
+							AND REG_USER_SEQ IN (
+								SELECT USER_SEQ FROM CPES_USER
+								WHERE USER_NM_EN LIKE CONCAT('%', #{searchValue}, '%')
+							)
+						</otherwise>
+					</choose>
+				</when>
+			</choose>
+		</if>
+
+		<!-- 행사구분 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairDivCd)">AND A.FAIR_DIV_CD = #{fairDivCd}</if>
+
+		<!-- 행사상태 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairStsDiv)">
+			<choose>
+				<when test="fairStsDiv == 'RSC0000000002'">
+					AND A.RECURMT_BGN_DT = CURDATE()
+				</when>
+				<when test="fairStsDiv == 'RSC0000000003'">
+					AND A.RECURMT_END_DT = CURDATE()
+				</when>
+				<when test="fairStsDiv == 'FAS0000000002'">
+					AND A.FAIR_BGN_DT = CURDATE()
+				</when>
+				<when test="fairStsDiv == 'FAS0000000003'">
+					AND A.FAIR_END_DT = CURDATE()
+				</when>
+			</choose>
+		</if>
+
+		<!-- 지역 코드 2 Depth (Province) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrCd2Depth)">
+			AND TRIM(SUBSTRING_INDEX(A.ADDR_FULL_CD, ',', 1)) = #{addrCd2Depth}
+		</if>
+
+		<!-- 전시 여부 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairViewYn)">
+			AND A.FAIR_VIEW_YN = #{fairViewYn}
+		</if>
+
+		<!-- 분류 기간 조회  -->
+		<choose>
+			<!-- 등록일일 경우 -->
+			<when test="periodKeyword == 'regDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+					AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S')
+					AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E')
+				</if>
+			</when>
+
+			<!-- 모집기간일 경우 -->
+			<when test="periodKeyword == 'recurmtDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND A.RECURMT_BGN_DT <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND A.RECURMT_END_DT <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+					AND A.RECURMT_BGN_DT <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y')
+					AND A.RECURMT_END_DT <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y')
+				</if>
+			</when>
+
+			<!-- 행사기간일 경우 -->
+			<when test="periodKeyword == 'fairDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND A.FAIR_BGN_DT <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND A.FAIR_END_DT <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+					AND A.FAIR_BGN_DT <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y')
+					AND A.FAIR_END_DT <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y')
+				</if>
+			</when>
+		</choose>
+
+	</sql>
+
+	<select id="selectJobFairJoinMngTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+	<!-- 채용행사 참가현황 조회 갯수 -->
+		SELECT
+			COUNT(*) AS totalCount
+		FROM
+			CPES_FAIR_MST A
+		<where>
+			<include refid="whereJobFairJoinMng"/>
+		</where>
+	</select>
+
+	<select id="selectJobFairJoinMngList" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 참가현황 조회 리스트 -->
+		SELECT
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.*
+		FROM (
+				SELECT
+					<include refid="selectJobFairJoinMngColumn"/>
+				FROM
+					CPES_FAIR_MST A
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) E
+				<where>
+					<include refid="whereJobFairJoinMng"/>
+				</where>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+				ORDER BY
+					<choose>
+						<when test="orderColumn == 'FAIR_NM'">
+							<choose>
+								<when test="lang == 'kh'">A.FAIR_NM_KH ${orderColumnSort}</when>
+								<otherwise>A.FAIR_NM_EN ${orderColumnSort} </otherwise>
+							</choose>
+						</when>
+						<otherwise>
+							${orderColumn} ${orderColumnSort}
+						</otherwise>
+					</choose>
+				</if>
+				<if test="length > -1">
+				LIMIT
+					${start} , ${length}
+				</if>
+		) T
+	</select>
+
+	<select id="selectJobFairMngDetail" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 참가현황 조회 상세 -->
+		SELECT
+			<include refid="selectJobFairJoinMngColumn"/>
+		FROM
+			CPES_FAIR_MST A
+		<where>
+			A.FAIR_SEQ = #{fairSeq}
+		</where>
+	</select>
+
+	<sql id="selectPrivateUserJoinMngColumn">
+	<!-- 채용행사 참가 개인회원 조회 컬럼 -->
+		A.FAIR_SEQ,
+		A.USER_SEQ,
+		C.USER_AUTH_CD,
+		FN_GET_COMMON_NM('USER_AUTH_CD',C.USER_AUTH_CD, #{lang}) AS USER_AUTH_NM,
+		FN_GET_USER_NM_BY_USER_SEQ(C.USER_SEQ, #{lang}) AS USER_NM,
+		C.USER_EMAIL,
+		C.USER_CELL,
+		FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) AS AGE,
+		C.GENDER_CD,
+		FN_GET_COMMON_NM('GENDER_CD',C.GENDER_CD, #{lang}) AS GENDER_NM,
+		C.JOBSK_STS_CD,
+		FN_GET_COMMON_NM('JOBSK_STS_CD',C.JOBSK_STS_CD, #{lang}) AS JOBSK_STS_NM,
+		A.REG_DT,
+		A.JC_AGREE_STS_CD,
+		FN_GET_COMMON_NM('JC_AGREE_STS_CD',A.JC_AGREE_STS_CD, #{lang}) AS JC_AGREE_STS_NM,
+		B.MST_JC_CD,
+		FN_GET_JOB_CNTR_NM(B.MST_JC_CD,#{lang}) AS MST_JC_NM,
+		FN_GET_BASE_DATE_TIME(A.JC_AGREE_DT, 'I', #{lang}) AS JC_AGREE_DT
+	</sql>
+
+	<sql id="wherePrivateUserJoinMng">
+	<!-- 채용행사 참가 개인회원 조회 조건 -->
+
+		AND IFNULL(C.DEL_YN, 'N') != 'Y'
+
+		<!-- 해당 채용행사 매핑 -->
+		AND A.FAIR_SEQ = #{fairSeq}
+
+		<!-- 잡센터 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(mstJcCd)">AND B.MST_JC_CD = #{mstJcCd}</if>
+
+		<!-- 검색어 (SDC0000000001 : userNm, SDC0000000002 : email, SDC0000000003 : cell) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000001'">
+					AND FN_GET_USER_NM_BY_USER_SEQ(A.USER_SEQ, #{lang}) LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND C.USER_EMAIL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000003'">
+					AND C.USER_CELL = #{searchValue}
+				</when>
+			</choose>
+		</if>
+
+		<!-- 회원구분  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(userAuthCd)">AND C.USER_AUTH_CD = #{userAuthCd}</if>
+
+		<!-- 우대 조건 검색 -->
+		<if test="preferntCondCdList.size != 0">
+			AND (
+					SELECT COUNT(*) FROM  CPES_RESUME
+					WHERE USER_SEQ = A.USER_SEQ
+					AND IFNULL(PRI_RESUME_YN, 'N') = 'Y'
+					<foreach collection="preferntCondCdList" item="item" index="index" open="AND (" close=")">
+					<if test="index > 0"> OR </if>
+					<if test="item == 'PCC0000000001'">
+						( IFNULL(DISABL_YN, 'N') = 'Y' )
+					</if>
+					<if test="item == 'PCC0000000002'">
+						( IFNULL(RET_MIGRAT_YN, 'N') = 'Y' )
+					</if>
+					</foreach>
+				) > 0
+		</if>
+
+		<!-- 성별  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(genderCd)">AND C.GENDER_CD = #{genderCd}</if>
+
+		<!-- 승인상태  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcAgreeStsCd)">AND A.JC_AGREE_STS_CD = #{jcAgreeStsCd}</if>
+
+		<!-- 구직상태  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jobskStsCd)">AND C.JOBSK_STS_CD = #{jobskStsCd}</if>
+
+		<!-- 연령별  -->
+		<if test="ageList.size != 0">
+			<foreach collection="ageList" item="item" index="index" open=" AND (" close=")">
+			<if test="index > 0"> OR </if>
+			<if test="item == '10'">
+				( FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ >= ]]> 10
+			 		AND FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ < ]]> 20 )
+			</if>
+			<if test="item == '20'">
+				( FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ >= ]]> 20
+					AND FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ < ]]> 30 )
+			</if>
+			<if test="item == '30'">
+				( FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ >= ]]> 30
+					AND FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ < ]]> 40 )
+			</if>
+			<if test="item == '40'">
+				( FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ >= ]]> 40
+					AND FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ < ]]> 50 )
+			</if>
+			<if test="item == '50'">
+				( FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ >= ]]> 50
+					AND FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ < ]]> 60 )
+			</if>
+			<if test="item == '60'">
+				( FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ >= ]]> 60
+					AND FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ < ]]> 70 )
+			</if>
+			<if test="item == '70over'">
+				( FLOOR( (CAST(REPLACE(CURRENT_DATE, '-', '') AS UNSIGNED) - CAST(REPLACE(REPLACE(C.BIRTH, '/', ''), '-', '') AS UNSIGNED)) / 10000 ) <![CDATA[ >= ]]> 70  )
+			</if>
+			</foreach>
+		</if>
+	</sql>
+
+	<select id="selectPrivateUserJoinMngTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+	<!-- 채용행사 참가 개인회원 조회 갯수 -->
+
+		SELECT
+			COUNT(*) AS totalCount
+		FROM
+			CPES_FAIR_ONLINE_PATCPTN A
+		JOIN
+			CPES_FAIR_MST B
+		ON
+			A.FAIR_SEQ = B.FAIR_SEQ
+		JOIN
+			CPES_USER C
+		ON
+			A.USER_SEQ = C.USER_SEQ
+		<where>
+			<include refid="wherePrivateUserJoinMng"/>
+		</where>
+	</select>
+
+	<select id="selectPrivateUserJoinMngList" resultType="FairMngBean" parameterType="FairMngBean">
+		SELECT
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.*
+		FROM (
+				SELECT
+					<include refid="selectPrivateUserJoinMngColumn"/>
+				FROM
+					CPES_FAIR_ONLINE_PATCPTN A
+				JOIN
+					 CPES_FAIR_MST B
+				ON
+					A.FAIR_SEQ = B.FAIR_SEQ
+				JOIN
+					 CPES_USER C
+				ON
+					A.USER_SEQ = C.USER_SEQ
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) G
+				<where>
+					<include refid="wherePrivateUserJoinMng"/>
+				</where>
+				<choose>
+					<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+						ORDER BY ${orderColumn} ${orderColumnSort}
+	               	</when>
+					<otherwise>
+						ORDER BY A.REG_DT DESC
+					</otherwise>
+				</choose>
+				<if test="length > -1">
+				LIMIT
+					${start} , ${length}
+				</if>
+		) T
+	</select>
+
+	<select id="selectPrivateUserJoinMngDetail" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 참가 개인회원 조회 상세 -->
+
+		SELECT
+			<include refid="selectPrivateUserJoinMngColumn"/>
+		FROM
+			CPES_FAIR_ONLINE_PATCPTN A
+		JOIN
+			 CPES_FAIR_MST B
+		ON
+			A.FAIR_SEQ = B.FAIR_SEQ
+		JOIN
+			CPES_USER C
+		ON
+			A.USER_SEQ = C.USER_SEQ
+		<where>
+			AND IFNULL(C.DEL_YN, 'N') != 'Y'
+			AND A.USER_SEQ = #{userSeq}
+			AND A.FAIR_SEQ = #{fairSeq}
+		</where>
+		GROUP BY A.FAIR_SEQ, A.USER_SEQ
+	</select>
+
+	<sql id="selectCompnyMngColumn">
+	<!-- 채용행사 참가 기업회원 조회 컬럼 -->
+		A.COMPNY_SEQ,
+		A.FAIR_SEQ,
+		A.JC_AGREE_USER_SEQ,
+		A.JC_AGREE_STS_CD,
+		FN_GET_COMMON_NM('JC_AGREE_STS_CD',A.JC_AGREE_STS_CD, #{lang}) AS JC_AGREE_STS_NM,
+		C.COMPNY_TYPE_CD,
+		FN_GET_COMMON_NM('COMPNY_TYPE_CD',C.COMPNY_TYPE_CD, #{lang}) AS COMPNY_TYPE_NM,
+		FN_GET_COMPNY_NM(A.COMPNY_SEQ, #{lang}) AS COMPNY_NM,
+		C.COMPNY_NM_KH,
+		C.COMPNY_NM_EN,
+		C.MNGER_NM,
+		C.MNGER_EMAIL,
+		C.MNGER_CELL,
+		A.COMPNY_RESP_YN,
+		C.REG_NUM,
+		A.REQ_DT,
+		A.INVITE_YN,
+		( CASE WHEN IFNULL(A.INVITE_YN, 'N') = 'Y' THEN A.INVITE_DT ELSE NULL END ) AS INVITE_DT,
+		B.MST_JC_CD,
+		FN_GET_JOB_CNTR_NM(B.MST_JC_CD,#{lang}) AS MST_JC_NM,
+		A.REG_USER_SEQ,
+		( CASE WHEN IFNULL(A.INVITE_YN, 'N') = 'Y' THEN FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ, #{lang}) ELSE NULL END ) AS REG_USER_NM,
+		FN_GET_USER_NM_BY_USER_SEQ(A.JC_AGREE_USER_SEQ, #{lang}) AS JC_AGREE_USER_NM,
+		A.JC_AGREE_DT,
+		(
+			SELECT COUNT(*) FROM CPES_FAIR_PATCPTN_COMPNY_VACANCY AA
+			LEFT JOIN CPES_VACANCY BB
+			ON AA.VACANCY_SEQ = BB.VACANCY_SEQ
+			LEFT JOIN CPES_COMPNY CC
+			ON AA.COMPNY_SEQ = CC.COMPNY_SEQ
+			WHERE AA.FAIR_SEQ = A.FAIR_SEQ
+			AND AA.COMPNY_SEQ = A.COMPNY_SEQ
+			AND IFNULL(CC.DEL_YN, 'N') != 'Y'
+		) AS VACANCY_ANCMT_TOT, <!-- 채용공고수 -->
+		(
+			SELECT IFNULL(BB.RECRUMT_MEMB, 0) FROM CPES_FAIR_PATCPTN_COMPNY_VACANCY AA
+			LEFT JOIN CPES_VACANCY BB
+			ON AA.VACANCY_SEQ = BB.VACANCY_SEQ
+			LEFT JOIN CPES_COMPNY CC
+			ON AA.COMPNY_SEQ = CC.COMPNY_SEQ
+			WHERE AA.FAIR_SEQ = A.FAIR_SEQ
+			AND AA.COMPNY_SEQ = A.COMPNY_SEQ
+			AND IFNULL(CC.DEL_YN, 'N') != 'Y'
+		) AS RECRUMT_MEMB, <!-- 모집인원수 -->
+		( CASE WHEN ( SELECT COUNT(*) FROM CPES_FAIR_BOOTH AA
+			LEFT JOIN CPES_FAIR_PATCPTN_COMPNY BB
+			ON AA.COMPNY_INSTT_SEQ = BB.COMPNY_SEQ
+			LEFT JOIN CPES_COMPNY CC
+			ON AA.COMPNY_INSTT_SEQ = CC.COMPNY_SEQ
+			WHERE BB.FAIR_SEQ = A.FAIR_SEQ
+			AND AA.COMPNY_INSTT_DIV_CD = #{compnyInsttDivCd}
+			AND IFNULL(CC.DEL_YN, 'N') != 'Y'
+		) > 0 THEN 'Y' ELSE 'N' END ) AS BOOTH_REQ_YN <!-- 부스신청여부 -->
+	</sql>
+
+	<sql id="whereCompnyMng">
+	<!-- 채용행사 참가 기업회원 조회 조건 -->
+
+		AND IFNULL(C.DEL_YN, 'N') != 'Y'
+
+		<!-- 해당 채용행사 매핑 -->
+		AND A.FAIR_SEQ = #{fairSeq}
+
+		<!-- 채용행사 탭 구분 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairMngDiv)">
+			<choose>
+				<when test="fairMngDiv == 'JOIN'">
+					AND A.JC_AGREE_STS_CD = 'JAS0000000001'
+				</when>
+				<when test="fairMngDiv == 'INVITE'">
+					AND A.INVITE_YN = 'Y'
+					AND A.JC_AGREE_STS_CD = 'JAS0000000002'
+				</when>
+			</choose>
+		</if>
+
+		<!-- 해당 채용행사 초청여부 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(inviteYn)">AND A.INVITE_YN = #{inviteYn}</if>
+
+		<!-- 잡센터 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(mstJcCd)">AND B.MST_JC_CD = #{mstJcCd}</if>
+
+		<!-- 검색어 (SDC0000000001 : userNm, SDC0000000002 : email, SDC0000000003 : cell) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000001'">
+					AND FN_GET_COMPNY_NM(A.COMPNY_SEQ, #{lang}) LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND C.MNGER_EMAIL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000003'">
+					AND C.MNGER_CELL = #{searchValue}
+				</when>
+			</choose>
+		</if>
+
+		<!-- 조직유형  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(compnyTypeCd)">AND C.COMPNY_TYPE_CD = #{compnyTypeCd}</if>
+
+		<!-- 부문  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(sectorCd)">AND C.ISIC_CD = #{sectorCd}</if>
+
+		<!-- 승인상태  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcAgreeStsCd)">AND A.JC_AGREE_STS_CD = #{jcAgreeStsCd}</if>
+
+	</sql>
+
+	<select id="selectCompnyMngTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+	<!-- 채용행사 참가기업 조회 갯수 -->
+
+		SELECT
+			COUNT(*) AS totalCount
+		FROM
+			CPES_FAIR_PATCPTN_COMPNY A
+		JOIN
+			CPES_FAIR_MST B
+		ON
+			A.FAIR_SEQ = B.FAIR_SEQ
+		JOIN
+			CPES_COMPNY C
+		ON
+			A.COMPNY_SEQ = C.COMPNY_SEQ
+		<where>
+			<include refid="whereCompnyMng"/>
+		</where>
+	</select>
+
+	<select id="selectCompnyMngList" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 참가기업 조회 리스트 -->
+
+		SELECT
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.*
+		FROM (
+				SELECT
+					<include refid="selectCompnyMngColumn"/>
+				FROM
+					CPES_FAIR_PATCPTN_COMPNY A
+				JOIN
+					 CPES_FAIR_MST B
+				ON
+					A.FAIR_SEQ = B.FAIR_SEQ
+				JOIN
+					 CPES_COMPNY C
+				ON
+					A.COMPNY_SEQ = C.COMPNY_SEQ
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) G
+				<where>
+					<include refid="whereCompnyMng"/>
+				</where>
+				<choose>
+					<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+						ORDER BY ${orderColumn} ${orderColumnSort}
+	               	</when>
+					<otherwise>
+						ORDER BY A.REG_DT DESC
+					</otherwise>
+				</choose>
+				<if test="length > -1">
+				LIMIT
+					${start} , ${length}
+				</if>
+		) T
+	</select>
+
+	<select id="selectCompnyMngDetail" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 참가기업 조회 상세 -->
+		SELECT
+			<include refid="selectCompnyMngColumn"/>
+		FROM
+			CPES_FAIR_PATCPTN_COMPNY A
+		JOIN
+			CPES_FAIR_MST B
+		ON
+			A.FAIR_SEQ = B.FAIR_SEQ
+		JOIN
+			CPES_COMPNY C
+		ON
+			A.COMPNY_SEQ = C.COMPNY_SEQ
+		<where>
+			AND A.FAIR_SEQ = #{fairSeq}
+			AND A.COMPNY_SEQ = #{compnySeq}
+		</where>
+	</select>
+
+	<sql id="selectInviteCompnyColumn">
+	<!-- 채용행사 참가 기업회원 조회 컬럼 -->
+		A.COMPNY_SEQ,
+		A.COMPNY_TYPE_CD,
+		FN_GET_COMPNY_NM(A.COMPNY_SEQ, #{lang}) AS COMPNY_NM,
+		A.REG_NUM,
+		A.MNGER_NM,
+		A.MNGER_EMAIL,
+		A.MNGER_CELL,
+		B.USER_STS_CD
+	</sql>
+
+	<sql id="whereInviteCompny">
+	<!-- 채용행사 참가 기업회원 초청기업 조회 조건 -->
+
+		AND IFNULL(A.DEL_YN, 'N') != 'Y'
+
+		<!-- 조회 할 채용행사에 참여한 기업이 아닌 경우  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairSeq)">
+			AND A.COMPNY_SEQ NOT IN (
+				SELECT COMPNY_SEQ FROM CPES_FAIR_PATCPTN_COMPNY WHERE FAIR_SEQ = #{fairSeq}
+			)
+		</if>
+
+		<!-- 잡센터 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+
+		<!-- 검색어  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000004'">
+					AND FN_GET_COMPNY_NM(A.COMPNY_SEQ, #{lang}) LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000005'">
+					AND C.MNGER_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND C.MNGER_EMAIL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000003'">
+					AND C.MNGER_CELL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000006'">
+					AND C.REG_NUM = #{searchValue}
+				</when>
+			</choose>
+		</if>
+		<!-- 조직유형  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(compnyTypeCd)">AND A.COMPNY_TYPE_CD = #{compnyTypeCd}</if>
+
+		<!-- 부문  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(sectorCd)">AND A.ISIC_CD = #{sectorCd}</if>
+
+		<!-- 총근로자수  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(employCntCd)">
+			<choose>
+				<when test="employCntCd == 'ECC0000000001'">
+					AND IFNULL(A.EMPLOYEE_TOT_CNT, 0) <![CDATA[ < ]]> 10
+				</when>
+				<when test="employCntCd == 'ECC0000000002'">
+					AND IFNULL(A.EMPLOYEE_TOT_CNT, 0) <![CDATA[ < ]]> 50
+				</when>
+				<when test="employCntCd == 'ECC0000000003'">
+					AND IFNULL(A.EMPLOYEE_TOT_CNT, 0) <![CDATA[ >= ]]> 50
+					AND IFNULL(A.EMPLOYEE_TOT_CNT, 0) <![CDATA[ <= ]]> 100
+				</when>
+				<when test="employCntCd == 'ECC0000000004'">
+					AND IFNULL(A.EMPLOYEE_TOT_CNT, 0) <![CDATA[ >= ]]> 100
+					AND IFNULL(A.EMPLOYEE_TOT_CNT, 0) <![CDATA[ <= ]]> 300
+				</when>
+				<when test="employCntCd == 'ECC0000000005'">
+					AND IFNULL(A.EMPLOYEE_TOT_CNT, 0) <![CDATA[ > ]]> 300
+				</when>
+			</choose>
+		</if>
+
+		<!-- 국적  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(nationCd)">AND A.OWNER_NATION_CD = #{nationCd}</if>
+
+		<!-- 회원상태  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(userStsCd)">AND B.USER_STS_CD = #{userStsCd}</if>
+
+	</sql>
+
+	<select id="selectInviteCompnyTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+	<!-- 채용행사 기업회원 조회 갯수 -->
+
+		SELECT
+			COUNT(*) AS totalCount
+		FROM
+			CPES_COMPNY A
+		JOIN
+			CPES_USER B
+		ON
+			A.USER_SEQ = B.USER_SEQ
+		<where>
+			<include refid="whereInviteCompny"/>
+		</where>
+	</select>
+
+	<select id="selectInviteCompnyList" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 기업회원 조회 리스트 -->
+
+		SELECT
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.*
+		FROM (
+				SELECT
+					<include refid="selectInviteCompnyColumn"/>
+				FROM
+					CPES_COMPNY A
+				JOIN
+					CPES_USER B
+				ON
+					A.USER_SEQ = B.USER_SEQ
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) G
+				<where>
+					<include refid="whereInviteCompny"/>
+				</where>
+				<choose>
+					<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+						ORDER BY ${orderColumn} ${orderColumnSort}
+	               	</when>
+					<otherwise>
+						ORDER BY A.REG_DT DESC
+					</otherwise>
+				</choose>
+				<if test="length > -1">
+				LIMIT
+					${start} , ${length}
+				</if>
+		) T
+	</select>
+
+	<select id="selectInviteCompnyDetail" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 기업회원 조회 상세 -->
+		SELECT
+			<include refid="selectInviteCompnyColumn"/>
+		FROM
+			CPES_COMPNY A
+		JOIN
+			CPES_USER B
+		ON
+			A.USER_SEQ = B.USER_SEQ
+		<where>
+			AND A.COMPNY_SEQ = #{compnySeq}
+			AND A.COMPNY_SEQ NOT IN (
+				SELECT COMPNY_SEQ FROM CPES_FAIR_PATCPTN_COMPNY WHERE FAIR_SEQ = #{fairSeq}
+			)
+		</where>
+	</select>
+
+	<sql id="selectInsttMngColumn">
+	<!-- 채용행사 참가 기관회원 조회 컬럼 -->
+		A.INSTT_SEQ,
+		A.FAIR_SEQ,
+		A.JC_AGREE_USER_SEQ,
+		A.JC_AGREE_STS_CD,
+		C.INSTT_OWNER_CD,
+		C.INSTT_TYPE_CD,
+		FN_GET_INSTT_NM(A.INSTT_SEQ, #{lang}) AS INSTT_NM,
+		C.INSTT_MNGER_NM,
+		C.INSTT_EMAIL,
+		C.INSTT_CELL,
+		A.INSTT_RESP_YN,
+		A.REQ_DT,
+		A.INVITE_YN,
+		( CASE WHEN IFNULL(A.INVITE_YN, 'N') = 'Y' THEN A.INVITE_DT ELSE NULL END ) AS INVITE_DT,
+		B.MST_JC_CD,
+		A.REG_USER_SEQ,
+		( CASE WHEN IFNULL(A.INVITE_YN, 'N') = 'Y' THEN FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ, #{lang}) ELSE NULL END ) AS REG_USER_NM,
+		FN_GET_USER_NM_BY_USER_SEQ(A.JC_AGREE_USER_SEQ, #{lang}) AS JC_AGREE_USER_NM,
+		A.JC_AGREE_DT,
+		(
+			SELECT COUNT(*) FROM CPES_FAIR_PATCPTN_INSTT_TRNNG AA
+			JOIN CPES_EDU_TRNNG BB
+			ON AA.EDU_TRNNG_SEQ = BB.EDU_TRNNG_SEQ
+			JOIN CPES_INSTT CC
+			ON BB.INSTT_SEQ = CC.INSTT_SEQ
+			WHERE AA.FAIR_SEQ = A.FAIR_SEQ
+			AND BB.INSTT_SEQ = A.INSTT_SEQ
+			AND IFNULL(BB.DEL_YN, 'N') != 'Y'
+			AND IFNULL(CC.DEL_YN, 'N') != 'Y'
+		) AS EDU_PROGRAM_TOT, <!-- 교육프로그램수 -->
+		( CASE WHEN ( SELECT COUNT(*) FROM CPES_FAIR_BOOTH AA
+			LEFT JOIN CPES_FAIR_PATCPTN_INSTT BB
+			ON AA.COMPNY_INSTT_SEQ = BB.INSTT_SEQ
+			LEFT JOIN CPES_INSTT CC
+			ON AA.COMPNY_INSTT_SEQ = CC.INSTT_SEQ
+			WHERE BB.FAIR_SEQ = A.FAIR_SEQ
+			AND AA.COMPNY_INSTT_DIV_CD = #{compnyInsttDivCd}
+			AND IFNULL(CC.DEL_YN, 'N') != 'Y'
+		) > 0 THEN 'Y' ELSE 'N' END ) AS BOOTH_REQ_YN <!-- 부스신청여부 -->
+	</sql>
+
+	<sql id="whereInsttMng">
+	<!-- 채용행사 참가 기관회원 조회 조건 -->
+
+		AND IFNULL(C.DEL_YN, 'N') != 'Y'
+
+		<!-- 해당 채용행사 매핑 -->
+		AND A.FAIR_SEQ = #{fairSeq}
+
+		<!-- 채용행사 탭 구분 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairMngDiv)">
+			<choose>
+				<when test="fairMngDiv == 'JOIN'">
+					AND A.JC_AGREE_STS_CD = 'JAS0000000001'
+				</when>
+				<when test="fairMngDiv == 'INVITE'">
+					AND A.INVITE_YN = 'Y'
+					AND A.JC_AGREE_STS_CD = 'JAS0000000002'
+				</when>
+			</choose>
+		</if>
+		<!-- 잡센터 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(mstJcCd)">AND B.MST_JC_CD = #{mstJcCd}</if>
+
+		<!-- 검색어 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000004'">
+					AND FN_GET_INSTT_NM(A.INSTT_SEQ, #{lang}) LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000005'">
+					AND C.INSTT_MNGER_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND C.INSTT_EMAIL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000003'">
+					AND C.INSTT_CELL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000006'">
+					AND C.INSTT_REG_NUM = #{searchValue}
+				</when>
+			</choose>
+		</if>
+
+		<!-- 기관소유  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(insttOwnerCd)">AND C.INSTT_OWNER_CD = #{insttOwnerCd}</if>
+
+		<!-- 기관유형  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(insttTypeCd)">AND C.INSTT_TYPE_CD = #{insttTypeCd}</if>
+
+		<!-- 신청여부 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(insttRespYn)">AND IFNULL(A.INSTT_RESP_YN, 'N') = #{insttRespYn}</if>
+
+		<!-- 승인상태  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcAgreeStsCd)">AND A.JC_AGREE_STS_CD = #{jcAgreeStsCd}</if>
+
+	</sql>
+
+	<select id="selectInsttMngTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+	<!-- 채용행사 참가기업 조회 갯수 -->
+
+		SELECT
+			COUNT(*) AS totalCount
+		FROM
+			CPES_FAIR_PATCPTN_INSTT A
+		JOIN
+			CPES_FAIR_MST B
+		ON
+			A.FAIR_SEQ = B.FAIR_SEQ
+		JOIN
+			CPES_INSTT C
+		ON
+			A.INSTT_SEQ = C.INSTT_SEQ
+		<where>
+			<include refid="whereInsttMng"/>
+		</where>
+	</select>
+
+	<select id="selectInsttMngList" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 참가기업 조회 리스트 -->
+
+		SELECT
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.*
+		FROM (
+				SELECT
+					<include refid="selectInsttMngColumn"/>
+				FROM
+					CPES_FAIR_PATCPTN_INSTT A
+				JOIN
+					 CPES_FAIR_MST B
+				ON
+					A.FAIR_SEQ = B.FAIR_SEQ
+				JOIN
+					 CPES_INSTT C
+				ON
+					A.INSTT_SEQ = C.INSTT_SEQ
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) G
+				<where>
+					<include refid="whereInsttMng"/>
+				</where>
+				<choose>
+					<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+						ORDER BY ${orderColumn} ${orderColumnSort}
+	               	</when>
+					<otherwise>
+						ORDER BY A.REG_DT DESC
+					</otherwise>
+				</choose>
+				<if test="length > -1">
+				LIMIT
+					${start} , ${length}
+				</if>
+		) T
+	</select>
+
+	<select id="selectInsttMngDetail" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 참가기관 조회 상세 -->
+		SELECT
+			<include refid="selectInsttMngColumn"/>
+		FROM
+			CPES_FAIR_PATCPTN_INSTT A
+		JOIN
+			CPES_FAIR_MST B
+		ON
+			A.FAIR_SEQ = B.FAIR_SEQ
+		JOIN
+			CPES_INSTT C
+		ON
+			A.INSTT_SEQ = C.INSTT_SEQ
+		<where>
+			AND A.FAIR_SEQ = #{fairSeq}
+			AND A.INSTT_SEQ = #{insttSeq}
+		</where>
+	</select>
+
+	<sql id="selectInviteInsttColumn">
+	<!-- 채용행사 기관회원 조회 컬럼 -->
+		A.INSTT_SEQ,
+		A.INSTT_TYPE_CD,
+		FN_GET_INSTT_NM(A.INSTT_SEQ, #{lang}) AS INSTT_NM,
+		A.INSTT_REG_NUM,
+		A.INSTT_MNGER_NM,
+		A.INSTT_EMAIL,
+		A.INSTT_CELL,
+		B.USER_STS_CD
+	</sql>
+
+	<sql id="whereInviteInstt">
+	<!-- 채용행사 기관회원 조회 조건 -->
+
+		AND IFNULL(A.DEL_YN, 'N') != 'Y'
+
+		<!-- 조회 할 채용행사에 참여한 기관이 아닌 경우  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairSeq)">
+			AND A.INSTT_SEQ NOT IN (
+				SELECT INSTT_SEQ FROM CPES_FAIR_PATCPTN_INSTT WHERE FAIR_SEQ = #{fairSeq}
+			)
+		</if>
+
+		<!-- 잡센터 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND B.JC_CD = #{jcCd}</if>
+
+		<!-- 검색어 (SDC0000000001 : userNm, SDC0000000002 : email, SDC0000000003 : cell) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000004'">
+					AND FN_GET_INSTT_NM(A.INSTT_SEQ, #{lang}) LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000005'">
+					AND A.INSTT_MNGER_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND A.INSTT_EMAIL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000003'">
+					AND A.INSTT_CELL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000006'">
+					AND A.INSTT_REG_NUM = #{searchValue}
+				</when>
+			</choose>
+		</if>
+
+		<!-- 기관소유  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(insttOwnerCd)">AND A.INSTT_OWNER_CD = #{insttOwnerCd}</if>
+
+		<!-- 기관유형  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(insttTypeCd)">AND A.INSTT_TYPE_CD = #{insttTypeCd}</if>
+
+		<!-- 회원상태  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(userStsCd)">AND B.USER_STS_CD = #{userStsCd}</if>
+
+	</sql>
+
+	<select id="selectInviteInsttTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+	<!-- 채용행사 기관회원 조회 갯수 -->
+
+		SELECT
+			COUNT(*) AS totalCount
+		FROM
+			CPES_INSTT A
+		JOIN
+			CPES_USER B
+		ON
+			A.USER_SEQ = B.USER_SEQ
+		<where>
+			<include refid="whereInviteInstt"/>
+		</where>
+	</select>
+
+	<select id="selectInviteInsttList" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 기관회원 조회 리스트 -->
+
+		SELECT
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.*
+		FROM (
+				SELECT
+					<include refid="selectInviteInsttColumn"/>
+				FROM
+					CPES_INSTT A
+				JOIN
+					CPES_USER B
+				ON
+					A.USER_SEQ = B.USER_SEQ
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) G
+				<where>
+					<include refid="whereInviteInstt"/>
+				</where>
+				<choose>
+					<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+						ORDER BY ${orderColumn} ${orderColumnSort}
+	               	</when>
+					<otherwise>
+						ORDER BY A.REG_DT DESC
+					</otherwise>
+				</choose>
+				<if test="length > -1">
+				LIMIT
+					${start} , ${length}
+				</if>
+		) T
+	</select>
+
+
+	<select id="selectInviteInsttDetail" resultType="FairMngBean" parameterType="FairMngBean">
+	<!-- 채용행사 기관회원 조회 상세 -->
+		SELECT
+			<include refid="selectInviteInsttColumn"/>
+		FROM
+			CPES_INSTT A
+		JOIN
+			CPES_USER B
+		ON
+			A.USER_SEQ = B.USER_SEQ
+		<where>
+			AND A.INSTT_SEQ = #{insttSeq}
+			AND A.INSTT_SEQ NOT IN (
+				SELECT INSTT_SEQ FROM CPES_FAIR_PATCPTN_INSTT WHERE FAIR_SEQ = #{fairSeq}
+			)
+		</where>
+	</select>
+
+	<select id="selectCoInvitationList" parameterType="FairMngBean" resultType="FairMngBean">
+		SELECT COMPNY.COMPNY_SEQ
+			 , FN_GET_COMPNY_NM(COMPNY.COMPNY_SEQ, #{lang}) AS COMPNY_NM
+			 , COMPNY.COMPNY_TYPE_CD
+			 , FN_GET_COMMON_NM('COMPNY_TYPE_CD', COMPNY.COMPNY_TYPE_CD, #{lang}) AS COMPNY_TYPE_NM
+			 , COMPNY.REG_NUM
+			 , COMPNY.MNGER_NM
+			 , COMPNY.MNGER_EMAIL
+			 , COMPNY.MNGER_CELL
+		FROM CPES_COMPNY COMPNY
+			INNER JOIN CPES_USER USER
+			ON COMPNY.USER_SEQ = USER.USER_SEQ
+		WHERE IFNULL(COMPNY.DEL_YN, 'N') != 'Y'
+		AND IFNULL(USER.DEL_YN, 'N') != 'Y'
+		AND USER.DORMANCY_YN = 'N'
+		AND USER.USE_YN = 'Y'
+
+		AND (SELECT COUNT(1) FROM CPES_FAIR_PATCPTN_COMPNY WHERE DEL_YN = 'N' AND COMPNY_SEQ = COMPNY.COMPNY_SEQ AND FAIR_SEQ = #{fairSeq}) <![CDATA[<]]> 1
+
+		<!-- 국가코드 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(nationCd)">AND COMPNY.OWNER_NATION_CD = #{nationCd}</if>
+
+		<!-- 잡센터 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(mstJcCd)">AND COMPNY.JC_CD = #{mstJcCd}</if>
+
+		<!-- 검색어 (SDC0000000001 : userNm, SDC0000000002 : email, SDC0000000003 : cell) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND COMPNY.MNGER_EMAIL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000005'">
+					AND COMPNY.MNGER_NM = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000006'">
+					AND COMPNY.REG_NUM = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000007'">
+					AND FN_GET_COMPNY_NM(COMPNY.COMPNY_SEQ, #{lang}) LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000009'">
+					AND COMPNY.MNGER_CELL = #{searchValue}
+				</when>
+			</choose>
+		</if>
+		<!-- 조직유형  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(compnyTypeCd)">AND COMPNY.COMPNY_TYPE_CD = #{compnyTypeCd}</if>
+
+		<!-- 부문  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(sectorCd)">AND COMPNY.ISIC_CD = #{sectorCd}</if>
+	</select>
+
+	<select id="selectInsttInvitationList" parameterType="FairMngBean" resultType="FairMngBean">
+		SELECT INSTT.INSTT_SEQ
+			 , INSTT.INSTT_OWNER_CD
+			 , INSTT.INSTT_TYPE_CD
+			 , FN_GET_COMMON_NM('INSTT_TYPE_CD', INSTT.INSTT_TYPE_CD, #{lang}) AS INSTT_TYPE_NM
+			 , FN_GET_INSTT_NM(INSTT.INSTT_SEQ, #{lang}) AS INSTT_NM
+			 , INSTT.INSTT_MNGER_NM
+			 , INSTT.INSTT_EMAIL
+			 , INSTT.INSTT_CELL
+		FROM CPES_INSTT INSTT
+			INNER JOIN CPES_USER USER
+			ON INSTT.USER_SEQ = USER.USER_SEQ
+		WHERE IFNULL(INSTT.DEL_YN, 'N') != 'Y'
+		AND IFNULL(USER.DEL_YN, 'N') != 'Y'
+		AND USER.DORMANCY_YN = 'N'
+		AND USER.USE_YN = 'Y'
+
+		AND (SELECT COUNT(1) FROM CPES_FAIR_PATCPTN_INSTT WHERE DEL_YN = 'N' AND INSTT_SEQ = INSTT.INSTT_SEQ AND FAIR_SEQ = #{fairSeq}) <![CDATA[<]]> 1
+
+		<!-- 기관소유  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(insttOwnerCd)">AND INSTT.INSTT_OWNER_CD = #{insttOwnerCd}</if>
+
+		<!-- 기관유형  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(insttTypeCd)">AND INSTT.INSTT_TYPE_CD = #{insttTypeCd}</if>
+
+
+		<!-- 검색어 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'SDC0000000004'">
+					AND FN_GET_INSTT_NM(INSTT.INSTT_SEQ, #{lang}) LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000005'">
+					AND INSTT.INSTT_MNGER_NM LIKE CONCAT('%', #{searchValue}, '%')
+				</when>
+				<when test="searchKeyword == 'SDC0000000002'">
+					AND INSTT.INSTT_EMAIL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000003'">
+					AND INSTT.INSTT_CELL = #{searchValue}
+				</when>
+				<when test="searchKeyword == 'SDC0000000006'">
+					AND INSTT.INSTT_REG_NUM = #{searchValue}
+				</when>
+			</choose>
+		</if>
+
+	</select>
+
+</mapper>

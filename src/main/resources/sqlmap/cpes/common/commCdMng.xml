@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="commCdMng">
+	
+	
+	<select id="selectGrpCdList" parameterType="CommCdMngBean" resultType="CommCdMngBean">
+			/** commCdMng.selectGrpCdList **/
+						SELECT A.*
+						FROM(
+							SELECT  A.GRP_CD
+							      , A.GRP_NM
+							      , A.USE_YN
+							      , FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ,#{lang}) AS REG_USER_NM
+							      , FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+							      , A.REG_DT AS REG_DATE
+							FROM CPES_COMM_GRP_CD A
+						) A
+					<where>
+						1=1
+						<if test='searchValue != null and searchValue != ""'>
+				            <if test='searchKeyword == "1"'> 
+								AND A.GRP_NM LIKE CONCAT('%',#{searchValue},'%')
+							</if>
+							<if test='searchKeyword == "2"'> 
+								AND A.GRP_CD LIKE CONCAT('%',#{searchValue},'%')
+							</if>
+							<if test='searchKeyword == "3"'> 
+								AND A.REG_USER_NM LIKE CONCAT('%',#{searchValue},'%')
+							</if>
+						</if>
+						
+						<if test="useYn != null and useYn != ''">
+							AND A.USE_YN = #{useYn}
+						</if>
+					</where>
+			   
+				<choose>
+		           <when test="orderColumn == 'REG_DT'">
+		          	ORDER BY A.REG_DATE ${orderColumnSort}
+		          </when>
+		          <otherwise>
+		          	ORDER BY ${orderColumn} ${orderColumnSort}
+		          </otherwise>
+		        </choose>
+	        LIMIT ${start} , ${length}
+	</select>
+	
+	<select id="selectGrpCdListTotalCount" parameterType="CommCdMngBean" resultType="java.lang.Integer">
+					/** commCdMng.selectGrpCdListTotalCount **/
+					SELECT COUNT(*) AS totalCount 
+						FROM(
+							SELECT  A.GRP_CD
+							      , A.GRP_NM
+							      , A.USE_YN
+							      , FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ,#{lang}) AS REG_USER_NM
+							      , FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+							      , A.REG_DT AS REG_DATE
+							FROM CPES_COMM_GRP_CD A
+						) A
+					<where>
+						1=1
+						<if test='searchValue != null and searchValue != ""'>
+				            <if test='searchKeyword == "1"'> 
+								AND A.GRP_NM LIKE CONCAT('%',#{searchValue},'%')
+							</if>
+							<if test='searchKeyword == "2"'> 
+								AND A.GRP_CD LIKE CONCAT('%',#{searchValue},'%')
+							</if>
+							<if test='searchKeyword == "3"'> 
+								AND A.REG_USER_NM LIKE CONCAT('%',#{searchValue},'%')
+							</if>
+						</if>
+						
+						<if test="useYn != null and useYn != ''">
+							AND A.USE_YN = #{useYn}
+						</if>
+					</where>
+	</select>
+	
+	
+	<select id="selectChkGrpCd" parameterType="CommCdMngBean" resultType="java.lang.Integer">
+		/** commCdMng.selectChkGrpCd **/
+		SELECT  COUNT(*) AS CNT
+		FROM CPES_COMM_GRP_CD A
+		WHERE A.GRP_CD = #{grpCd}
+	</select>
+	
+	<select id="selectGrpCdDtl" parameterType="CommCdMngBean" resultType="CommCdMngBean">
+			/** commCdMng.selectGrpCdDtl **/
+			SELECT  A.GRP_CD
+			      , A.GRP_NM
+			      , A.USE_YN
+			      , FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ,#{lang}) AS REG_USER_NM
+			      , FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+			      , A.EXPLN
+			FROM CPES_COMM_GRP_CD A
+			WHERE A.GRP_CD = #{grpCd}
+	</select>
+	
+	<select id="selectDtlCdChk" parameterType="CommCdMngBean" resultType="java.lang.Integer">
+		/** commCdMng.selectDtlCdChk **/
+		SELECT  COUNT(*) AS CNT
+		FROM CPES_COMM_DTL_CD B
+		WHERE B.GRP_CD = #{grpCd}
+	</select>
+	
+	
+	<select id="selectDtlMngGrpCdList" parameterType="CommCdMngBean" resultType="CommCdMngBean">
+					/** commCdMng.selectDtlMngGrpCdList **/	
+						SELECT A.*
+						FROM(
+							SELECT  '1' AS ROW_NUM
+							      , A.GRP_CD
+							      , A.GRP_NM
+							      , A.USE_YN
+							      , FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ,#{lang}) AS REG_USER_NM
+							      , FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+							      , A.REG_DT AS REG_DATE
+							FROM CPES_COMM_GRP_CD A
+						) A
+					<where>
+						1=1
+						<if test='searchValue != null and searchValue != ""'>
+				            <if test='searchKeyword == "1"'> 
+								AND A.GRP_NM LIKE CONCAT('%',#{searchValue},'%')
+							</if>
+							<if test='searchKeyword == "2"'> 
+								AND A.GRP_CD LIKE CONCAT('%',#{searchValue},'%')
+							</if>
+							<if test='searchKeyword == "3"'> 
+								AND A.REG_USER_NM LIKE CONCAT('%',#{searchValue},'%')
+							</if>
+						</if>
+						
+						
+					</where>
+			   ORDER BY A.REG_DATE DESC
+				
+	        
+	</select>
+	
+	<select id="selectDtlMngDtlCdList" parameterType="CommCdMngBean" resultType="CommCdMngBean">
+		/** commCdMng.selectDtlMngDtlCdList **/	
+		SELECT '1' AS ROW_NUM
+		      ,A.DTL_CD
+		      ,A.CD_EN_NM
+		      ,A.CD_KH_NM
+		      ,A.USE_YN
+		      ,A.CD_CONTENT
+		FROM CPES_COMM_DTL_CD A
+		<where>
+			<choose>
+	           <when test='grpCd == "none"'>
+	          	1=2
+	          </when>
+	          <otherwise>
+	          	 A.GRP_CD = #{grpCd}
+	          </otherwise>
+	        </choose>
+			
+		</where>
+		  
+	</select>
+	
+</mapper>

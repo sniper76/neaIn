@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="resume">
+
+	<select id="selectResumeHumanInfo" resultType="ResumeBean" parameterType="ResumeBean">
+		SELECT
+		A.RESUME_SEQ
+		, A.USER_SEQ
+		, A.BIRTH_ADDR_DTL
+		, FN_GET_COMMON_NM('MARRI_CD', A.MARRI_CD, #{lang}) AS MARRI_NM
+		, A.FAMILY_CNT
+		, A.UNDER_AGE15_FAMILY_CNT
+    	, A.OVER_AGE64_FAMILY_CNT
+    	, A.FRSTIME_JOB_SEEKER_YN
+    	, A.STUDYING_YN
+    	, A.RET_MIGRAT_YN
+    	, A.SRVC_YN
+    	, A.ETHNIC_MINOR_YN
+    	, A.DISABL_YN
+    	, FN_GET_COMMON_NM('DISABL_OPTION_CD', A.DISABL_OPTION_CD, #{lang}) AS DISABL_OPTION_NM
+    	, A.DISABL_ETC
+    	, A.SELFEMP_YN
+    	, A.PREFER_JOB_TITLE
+    	, A.PREFER_POSITION
+    	, FN_GET_COMMON_NM('EMPLOY_FORM_CD', A.EMPLOY_FORM_CD, #{lang}) AS EMPLOY_FORM_NM
+    	, FN_GET_COMMON_NM('PREFER_EMPLOYMT_TYPE_CD', A.PREFER_EMPLOY_TYPE_CD, #{lang}) AS PREFER_EMPLOY_TYPE_NM
+    	, A.TYPE_EMPLOY_HOUR_DAY
+    	, A.TYPE_EMPLOY_DAY_WEEK
+    	, A.PREFER_DAY_MON
+    	, A.PREFER_DAY_TUE
+    	, A.PREFER_DAY_WED
+    	, A.PREFER_DAY_THU
+    	, A.PREFER_DAY_FRI
+    	, A.PREFER_DAY_SAT
+    	, A.PREFER_DAY_SUN
+    	, FN_GET_COMMON_NM('EMPLOY_CRTCT_CD', A.PREFER_CRTCT_TYPE, #{lang}) AS PREFER_CRTCT_TYPE_NM
+		, A.NIGHT_WORK_YN
+		, A.OVER_TIME_WORK_YN
+		, A.HLDAY_WORK_YN
+		, A.EXPCT_MIN_SALARY_AMT
+		, A.EXPCT_MAX_SALARY_AMT
+		, A.DIFF_PROVC_WORK_YN
+		, A.WORK_BGN_ABLE_YN
+		, A.WORK_BGN_ABLE_WITHIN
+    	, A.TOT_CAREER_TERM_YEAR_CNT
+		, A.TOT_CAREER_TERM_MONTH_CNT
+		, FN_GET_COMMON_NM('ISCED_CD', C.ISCED_CD, #{lang}) AS EDU_GNRL_ISCED_NM
+		, FN_GET_COMMON_NM('ISCED_CD', D.ISCED_CD, #{lang}) AS EDU_SKILL_ISCED_NM
+		, A.PRO_LICNS_YN
+		, A.PRO_LICNS_SPEC
+		FROM CPES_RESUME A
+		JOIN CPES_USER B
+		ON A.USER_SEQ				= B.USER_SEQ
+		LEFT JOIN CPES_RESUME_GENRL_EDU C
+		ON A.RESUME_SEQ				= C.RESUME_SEQ
+		LEFT JOIN CPES_RESUME_TVET_EDU D
+		ON A.RESUME_SEQ				= D.RESUME_SEQ
+		WHERE A.RESUME_SEQ 					= #{resumeSeq}
+		  AND A.PRI_RESUME_YN				= 'Y'
+		  AND A.USE_YN						= 'Y'
+    </select>
+
+	<select id="selectDisableOptNm" resultType="ResumeBean" parameterType="ResumeBean">
+		SELECT
+		CASE WHEN #{lang} = 'kh' THEN CD_KH_NM ELSE CD_EN_NM END DISABL_OPTION_NM
+		FROM CPES_COMM_DTL_CD
+		WHERE GRP_CD		= 'DISABL_OPTION_CD'
+		AND DTL_CD			= #{disablOptionCd}
+    </select>
+
+	<select id="selectIscoList" resultType="ResumeIscoBean" parameterType="ResumeIscoBean">
+		SELECT CASE WHEN #{lang} = 'kh' THEN B.KH_NM ELSE B.EN_NM END AS ISCO_NM
+		FROM CPES_RESUME_ISCO A
+		, CPES_ISCO_CD B
+		WHERE A.ISCO_CD         = B.ISCO_CD
+		AND A.RESUME_SEQ       	= #{resumeSeq}
+    </select>
+
+	<select id="selectPreferWorkLocList" resultType="ResumeLocBean" parameterType="ResumeLocBean">
+		SELECT ADDR_FULL_NM
+		FROM CPES_RESUME_HOPE_WORK_LOC
+		WHERE RESUME_SEQ       	= #{resumeSeq}
+    </select>
+
+	<select id="selectResumeOtrTrngInfo" resultType="ResumeOtrTrngBean" parameterType="ResumeOtrTrngBean">
+		SELECT
+		A.RESUME_OTHER_TRNNG_SEQ
+		, A.RESUME_OTHER_TRNNG_ID
+		, FN_GET_BASE_DATE_CHAR(A.BGN_DT, #{lang}) AS BGN_DT
+		, FN_GET_BASE_DATE_CHAR(A.END_DT, #{lang}) AS END_DT
+		, A.TRNNG_EDU_DEGREE_CD
+		, FN_GET_COMMON_NM('EDU_DEGREE_CD', A.TRNNG_EDU_DEGREE_CD, #{lang}) AS TRNNG_EDU_DEGREE_NM
+		, A.INSTT_NM
+		, A.ISCED_CD
+		, CASE WHEN #{lang} = 'kh' THEN B.KH_NM ELSE B.EN_NM END AS ISCED_NM
+		, A.ADDR_PROVC_CD
+		, CASE WHEN #{lang} = 'kh' THEN C.NM_KH ELSE C.NM_EN END AS ADDR_PROVC_NM
+		, A.REG_USER_SEQ
+		, A.REG_DT
+		, A.MOD_USER_SEQ
+		, A.MOD_DT
+		, A.RESUME_SEQ
+		FROM CPES_RESUME_OTHER_TRNNG A
+		LEFT JOIN CPES_ISCED_CD B
+		ON A.ISCED_CD					= B.ISCED_CD
+		LEFT JOIN CPES_LOC_CD C
+		ON A.ADDR_PROVC_CD				= C.LOC_SEQ
+		WHERE A.RESUME_SEQ				= #{resumeSeq};
+    </select>
+
+	<select id="selectResumeLangInfo" resultType="ResumeLangBean" parameterType="ResumeLangBean">
+		SELECT
+		A.RESUME_LANG_SEQ
+		, A.RESUME_LANG_ID
+		, A.LANG_CD
+		, FN_GET_COMMON_NM('LANG_CD', A.LANG_CD, #{lang}) AS LANG_NM
+		, A.LANG_LVL_CD
+		, FN_GET_COMMON_NM('LANG_LVL_CD', A.LANG_LVL_CD, #{lang}) AS LANG_LVL_NM
+		, A.LANG_TYPE_CD
+		, FN_GET_COMMON_NM('LANG_TYPE_CD', A.LANG_TYPE_CD, #{lang}) AS LANG_TYPE_NM
+		, A.RESUME_SEQ
+		, A.REG_USER_SEQ
+		, A.REG_DT
+		, A.MOD_USER_SEQ
+		, A.MOD_DT
+		FROM CPES_RESUME_LANG A
+		WHERE A.RESUME_SEQ			= #{resumeSeq}
+		ORDER BY A.LANG_TYPE_CD ASC;
+    </select>
+
+	<select id="selectResumeSpcEduInfo" resultType="ResumeSpcEduBean" parameterType="ResumeSpcEduBean">
+		SELECT
+		A.SPECIAL_STUDY_NM
+		, FN_GET_BASE_DATE_CHAR(A.BGN_DT, #{lang}) AS BGN_DT
+		, FN_GET_BASE_DATE_CHAR(A.END_DT, #{lang}) AS END_DT
+		, A.INSTT_NM
+		, A.CNTRY_CD
+		, CASE WHEN #{lang} = 'kh' THEN B.NM_KH ELSE B.NM_EN END AS CNTRY_NM
+		, A.PROVC_CD
+		, CASE WHEN #{lang} = 'kh' THEN C.NM_KH ELSE C.NM_EN END AS PROVC_NM
+		FROM CPES_RESUME_SPECIAL_STUDY A
+		LEFT JOIN CPES_LOC_CD B
+		ON A.CNTRY_CD           = B.LOC_SEQ
+		LEFT JOIN CPES_LOC_CD C
+		ON A.PROVC_CD           = C.LOC_SEQ
+		WHERE A.RESUME_SEQ     	= #{resumeSeq}
+		;
+
+    </select>
+
+	<select id="selectResumeWorkExpInfo" resultType="ResumeWorkExpBean" parameterType="ResumeWorkExpBean">
+		SELECT
+		A.RESUME_WORK_EXP_SEQ
+		, A.RESUME_WORK_EXP_ID
+		, FN_GET_BASE_DATE_CHAR(A.BGN_DT, #{lang}) AS BGN_DT
+		, FN_GET_BASE_DATE_CHAR(A.END_DT, #{lang}) AS END_DT
+		, A.ISCO_CD
+		, CASE WHEN #{lang} = 'kh' THEN B.KH_NM ELSE B.EN_NM END AS ISCO_NM
+		, A.ISIC_CD
+		, CASE WHEN #{lang} = 'kh' THEN C.KH_NM ELSE C.EN_NM END AS ISIC_NM
+		, A.ORGNZ_NM
+		, A.LEAVE_REASON
+		, A.ADDR_PROVC_CD
+		, CASE WHEN #{lang} = 'kh' THEN D.NM_KH ELSE D.NM_EN END AS ADDR_PROVC_NM
+		, A.RESUME_SEQ
+		, A.SELFEMP_YN
+		, A.JOB_SECTOR
+		, A.JOB_POSITION
+		FROM CPES_RESUME_WORK_EXP A
+		LEFT JOIN CPES_ISCO_CD B
+		ON A.ISCO_CD					= B.ISCO_CD
+		LEFT JOIN CPES_ISIC_CD C
+		ON A.ISIC_CD					= C.ISIC_CD
+		LEFT JOIN CPES_LOC_CD D
+		ON A.ADDR_PROVC_CD				= D.LOC_SEQ
+		WHERE A.RESUME_SEQ				= #{resumeSeq}
+		;
+
+    </select>
+
+	<select id="selectResumeSkillInfo" resultType="ResumeSkillBean" parameterType="ResumeSkillBean">
+		SELECT
+		A.RESUME_SKILL_SEQ
+		, A.RESUME_SKILL_ID
+		, A.SKILL_CD
+		, FN_GET_COMMON_NM('SKILL_CD', A.SKILL_CD, #{lang}) AS SKILL_NM
+		, A.REG_USER_SEQ
+		, A.REG_DT
+		, A.MOD_USER_SEQ
+		, A.MOD_DT
+		, A.RESUME_SEQ
+		FROM CPES_RESUME_SKILL A
+		WHERE A.RESUME_SEQ			= #{resumeSeq}
+		AND A.SKILL_CD				LIKE CONCAT ('%', '00', '')
+		ORDER BY A.SKILL_CD ASC
+		;
+
+    </select>
+
+	<select id="selectResumeSkillDtlInfo" resultType="ResumeSkillBean" parameterType="ResumeSkillBean">
+		SELECT
+		A.RESUME_SKILL_SEQ
+		, A.RESUME_SKILL_ID
+		, A.SKILL_CD
+		, FN_GET_COMMON_NM('SKILL_CD', A.SKILL_CD, #{lang}) AS SKILL_NM
+		, A.REG_USER_SEQ
+		, A.REG_DT
+		, A.MOD_USER_SEQ
+		, A.MOD_DT
+		, A.RESUME_SEQ
+		FROM CPES_RESUME_SKILL A
+		WHERE A.RESUME_SEQ			= #{resumeSeq}
+		AND A.SKILL_CD				LIKE CONCAT ('', #{skillCd}, '%')
+		ORDER BY A.SKILL_CD ASC
+		;
+
+    </select>
+
+	<select id="selectResumeRefmanInfo" resultType="ResumeRefmanBean" parameterType="ResumeRefmanBean">
+		SELECT
+		A.RESUME_REF_MAN_SEQ
+		, A.RESUME_REF_MAN_ID
+		, A.NM
+		, A.ORGNZ_NM
+		, A.POSITION
+		, A.REF
+		, A.CELL
+		, A.EMAIL
+		, A.ADDR_FULL_NM
+		, A.REG_USER_SEQ
+		, A.REG_DT
+		, A.MOD_USER_SEQ
+		, A.MOD_DT
+		, A.RESUME_SEQ
+		FROM CPES_RESUME_REF_MAN A
+		WHERE A.RESUME_SEQ				= #{resumeSeq}
+		;
+
+    </select>
+
+    <select id="selectResumeTotCnt" parameterType="ony.cpes.internal.resume.bean.ResumeBean" resultType="int">
+		/* resume.selectResumeTotCnt */
+		SELECT CNT + TEMP_CNT AS TOT_CNT
+
+		FROM (SELECT COUNT(1) AS CNT
+				FROM CPES_RESUME
+				WHERE 1=1
+				AND USER_SEQ = #{userSeq}
+				AND USE_YN = 'Y') RE
+
+			LEFT JOIN
+
+			(SELECT COUNT(1) AS TEMP_CNT
+				FROM CPES_RESUME_TEMP
+				WHERE 1=1
+				AND USER_SEQ = #{userSeq}
+				AND USE_YN = 'Y') RE_TEMP
+			ON 1=1
+	</select>
+
+	<select id="selectResumeDisableDetail" parameterType="ony.cpes.internal.resume.bean.ResumeBean" resultType="ony.cpes.internal.resume.bean.ResumeDisablBean">
+		/* resume.selectResumeDisableDetail */
+		SELECT RD.RESUME_DISABL_SEQ
+			 , RD.RESUME_SEQ
+			 , RD.DISABLE_CD
+			 , (SELECT CD_EN_NM FROM CPES_COMM_DTL_CD WHERE DTL_CD = RD.DISABLE_CD AND USE_YN = 'Y') AS DISABLE_CD_NM
+		FROM CPES_RESUME_DISABL RD
+		WHERE 1=1
+		AND RD.RESUME_SEQ = #{resumeSeq}
+	</select>
+
+	<select id="selectResumeGenrlEduDetail" parameterType="ony.cpes.internal.resume.bean.ResumeBean" resultType="ony.cpes.internal.resume.bean.ResumeGenrlEduBean">
+		/* resume.selectResumeGenrlEduDetail */
+		SELECT RGE.RESUME_GENRL_EDU_SEQ
+			 , RGE.RESUME_EDU_ID
+			 , RGE.EDU_DEGREE_CD
+			 , (SELECT CD_EN_NM FROM CPES_COMM_DTL_CD WHERE DTL_CD = RGE.EDU_DEGREE_CD AND USE_YN = 'Y') AS EDU_DEGREE_CD_NM
+			 , RGE.ISCED_CD
+			 , RGE.EDU_DURA
+			 , RGE.BGN_DT
+			 , RGE.END_DT
+			 , RGE.INSTT_NM
+			 , RGE.ADDR_PROVC_CD
+			 , RGE.RESUME_SEQ
+		FROM CPES_RESUME_GENRL_EDU RGE
+		WHERE 1=1
+		AND RESUME_SEQ = #{resumeSeq}
+	</select>
+
+	<select id="selectResumeSkillDetail" parameterType="ony.cpes.internal.resume.bean.ResumeBean" resultType="ony.cpes.internal.resume.bean.ResumeSkillBean">
+		/* resume.selectResumeSkillDetail */
+		SELECT RESUME_SKILL_SEQ
+			 , RESUME_SKILL_ID
+			 , SKILL_CD
+			 , RESUME_SEQ
+		FROM CPES_RESUME_SKILL
+		WHERE 1=1
+		AND RESUME_SEQ = #{resumeSeq}
+	</select>
+
+	<select id="selectResumeDetail" parameterType="ony.cpes.internal.resume.bean.ResumeBean" resultType="ony.cpes.internal.resume.bean.ResumeBean">
+		/* resume.selectResumeDetail */
+		SELECT RE.RESUME_SEQ
+			 , RE.USER_SEQ
+			 , (SELECT BKMK_SEQ FROM CPES_BKMK WHERE USER_SEQ = #{userSeq} AND TABLE_KEY_SEQ = RE.USER_SEQ) AS BKMK_SEQ
+			 , RE.USER_ID
+			 , RE.JC_CD
+			 , RE.CMPLT_USER_NM_KH
+			 , RE.CMPLT_USER_NM_EN
+			 , RE.GENDER_CD
+			 , RE.NATION_CD
+			 , RE.BIRTH
+			 , RE.IDENTI_NO
+			 , RE.BIRTH_LOC_CD
+			 , RE.MARRI_CD
+			 , (SELECT CD_EN_NM FROM CPES_COMM_DTL_CD WHERE DTL_CD = RE.MARRI_CD AND USE_YN = 'Y') AS MARRI_CD_NM
+			 , RE.FAMILY_CNT
+			 , RE.UNDER_AGE15_FAMILY_CNT
+			 , RE.OVER_AGE64_FAMILY_CNT
+			 , RE.ADDR_DTL
+			 , RE.ADDR_CD
+			 , RE.FRSTIME_JOB_SEEKER_YN
+			 , RE.STUDYING_YN
+			 , RE.RET_MIGRAT_YN
+			 , RE.RURAL_LABO_YN
+			 , RE.SRVC_YN
+			 , RE.ETHNIC_MINOR_YN
+			 , RE.DISABL_YN
+			 , RE.DISABL_OPTION_CD
+			 , RE.DISABL_ETC
+			 , RE.NOW_WORK_YN
+			 , RE.BEFORE_WORK_DURA
+			 , RE.SELFEMP_YN
+			 , RE.SELFEMP_CLASS_CD
+			 , RE.URGENT_JOBSEEK_YN
+			 , RE.JOBSEEK_WAIT_DURA
+			 , RE.FILE_GRP_SEQ
+			 , RE.PRO_LICNS_YN
+			 , RE.PRO_LICNS_SPEC
+			 , RE.CAREER_YN
+			 , RE.TOT_CAREER_TERM_YEAR_CNT
+			 , RE.TOT_CAREER_TERM_MONTH_CNT
+			 , RE.JC_USER_MOD_DT
+			 , RE.JC_VERITY_USER_SEQ
+			 , RE.JC_NOTE
+			 , RE.UPLOAD_CV
+			 , RE.STEP_INPUT
+			 , RE.MOBILE_ID
+			 , RE.RESUME_STS_CD
+			 , RE.LAST_MOD_DT
+			 , RE.JC_USER_SEQ
+			 , RE.LANG_USE_CD
+			 , RE.RESUME_TITLE
+			 , RE.PRI_RESUME_YN
+			 , RE.RESUME_KEYWORD
+			 , RE.PREFER_JOB_TITLE
+			 , RE.ISCO_CD
+			 , RE.ISIC_CD
+			 , RE.EMPLOY_FORM_CD
+			 , (SELECT CD_EN_NM FROM CPES_COMM_DTL_CD WHERE DTL_CD = RE.EMPLOY_FORM_CD AND USE_YN = 'Y') AS EMPLOY_FORM_CD_NM
+			 , RE.PREFER_EMPLOY_TYPE_CD
+			 , (SELECT CD_EN_NM FROM CPES_COMM_DTL_CD WHERE DTL_CD = RE.PREFER_EMPLOY_TYPE_CD AND USE_YN = 'Y') AS PREFER_EMPLOY_TYPE_CD_NM
+			 , RE.TYPE_EMPLOY_HOUR_DAY
+			 , RE.TYPE_EMPLOY_DAY_WEEK
+			 , RE.PREFER_CRTCT_TERMS
+			 , RE.PREFER_CRTCT_TERMS_DURA
+			 , RE.PREFER_CRTCT_TYPE
+			 , (SELECT CD_EN_NM FROM CPES_COMM_DTL_CD WHERE DTL_CD = RE.PREFER_CRTCT_TYPE AND USE_YN = 'Y') AS PREFER_CRTCT_TYPE_NM
+			 , RE.NIGHT_WORK_YN
+			 , RE.OVER_TIME_WORK_YN
+			 , RE.HLDAY_WORK_YN
+			 , RE.EXPCT_MIN_SALARY_AMT
+			 , RE.EXPCT_MAX_SALARY_AMT
+			 , RE.EXPCT_SALARY_TYPE_CD
+			 , RE.DIFF_PROVC_WORK_YN
+			 , RE.WORK_BGN_ABLE_YN
+			 , RE.WORK_BGN_ABLE_WITHIN
+			 , RE.JOBSK_REQ_YN
+			 , RE.USE_YN
+			 , RE.BIRTH_ADDR_DTL
+			 , RE.PREFER_DAY_MON
+			 , RE.PREFER_DAY_TUE
+			 , RE.PREFER_DAY_WED
+			 , RE.PREFER_DAY_THU
+			 , RE.PREFER_DAY_FRI
+			 , RE.PREFER_DAY_SAT
+			 , RE.PREFER_DAY_SUN
+			 , RE.PREFER_POSITION
+			 , RE.ADDR_FULL_CD
+			 , RE.ADDR_FULL_NM
+		FROM CPES_RESUME RE
+
+		WHERE 1=1
+		AND RESUME_SEQ = #{resumeSeq}
+	</select>
+
+	<select id="selectResumeIsco" parameterType="ony.cpes.internal.resume.bean.ResumeBean" resultType="ony.cpes.internal.resume.bean.ResumeIscoBean">
+		SELECT RI.RESUME_ISCO_SEQ
+			 , RI.ISCO_CD
+			 , (SELECT EN_NM FROM CPES_ISCO_CD WHERE ISCO_CD = RI.ISCO_CD AND USE_YN = 'Y') AS ISCO_NM
+			 , RI.RESUME_SEQ
+		FROM CPES_RESUME_ISCO RI
+		WHERE 1=1
+		AND RI.RESUME_SEQ = #{resumeSeq}
+	</select>
+
+	<select id="selectResumeRefManDetail" parameterType="ony.cpes.internal.resume.bean.ResumeBean" resultType="ony.cpes.internal.resume.bean.ResumeRefmanBean">
+		/* resume.selectResumeRefManDetail */
+		SELECT RESUME_REF_MAN_SEQ
+			 , RESUME_REF_MAN_ID
+			 , NM
+			 , ORGNZ_NM
+			 , POSITION
+			 , REF
+			 , CELL
+			 , EMAIL
+			 , ADDR_CD
+			 , RESUME_SEQ
+			 , ADDR_FULL_CD
+			 , ADDR_FULL_NM
+			 , ADDR_DTL
+		FROM CPES_RESUME_REF_MAN
+		WHERE 1=1
+		AND RESUME_SEQ = #{resumeSeq}
+	</select>
+
+</mapper>

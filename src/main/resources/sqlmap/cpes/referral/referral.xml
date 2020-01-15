@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="referral">
+
+	<select id="selectReferralHisMngList" resultType="ReferralBean" parameterType="ReferralBean">
+		SELECT
+		CREF.VACANCY_SEQ
+		, CREF.RESUME_SEQ 
+		, CREF.REFERRAL_TYPE_CD
+		, CCOM.COMPNY_NM
+		, CVCY.VACANCY_TITLE
+		, CUSR.USER_NM
+		, DATE_FORMAT(CREF.REG_DT, '%d/%m/%y')	AS REFERRAL_DATE
+		, CJUSR.USER_NM         AS JC_USER_NM
+		, CJCTR.JC_EN			
+		/* NEED TO CHANGE AS LANGUAGE CODE */
+		, CREF.REFERRAL_STS_CD
+		FROM CPES_REFERRAL CREF
+		INNER JOIN CPES_VACANCY CVCY
+		ON CREF.VACANCY_SEQ     = CVCY.VACANCY_SEQ
+		INNER JOIN CPES_RESUME CRSM
+		ON CREF.RESUME_SEQ      = CRSM.RESUME_SEQ
+		INNER JOIN CPES_COMPNY CCOM
+		ON CVCY.COMPNY_SEQ     = CCOM.COMPNY_SEQ
+		INNER JOIN CPES_USER CUSR
+		ON CRSM.USER_SEQ        = CUSR.USER_SEQ
+		INNER JOIN CPES_USER CJUSR
+		ON CREF.JC_CD           = CJUSR.JC_CD
+		AND CREF.JC_USER_SEQ    = CJUSR.USER_SEQ
+		INNER JOIN CPES_JOB_CENTER CJCTR
+		ON CREF.JC_CD           = CJCTR.JC_CD
+		<where>
+			<if test="jcCd != null and jcCd != ''">
+			AND CREF.JC_CD 					= #{jcCd}
+			</if>
+			<if test="referralTypeCd != null and referralTypeCd != ''">
+			AND CREF.REFERRAL_TYPE_CD 		= #{referralTypeCd}
+			</if>
+			<if test="referralStsCd != null and referralStsCd != ''">
+			AND CREF.REFERRAL_STS_CD 		= #{referralStsCd}
+			</if>
+			/* NEED TO ADD KEYWORD */
+			<if test="strDate != null and strDate != ''">
+			AND CREF.REG_DT 				BETWEEN STR_TO_DATE(#{strDate},'%Y%m%d') AND STR_TO_DATE(#{strDate},'%Y%m%d')
+			</if>									
+		</where>
+		<choose>
+           <when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+          	ORDER BY ${orderColumn} ${orderColumnSort}
+          </when>
+          <otherwise>
+          	ORDER BY CREF.REG_DT DESC
+          </otherwise>
+        </choose>
+        LIMIT ${start} , ${length}		
+    </select>
+
+	<select id="selectReferralHisMngListTotalCnt" parameterType="ReferralBean" resultType="int">
+		SELECT 
+		COUNT(*)
+		FROM CPES_JOB_CENTER
+		<where>
+			<if test="jcCd != null and jcCd != ''">
+			AND CREF.JC_CD 					= #{jcCd}
+			</if>
+			<if test="referralTypeCd != null and referralTypeCd != ''">
+			AND CREF.REFERRAL_TYPE_CD 		= #{referralTypeCd}
+			</if>
+			<if test="referralStsCd != null and referralStsCd != ''">
+			AND CREF.REFERRAL_STS_CD 		= #{referralStsCd}
+			</if>
+			/* NEED TO ADD KEYWORD */
+			<if test="strDate != null and strDate != ''">
+			AND CREF.REG_DT 				BETWEEN STR_TO_DATE(#{strDate},'%Y%m%d') AND STR_TO_DATE(#{endDate},'%Y%m%d')
+			</if>									
+		</where>
+		
+	</select>
+	
+	
+	<select id="selectReferralManageVacancy" parameterType="ReferralBean" resultType="VacancyBean">
+		SELECT A.VACANCY_SEQ
+		      ,FN_GET_COMPNY_NM(A.COMPNY_SEQ,#{lang}) AS COMPNY_NM
+		      ,A.VACANCY_TITLE
+		      ,A.VACANCY_CLOSE_DT
+		FROM CPES_VACANCY A
+		WHERE A.VACANCY_SEQ = #{vacancySeq}
+	</select>
+	
+	<select id="selectReferralManageResume" parameterType="ReferralBean" resultType="ResumeBean">
+		SELECT A.RESUME_SEQ
+		      ,CASE WHEN #{lang} = 'kh'
+		            THEN A.CMPLT_USER_NM_KH
+		            ELSE A.CMPLT_USER_NM_EN
+		            END AS FULL_USER_NM
+		      ,TRUNCATE((TO_DAYS(NOW()) - TO_DAYS(DATE_FORMAT(A.BIRTH, '%Y-%m-%d'))) / 365, 0) AS AGE
+		      ,FN_GET_COMMON_NM('GENDER_CD',A.GENDER_CD,#{lang}) AS GENDER_CD
+		      ,A.RESUME_TITLE
+		      ,B.CELL
+		FROM CPES_RESUME A LEFT OUTER JOIN CPES_RESUME_CELL B
+		                                ON A.RESUME_SEQ = B.RESUME_SEQ
+		WHERE A.RESUME_SEQ = #{resumeSeq}
+	</select>
+	
+	<select id="selectReferralManage" parameterType="ReferralBean" resultType="ReferralBean">
+		SELECT A.RESUME_SEQ
+		      ,A.VACANCY_SEQ
+		      ,A.REFERRAL_COUNSEL_RECORD
+		      ,A.MNGER_OPINION
+		      ,A.REFERRAL_STS_CD
+		FROM CPES_REFERRAL A
+		WHERE A.RESUME_SEQ = #{resumeSeq}
+		  AND A.VACANCY_SEQ = #{vacancySeq}
+	</select>
+	
+	<sql id="jobReferralList">
+		SELECT A.VACANCY_SEQ
+		      ,A.RESUME_SEQ
+		      ,FN_GET_COMMON_NM('REFERRAL_TYPE_CD',A.REFERRAL_TYPE_CD, #{lang}) AS REFERRAL_TYPE_NM
+		      ,A.REFERRAL_TYPE_CD
+		      ,FN_GET_COMPNY_NM(B.COMPNY_SEQ,#{lang}) AS COMPNY_NM
+		      ,B.VACANCY_TITLE
+		      ,CASE WHEN #{lang} = 'kh'
+		            THEN C.CMPLT_USER_NM_KH
+		            ELSE C.CMPLT_USER_NM_EN
+		            END  AS JOB_USER_NM
+		      ,FN_GET_BASE_DATE_CHAR(A.MOD_DT, #{lang}) AS MOD_DT
+		      ,FN_GET_USER_NM_BY_USER_SEQ(A.JC_USER_SEQ,#{lang}) AS JC_USER_SEQ
+		      ,CASE WHEN #{lang} = 'kh'
+		            THEN D.JC_KH
+		            ELSE D.JC_EN
+		            END  AS JC_NM
+		      ,FN_GET_COMMON_NM('REFERRAL_STS_CD',A.REFERRAL_STS_CD, #{lang}) AS REFERRAL_STS_CD
+		      ,B.COMPNY_SEQ
+		      ,C.USER_SEQ
+		      ,B.MNGER_CELL
+      		  ,D.JC_CD
+      		  ,A.REG_DT
+		FROM CPES_REFERRAL A JOIN CPES_VACANCY B
+		                       ON A.VACANCY_SEQ = B.VACANCY_SEQ
+		                     JOIN CPES_RESUME C
+		                       ON A.RESUME_SEQ = C.RESUME_SEQ
+		                     JOIN CPES_JOB_CENTER D
+		                       ON A.JC_CD = D.JC_CD
+		
+	</sql>
+	
+	<sql id="whereJobReferral">
+	         <!-- keyword search -->
+            <if test='keyword != null and keyword != ""'>
+	            <if test='keywordSel == "1"'> 
+					AND COMPNY_NM LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "2"'> 
+					AND A.JOB_USER_NM LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "3"'> 
+					AND A.VACANCY_TITLE LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "4"'> 
+					AND A.MNGER_CELL LIKE CONCAT('%',#{keyword},'%')
+				</if>
+			</if>
+			<!-- keyword search -->
+			
+            <if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">
+					AND A.JC_CD = #{jcCd}
+			</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(referralTypeCd)">
+					AND A.REFERRAL_TYPE_CD = #{referralTypeCd}
+			</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(referralStsCd)">
+					AND A.REFERRAL_STS_CD = #{referralStsCd}
+			</if>
+			
+			<if test="startDate != null and startDate != ''">
+			<![CDATA[
+			AND A.REG_DT	>= FN_GET_STR_TO_DATE(#{startDate}, 'S')
+			]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+			<![CDATA[			
+			AND A.REG_DT	<= FN_GET_STR_TO_DATE(#{endDate}, 'E')
+			]]>
+			</if>
+			
+	</sql>
+	
+	<select id="selectJobReferralRecordList" resultType="ReferralBean" parameterType="ReferralBean">
+		SELECT 
+			 A.*
+			,${recordsTotal} - ((${pageNo} - 1) * ${length}) - (@ROWNUM:=@ROWNUM+1) + 1 AS ROW_NUM
+		FROM
+        	  (SELECT A.*
+        	    FROM(
+        	    	<include refid="jobReferralList"/>
+        	    ) A		
+		         <where>
+		            <include refid="whereJobReferral"/>
+				</where>
+				<choose>
+		           <when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+		          	ORDER BY ${orderColumn} ${orderColumnSort}
+		          </when>
+		          <otherwise>
+		          	ORDER BY A.REG_DT DESC
+		          </otherwise>
+		        </choose>
+		) A,
+		(SELECT @ROWNUM := 1) B
+		
+        LIMIT ${start} , ${length}
+    </select>
+    
+    <select id="selectJobReferralRecordListTotalCount" parameterType="ReferralBean" resultType="int">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM 
+			(SELECT A.*
+        	    FROM(
+        	    	<include refid="jobReferralList"/>
+        	    ) A		
+		         <where>
+		            <include refid="whereJobReferral"/>
+				</where>
+		) A
+	</select>
+	    
+</mapper>

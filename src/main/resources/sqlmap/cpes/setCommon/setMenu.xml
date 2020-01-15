@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setMenu">
+	
+	<insert id="insertMenuMng" parameterType="MenuBean">
+		/** setMenu.insertMenuMng **/
+		INSERT INTO CPES_MENU
+		(
+			MENU_CD
+			, UPPER_MENU_CD
+			, MENU_NM_KH
+			, MENU_NM_EN
+			, MENU_NM_KR
+			, MENU_LVL
+			, MENU_SORT
+			, USE_YN
+			, MENU_GRP_CD
+			, REG_USER_SEQ
+			, REG_DT
+			, MOD_USER_SEQ
+			, MOD_DT
+			, MENU_URL
+			, BULLETIN_YN
+			, PROGRAM_SEQ
+			, PROGRAM_MAP_YN
+			, FULL_MENU_CD
+			, RANGE_CD
+		)
+		VALUES
+		(
+			  #{menuCd}
+			, #{upperMenuCd}
+			, #{menuNmKh}
+			, #{menuNmEn}
+			, #{menuNmEn}
+			, #{menuLvl}
+			, #{menuSort}
+			, #{useYn}
+			, null
+			, #{regUserSeq}
+			, now()
+			, #{modUserSeq}
+			, now()
+			, #{menuUrl}
+			, #{bulletinYn}
+			, null
+			, null
+			, CONCAT(#{fullMenuCd},",",#{menuCd})
+			, #{rangeCd}
+		)
+	</insert>
+	
+	<insert id="insertMenuProgramMap" parameterType="MenuProgramMapBean">
+			/** setMenu.insertMenuProgramMap **/
+			INSERT INTO CPES_MENU_PROGRAM_MAP
+			(
+				MENU_PROGRAM_MAP_SEQ
+				, MENU_CD
+				, PROGRAM_SEQ
+				, PRI_PROGRAM_YN
+				, REG_USER_SEQ
+				, REG_DT
+			)
+			VALUES
+			(
+				FN_GET_UUID_SEQ()
+				, #{menuCd}
+				, #{programSeq}
+				, #{priProgramYn}
+				, #{regUserSeq}
+				, now()
+			)
+	</insert>
+	
+	<insert id="updateMenuProgramMap" parameterType="MenuProgramMapBean">
+			/** setMenu.updateMenuProgramMap **/
+			UPDATE CPES_MENU_PROGRAM_MAP
+			   SET PRI_PROGRAM_YN = #{priProgramYn}
+			 WHERE MENU_PROGRAM_MAP_SEQ = #{menuProgramMapSeq}
+	</insert>
+	
+	<update id="updateMenuMng" parameterType="MenuBean">
+		UPDATE CPES_MENU
+		   SET UPPER_MENU_CD		= #{upperMenuCd}
+		     , MENU_NM_KH			= #{menuNmKh}
+		     , MENU_NM_EN			= #{menuNmEn}
+		     , MENU_NM_KR			= #{menuNmKr}
+		     , MENU_LVL				= #{menuLvl}
+		     , MENU_SORT			= #{menuSort}
+		     , MENU_URL				= #{menuUrl}
+		     , FULL_MENU_CD			= CONCAT(#{fullMenuCd},",",#{menuCd})
+		     , USE_YN				= #{useYn}
+		     , BULLETIN_YN			= #{bulletinYn}
+		     , MOD_USER_SEQ			= #{modUserSeq}
+		     , MOD_DT				= now()
+		WHERE  MENU_CD				= #{menuCd}
+	</update>
+	
+	<update id="deleteMenuMng" parameterType="MenuBean">
+		DELETE FROM CPES_MENU
+		WHERE  MENU_CD				= #{menuCd}
+	</update>
+	
+	<delete id="deleteMenuProgramMap" parameterType="menuBean">
+		DELETE FROM CPES_MENU_PROGRAM_MAP
+		WHERE MENU_CD = #{menuCd}
+	</delete>
+	
+</mapper>

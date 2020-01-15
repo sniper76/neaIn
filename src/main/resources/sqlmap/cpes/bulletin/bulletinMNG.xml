@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bulletinMNG">
+
+	<sql id="bulletinMNGList">
+			SELECT   A.BULLETIN_MNG_SEQ
+		            ,A.FILE_GRP_CD
+		            ,A.BULLETIN_NM
+		            ,A.CONTENT
+		            ,FN_GET_BASE_DATE_CHAR(A.CREATE_DT, #{lang}) AS CREATE_DT
+		            ,A.USE_YN
+		            ,A.COMMENT_YN
+		            ,A.LIKE_YN
+		            ,A.FILE_YN
+		            ,A.DEL_YN
+		            ,A.MENU_CD
+		            ,A.MENU_CD_DIV
+		            ,A.BULLETIN_TYPE_CD
+		            ,FN_GET_COMMON_NM('BULLETIN_TYPE_CD',A.BULLETIN_TYPE_CD, #{lang}) AS BULLETIN_TYPE_NM
+		            ,A.BANNER_USE_YN
+                    ,CASE WHEN #{lang} = 'KH' THEN B.USER_NM_KH ELSE B.USER_NM_EN END USER_NM
+                    ,B.USER_AUTH_CD
+                    ,D.PROGRAM_ID
+                    ,A.BULLETIN_RANGE_CD
+		            ,A.REG_USER_SEQ
+                    , FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+                    ,A.REG_DT AS REG_DATE
+		            ,A.MOD_USER_SEQ
+                    , FN_GET_BASE_DATE_CHAR(A.MOD_DT, #{lang}) AS MOD_DT
+		    FROM CPES_BULLETIN_MNG A LEFT OUTER JOIN CPES_USER B
+                                       ON A.REG_USER_SEQ = B.USER_SEQ
+                                     LEFT OUTER JOIN CPES_COMM_DTL_CD C
+                                       ON A.BULLETIN_TYPE_CD = C.DTL_CD
+                                     LEFT OUTER JOIN CPES_PROGRAM D
+                                       ON A.BULLETIN_MNG_SEQ = D.BULLETIN_MNG_SEQ
+
+	</sql>
+
+	<sql id="whereBulletinMNG">
+			A.DEL_YN = 'N'
+            <!-- keyword search 1:bulletin NM, 2:content, 3:reg user, 4:program id-->
+            <if test='keyword != null and keyword != ""'>
+	            <if test='keywordSel == "SBK0000000001"'>
+					AND A.BULLETIN_NM LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "SBK0000000002"'>
+					AND A.CONTENT LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "SBK0000000003"'>
+					AND A.USER_NM LIKE CONCAT('%',#{keyword},'%')
+				</if>
+			</if>
+
+			<!-- keyword search -->
+
+			<if test="useYn != null and useYn != ''">
+				AND A.USE_YN = #{useYn}
+			</if>
+			<if test="bulletinTypeCd != null and bulletinTypeCd != ''">
+				AND A.BULLETIN_TYPE_CD = #{bulletinTypeCd}
+			</if>
+			<!-- 등록일 기준 시작 조회 일자만 있을 경우 -->
+			<if test="startDate != null and startDate != ''">
+			<![CDATA[
+			AND A.REG_DT	>= FN_GET_STR_TO_DATE(#{startDate}, 'S')
+			]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+			<![CDATA[
+			AND A.REG_DT	<= FN_GET_STR_TO_DATE(#{endDate}, 'E')
+			]]>
+			</if>
+			<if test="userType != null and userType != '' and userType == 'ROLE_USER'">
+				AND A.JOBSK_YN = 'Y'
+			</if>
+			<if test="userType != null and userType != '' and userType == 'ROLE_CMPNY'">
+				AND A.EMPLOY_YN = 'Y'
+			</if>
+			<if test="userType != null and userType != '' and userType == 'ROLE_STDIT'">
+				AND A.STDT_YN = 'Y'
+			</if>
+			<if test="userType != null and userType != '' and userType == 'ROLE_TRNCT'">
+				AND A.TRNNG_INSTT_YN = 'Y'
+			</if>
+			<if test="bulletinRangeCd != null and bulletinRangeCd != ''">
+				AND A.BULLETIN_RANGE_CD = #{bulletinRangeCd}
+			</if>
+	</sql>
+
+
+	<select id="selectBulletinMNGList" resultType="ony.cpes.internal.bulletin.bean.BulletinMNGBean" parameterType="BulletinMNGBean">
+		/* selectBulletinMNGList */
+        SELECT
+			 A.*
+			,${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM
+		FROM
+        	  (<include refid="bulletinMNGList"/>
+         <where>
+            <include refid="whereBulletinMNG"/>
+		</where>
+		) A,
+		(SELECT @ROWNUM := 0) B
+		<choose>
+		<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+			ORDER BY ${orderColumn} ${orderColumnSort}
+		</when>
+		<otherwise>
+			ORDER BY A.REG_DATE DESC
+		</otherwise>
+		</choose>
+        LIMIT ${start} , ${length}
+    </select>
+
+
+    <select id="selectBulletinMNGTotalCount" resultType="java.lang.Integer" parameterType="BulletinMNGBean">
+    	/* selectBulletinMNGTotalCount */
+		SELECT
+			COUNT(*) AS totalCount
+		FROM
+			(<include refid="bulletinMNGList"/>
+		<where>
+			<include refid="whereBulletinMNG"/>
+		</where>
+		) A
+	</select>
+
+
+    <select id="selectUUID" resultType="java.lang.String" parameterType="BulletinMNGBean">
+		select FN_GET_UUID_SEQ() AS uuid FROM DUAL
+	</select>
+
+	<select id="selectPgmId" resultType="java.lang.String" parameterType="BulletinMNGBean">
+		/* selectPgmId */
+		select CONCAT('PGM',LPAD(max(substr(IFNULL(A.PROGRAM_ID,0000000000),4)) + 1 ,10,'0'))
+		from CPES_PROGRAM A
+	</select>
+
+	<select id="selectBulletinMngDtl" resultType="BulletinMNGBean" parameterType="BulletinMNGBean">
+		/* selectBulletinMngDtl */
+        SELECT A.*,B.PROGRAM_ID
+        FROM CPES_BULLETIN_MNG A JOIN CPES_PROGRAM B
+						           ON A.BULLETIN_MNG_SEQ = B.BULLETIN_MNG_SEQ
+        WHERE A.BULLETIN_MNG_SEQ = #{bulletinMngSeq}
+    </select>
+
+	<select id="selectBulletinMngByProgramId" resultType="BulletinMNGBean" parameterType="BulletinMNGBean">
+		/* selectBulletinMngByProgramId */
+        SELECT
+        	A.*,
+        	B.PROGRAM_ID
+        FROM
+        	CPES_BULLETIN_MNG A
+        JOIN
+        	CPES_PROGRAM B
+		ON
+			A.BULLETIN_MNG_SEQ = B.BULLETIN_MNG_SEQ
+        WHERE
+        	B.PROGRAM_ID = #{programId}
+    </select>
+
+    <select id="selectBulletinCateList" resultType="BulletinCateBean" parameterType="BulletinMNGBean">
+    	/* selectBulletinCateList */
+        SELECT A.BULLETIN_CATE_SEQ
+		      ,A.BULLETIN_CATE_NM
+		      ,A.BULLETIN_MNG_SEQ
+		      ,A.SORT
+		FROM CPES_BULLETIN_CATE A
+		WHERE A.BULLETIN_MNG_SEQ = #{bulletinMngSeq}
+		ORDER BY A.SORT
+    </select>
+
+    <select id="selectMenuCnt" resultType="int" parameterType="BulletinMNGBean">
+    	/* selectMenuCnt */
+        SELECT COUNT(*) AS CNT
+		FROM CPES_MENU A
+		WHERE EXISTS (SELECT 1 FROM CPES_PROGRAM B
+					  WHERE B.PROGRAM_SEQ = A.PROGRAM_SEQ
+					    AND B.BULLETIN_MNG_SEQ = #{bulletinMngSeq}
+					  )
+    </select>
+
+    <!-- select id="getBulletinMNGTotalCount" resultType="java.lang.Integer" parameterType="BulletinMNGBean">
+		SELECT COUNT(*) AS totalCount FROM CPES_BULLETIN_MNG
+		<where>
+
+			<if test="useYn != null and useYn != ''">
+			A.USE_YN = #{useYn}
+			</if>
+			<if test="bulletinTypeCd != null and bulletinTypeCd != ''">
+			AND BULLETIN_TYPE_CD = #{bulletinTypeCd}
+			</if>
+			<if test="strDate != null and strDate != ''">
+			AND REG_DT between str_to_date(#{strDate},'%Y%m%d') AND str_to_date(#{endDate},'%Y%m%d')
+			</if>
+			<if test="userType != null and userType != ''">
+			AND B.USER_GRP_CD = #{userType}
+			</if>
+		</where>
+	</select -->
+
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setCommCdMng">
+	
+	<insert id="insertGrpCd" parameterType="CommCdMngBean">
+		/** setCommCdMng.insertGrpCd **/	
+		INSERT INTO CPES_COMM_GRP_CD
+		(
+				GRP_CD
+			, GRP_NM
+			, USE_YN
+			, REG_USER_SEQ
+			, REG_DT
+			, MOD_USER_SEQ
+			, MOD_DT
+			, EXPLN
+		)VALUES(
+			  #{grpCd}
+		   ,#{grpNm}
+		   ,#{useYn}
+		   ,#{user.userSeq}
+		   ,now()
+		   ,#{user.userSeq}
+		   ,now()
+		   ,#{expln}
+		)
+	</insert>
+	
+	<insert id="updateGrpCd" parameterType="CommCdMngBean">
+		/** setCommCdMng.updateGrpCd **/
+		UPDATE CPES_COMM_GRP_CD SET 
+			  GRP_NM = #{grpNm}
+			, USE_YN = #{useYn}
+			, MOD_USER_SEQ = #{user.userSeq}
+			, MOD_DT = now()
+			, EXPLN = #{expln}
+		WHERE GRP_CD = #{grpCd}
+	</insert>
+	
+	<insert id="deleteGrpCd" parameterType="CommCdMngBean">
+		/** setCommCdMng.deleteGrpCd **/
+		DELETE FROM CPES_COMM_GRP_CD
+		WHERE GRP_CD = #{grpCd} 
+		
+	</insert>
+	
+	<insert id="saveDtlCdMng" parameterType="CommCdMngBean">
+			/** setCommCdMng.saveDtlCdMng **/
+			INSERT INTO CPES_COMM_DTL_CD
+			(
+					DTL_CD
+				, GRP_CD
+				, CD_EN_NM
+				, CD_CONTENT
+				, USE_YN
+				, REG_USER_SEQ
+				, REG_DT
+				, MOD_USER_SEQ
+				, MOD_DT
+				, CD_KH_NM
+			) VALUES (
+				 #{dtlCd}
+				,#{grpCd}
+				,#{cdEnNm}
+				,#{cdContent}
+				,#{useYn}
+				,#{user.userSeq}
+				,NOW()
+				,#{user.userSeq}
+				,NOW()
+				,#{cdKhNm}
+			)
+			ON DUPLICATE KEY
+				 UPDATE   CD_EN_NM     = #{cdEnNm}
+						 ,CD_CONTENT   = #{cdContent}
+						 ,USE_YN       = #{useYn}
+						 ,MOD_USER_SEQ = #{user.userSeq}
+						 ,MOD_DT       = NOW()
+						 ,CD_KH_NM     = #{cdKhNm} 
+	</insert>
+	
+	
+	<insert id="deleteDtlCdMng" parameterType="CommCdMngBean">
+		/** setCommCdMng.deleteDtlCdMng **/
+		DELETE FROM CPES_COMM_DTL_CD
+		WHERE DTL_CD = #{dtlCd}
+	</insert>
+	
+</mapper>

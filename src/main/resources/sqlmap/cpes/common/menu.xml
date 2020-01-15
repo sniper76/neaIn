@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="menu">
+	
+	<resultMap id="MenuMap" type="MenuBean">
+		<result column="MENU_CD" property="menuCd" />
+		<result column="REG_USER_SEQ" property="regUserSeq" />
+		<result column="REG_DT" property="regDt" />
+		<result column="MENU_NM" property="menuNm" />
+		<result column="PROGRAM_URL" property="menuUrl" />
+		<result column="MENU_LVL" property="menuLvl" />
+		<result column="UPPER_MENU_CD" property="upperMenuCd" />
+		<result column="MENU_SORT" property="menuSort" />
+		<result column="FULL_MENU_CD" property="fullMenuCd" />
+	</resultMap>
+	
+	<!--inquiry user menu  after login -->
+	<select id="selectUserMenuList" parameterType="UserMenuBean" resultMap="MenuMap">
+		/** menu.selectUserMenuList **/
+		SELECT
+        	M.MENU_CD
+        	, A.REG_USER_SEQ
+        	, A.REG_DT
+            <choose>
+		  	<when test="lang == 'kh'">
+		  	, M.MENU_NM_KH AS MENU_NM
+		  	</when>
+		  	<otherwise>
+		  	, M.MENU_NM_EN AS MENU_NM
+		  	</otherwise>
+		  	</choose>
+           	, CUP.PROGRAM_URL
+           	, M.MENU_LVL
+           	, M.UPPER_MENU_CD
+           	, M.MENU_SORT
+           	, M.FULL_MENU_CD
+        FROM CPES_USER A
+        INNER JOIN CPES_USER_MENU UM ON A.USER_SEQ = UM.USER_SEQ
+          INNER JOIN CPES_MENU M ON UM.MENU_CD = M.MENU_CD AND M.USE_YN = 'Y'
+          LEFT OUTER JOIN
+          	(SELECT CP.PROGRAM_URL, MP.MENU_CD FROM CPES_MENU_PROGRAM_MAP MP 
+            INNER JOIN CPES_PROGRAM CP ON MP.PROGRAM_SEQ = CP.PROGRAM_SEQ
+            INNER JOIN CPES_USER_PROGRAM UP
+            ON MP.MENU_PROGRAM_MAP_SEQ = UP.MENU_PROGRAM_MAP_SEQ
+            AND UP.PRI_PROGRAM_YN = 'Y'
+            WHERE UP.USER_SEQ = (SELECT USER_SEQ FROM CPES_USER WHERE MNG_ID = #{mngId} LIMIT 1)
+            ) CUP
+            ON M.MENU_CD = CUP.MENU_CD
+        WHERE A.MNG_ID = #{mngId}
+		  AND M.USE_YN = 'Y'
+		  AND RANGE_CD = 'RNG0000000002'
+		 <if test="menu.menuLvl != null and menu.menuLvl != ''">
+		  AND M.MENU_LVL = #{menu.menuLvl}
+		 </if>
+		 <if test="menu.upperMenuCd != null and menu.upperMenuCd != ''">
+		  AND M.UPPER_MENU_CD = #{menu.upperMenuCd}
+		 </if>
+		 <if test="menu.menuCd != null and menu.menuCd != ''">
+		  AND M.MENU_CD = #{menu.menuCd}
+		 </if>
+		  ORDER BY MENU_SORT ASC
+	</select>
+	
+	<select id="selectMenuInfoByProgram" parameterType="UserMenuBean" resultType="MenuProgramMapBean">
+		SELECT
+			A.MENU_PROGRAM_MAP_SEQ
+			, A.MENU_CD
+			, A.PROGRAM_SEQ
+			, A.PRI_PROGRAM_YN
+			, C.PROGRAM_URL
+		  FROM CPES_MENU_PROGRAM_MAP A
+	INNER JOIN CPES_USER_PROGRAM B ON A.PROGRAM_SEQ = B.PROGRAM_SEQ
+	INNER JOIN CPES_PROGRAM C ON A.PROGRAM_SEQ = C.PROGRAM_SEQ
+	     WHERE B.USER_SEQ = (SELECT USER_SEQ FROM CPES_USER WHERE MNG_ID = #{mngId} LIMIT 1)
+	</select>
+	
+	<select id="selectMenuMngList" parameterType="MenuBean" resultType="MenuBean">
+		/** menu.selectMenuMngList **/
+		SELECT
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM
+			, M.*
+			FROM (
+			SELECT
+					A.MENU_CD
+				  , A.MENU_NM_KH
+				  , A.MENU_NM_EN
+				  , A.MENU_NM_KR
+				  , A.PROGRAM_MAP_YN
+				  , A.MENU_LVL
+				  , A.UPPER_MENU_CD
+				  , A.MENU_SORT
+				  , (
+                     SELECT P.PROGRAM_URL FROM CPES_MENU_PROGRAM_MAP PM INNER JOIN CPES_PROGRAM P ON PM.PROGRAM_SEQ = P.PROGRAM_SEQ
+                  	 WHERE PM.MENU_CD = A.MENU_CD AND PM.PRI_PROGRAM_YN = 'Y' LIMIT 1) AS MENU_URL
+				  , A.REG_DT
+				  , A.REG_USER_SEQ
+				  , A.USE_YN
+			 FROM   CPES_MENU A
+			 ,(SELECT @ROWNUM := 0) C
+	 		WHERE RANGE_CD = #{rangeCd}
+       		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchValue)">
+       			<choose>
+       				<when test="searchKeyword == 'SFP0000000001'">
+       					AND MENU_NM_KH LIKE CONCAT('%', #{searchValue}, '%')
+       				</when>
+       				<otherwise>
+       					AND MENU_NM_EN LIKE CONCAT('%', #{searchValue}, '%')
+       				</otherwise>
+       			</choose>
+       		</if>
+       		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(menuLvl)">
+       			  AND A.MENU_LVL = #{menuLvl}
+       		</if>
+       		<choose>
+		 	<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+			ORDER BY CONCAT('A.', #{orderColumn}) ${orderColumnSort}
+			</when>
+			<otherwise>
+			ORDER BY A.REG_DT DESC
+			</otherwise>
+			</choose>
+			LIMIT ${start} , ${length}
+		) M
+	</select>
+	
+	<select id="selectMenuMngListTotalCount" parameterType="MenuBean" resultType="int">
+		/** menu.selectMenuMngListTotalCount **/
+		SELECT 
+			COUNT(1)
+		FROM CPES_MENU
+	   WHERE RANGE_CD = #{rangeCd}
+	   		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchValue)">
+       			<choose>
+       				<when test="searchKeyword == 'SFP0000000001'">
+       					AND MENU_NM_KH LIKE CONCAT('%', #{searchValue}, '%')
+       				</when>
+       				<otherwise>
+       					AND MENU_NM_EN LIKE CONCAT('%', #{searchValue}, '%')
+       				</otherwise>
+       			</choose>
+       		</if>
+       		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(menuLvl)">
+       			  AND MENU_LVL = #{menuLvl}
+       		</if>
+	</select>
+	
+	<select id="selectCurrentLvlMenuMngList" parameterType="MenuBean" resultType="MenuBean">
+		/** menu.selectCurrentLvlMenuMngList **/
+		SELECT
+					A.MENU_NM_KH
+				  , A.MENU_NM_EN
+				  , A.MENU_NM_KR
+				  , A.MENU_CD
+				  , A.PROGRAM_MAP_YN
+				  , A.MENU_LVL
+				  , A.UPPER_MENU_CD
+				  , A.MENU_SORT
+				  , A.MENU_URL
+				  , A.USE_YN
+				  , A.FULL_MENU_CD
+				  , A.RANGE_CD
+				  , (SELECT 
+		        		<choose>
+				  		<when test="lang == 'kh'">
+		        			B.USER_NM_KH
+		        		</when>
+					  	<otherwise>
+					  		B.USER_NM_EN
+					  	</otherwise>
+					  	</choose>
+		        	   FROM CPES_USER B WHERE B.USER_SEQ = A.REG_USER_SEQ) AS USER_NM
+		        	, FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+		        	, A.MOD_USER_SEQ
+		        	, FN_GET_BASE_DATE_CHAR(A.MOD_DT, #{lang}) AS MOD_DT
+			 FROM   CPES_MENU A
+			 <where>
+			 	<if test="upperMenuCd != null and upperMenuCd !=''">
+			 	A.UPPER_MENU_CD = #{upperMenuCd}
+			 	</if>
+			 	<if test="menuLvl != null and menuLvl !=''">
+			 	AND A.MENU_LVL = #{menuLvl}
+			 	</if>
+			 </where>
+	</select>
+	
+	<select id="selectMenuMngDetail" parameterType="MenuBean" resultType="MenuBean">
+		/** menu.selectMenuMngDetail **/
+		SELECT
+				A.MENU_NM_KH
+			  , A.MENU_NM_EN
+			  , A.MENU_NM_KR
+			  , A.MENU_CD
+			  , A.PROGRAM_MAP_YN
+			  , A.MENU_LVL
+			  , A.UPPER_MENU_CD
+			  , A.MENU_SORT
+			  , A.MENU_URL
+			  , A.FULL_MENU_CD
+			  , A.RANGE_CD
+			  , (SELECT 
+        		<choose>
+		  		<when test="lang == 'kh'">
+        			B.USER_NM_KH
+        		</when>
+			  	<otherwise>
+			  		B.USER_NM_EN
+			  	</otherwise>
+			  	</choose>
+        	        FROM CPES_USER B WHERE B.USER_SEQ = A.REG_USER_SEQ) AS REG_NM
+        	  , FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+        	  , A.MOD_USER_SEQ
+        	  , FN_GET_BASE_DATE_CHAR(A.MOD_DT, #{lang}) AS MOD_DT
+			  , A.USE_YN
+		 FROM   CPES_MENU A
+		WHERE MENU_CD = #{menuCd}
+	</select>
+	
+	<select id="selectMenuCd" resultType="String">
+		/** menu.selectMenuCd **/
+		SELECT CONCAT('MNU',LPAD(SUBSTR(MAX(MENU_CD),4,10) + 1,10,'0')) AS MENU_CD FROM CPES_MENU
+	</select>
+	
+	<select id="selectMenuProgramMapList" parameterType="MenuBean" resultType="MenuProgramMapBean">
+		/** menu.selectMenuProgramMapList **/
+		SELECT 
+				A.MENU_PROGRAM_MAP_SEQ
+			  , A.MENU_CD
+			  , A.PROGRAM_SEQ
+			  , A.PRI_PROGRAM_YN
+			  , A.REG_USER_SEQ
+			  , A.REG_DT
+			  	<choose>
+		  		<when test="lang == 'kh'">
+        			, B.PROGRAM_NM_KH
+        		</when>
+			  	<otherwise>
+			  		, B.PROGRAM_NM_EN
+			  	</otherwise>
+			  	</choose>
+			  	AS PROGRAM_NM
+		  FROM CPES_MENU_PROGRAM_MAP A
+	INNER JOIN CPES_PROGRAM B 
+		    ON A.PROGRAM_SEQ = B.PROGRAM_SEQ
+		 WHERE A.MENU_CD = #{menuCd}
+	</select>
+</mapper>

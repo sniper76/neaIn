@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setCounsel">
+	<insert id="insertCounsel" parameterType="CounselBean">
+		INSERT INTO CPES_COUNSEL (
+			COUNSEL_SEQ,
+			USER_SEQ,
+			COUNSEL_METHOD_DIV_CD,
+			COUNSEL_CATE_DIV_CD,
+			COUNSEL_TARGET_CD,
+			ISCO_CD,
+			QUST_TITLE,
+			QUST_CONTENT,
+			QUST_ETC_REQ,
+			HOPE_COUNSEL_DT,
+			QUST_REG_USER_SEQ,
+			QUST_REG_DT,
+			QUST_FILE_GRP_SEQ,
+			ANS_TITLE,
+			ANS_CONTENT,
+			ANS_FILE_GRP_SEQ,
+			ANS_REG_USER_SEQ,
+			ANS_REG_DT,
+			ANS_MOD_USER_SEQ,
+			ANS_MOD_DT,
+			COUNSEL_STS_CD,
+			JC_CD,
+			JC_USER_SEQ,
+			DEL_YN,
+			SECRET_YN,
+			LIKE_CNT,
+			VIEW_CNT
+		) VALUES(
+			#{counselSeq},
+			#{userSeq},
+			#{counselMethodDivCd},
+			#{counselCateDivCd},
+			#{counselTargetCd},
+			#{iscoCd},
+			#{qustTitle},
+			#{qustContent},
+			#{qustEtcReq},
+			#{hopeCounselDt},
+			#{qustRegUserSeq},
+			#{qustRegDt},
+			#{qustFileGrpSeq},
+			#{ansTitle},
+			#{ansContent},
+			#{ansFileGrpSeq},
+			#{ansRegUserSeq},
+			#{ansRegDt},
+			#{ansModUserSeq},
+			#{ansModDt},
+			#{counselStsCd},
+			#{jcCd},
+			#{jcUserSeq},
+			#{delYn},
+			#{secretYn},
+			#{likeCnt},
+			#{viewCnt}
+		)
+	</insert>
+
+	<update id="updateCounsel" parameterType="CounselBean">
+		UPDATE
+			CPES_COUNSEL
+		<set>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(counselStsCd)">COUNSEL_STS_CD = #{counselStsCd},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(counselDt)">COUNSEL_DT = STR_TO_DATE(#{counselDt}, '%d/%m/%Y'),</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(counselHour)">COUNSEL_HOUR = #{counselHour},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(counselMinute)">COUNSEL_MINUTE = #{counselMinute},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(counselAmpm)">COUNSEL_AMPM = #{counselAmpm},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(counselNtce)">COUNSEL_NTCE = #{counselNtce},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(ansContent)">ANS_CONTENT = #{ansContent},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(ansFileGrpSeq)">ANS_FILE_GRP_SEQ = #{ansFileGrpSeq},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isBlank(ansRegDt)">
+				ANS_REG_USER_SEQ = #{user.userSeq},
+				ANS_REG_DT = NOW(),
+			</if>
+			ANS_MOD_USER_SEQ = #{user.userSeq},
+			ANS_MOD_DT = NOW(),
+			JC_USER_SEQ = #{user.userSeq},
+		</set>
+		WHERE
+			COUNSEL_SEQ = #{counselSeq}
+	</update>
+
+	<update id="deleteCounsel" parameterType="CounselBean">
+		UPDATE
+			CPES_COUNSEL
+		<set>
+			DEL_YN = 'Y',
+			<if test="@org.apache.commons.lang.StringUtils@isBlank(ansRegDt)">
+				ANS_REG_USER_SEQ = #{user.userSeq},
+				ANS_REG_DT = NOW(),
+			</if>
+			ANS_MOD_USER_SEQ = #{user.userSeq},
+			ANS_MOD_DT = NOW(),
+		</set>
+		WHERE
+			COUNSEL_SEQ = #{counselSeq}
+	</update>
+</mapper>

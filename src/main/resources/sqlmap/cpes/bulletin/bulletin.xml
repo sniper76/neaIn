@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bulletin">
+	
+	<sql id="bulletinList">
+			SELECT A.BULLETIN_SEQ
+			     , A.BULLETIN_MNG_SEQ
+			     , A.FILE_GRP_SEQ
+			     , A.BULLETIN_CATE_SEQ
+			     , A.SORT
+			     , A.DEPTH
+			     , A.WRITE_DT
+			     , A.WRITER_NM
+			     , CASE WHEN #{lang} = 'kh' THEN A.TITLE_KH ELSE A.TITLE_EN END TITLE
+			     , CASE WHEN #{lang} = 'kh' THEN A.CONTENT_KH ELSE A.CONTENT_EN END CONTENT
+			     , A.TITLE_EN
+			     , A.CONTENT_EN
+			     , A.VIEW_CNT
+			     , A.COMMENT_CNT
+			     , A.DEL_YN
+			     , A.JC_CD
+			     , CASE WHEN #{lang} = 'kh' THEN B.USER_NM_KH ELSE B.USER_NM_EN END USER_NM
+			     , A.REG_USER_SEQ
+			     , FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+			     , A.MOD_USER_SEQ
+			     , FN_GET_BASE_DATE_CHAR(A.MOD_DT, #{lang}) AS MOD_DT
+			     , A.REG_DT AS REG_DATE
+			     , A.MOD_DT AS MOD_DATE
+				 , A.TITLE_KH
+				 , A.CONTENT_KH
+				 , A.VIEW_YN
+				 , A.AGREE_YN
+				 , A.LIKE_CNT
+				 , (SELECT COUNT(*) FROM CPES_ATTACH_FILES WHERE FILE_GRP_SEQ = A.FILE_GRP_SEQ) AS FILE_CNT
+				 , D.BULLETIN_TYPE_CD
+				 , A.NTC_YN
+				 , CASE WHEN A.NTC_YN = 'Y' THEN 1 ELSE 2 END SORT_YN
+				 , E.PROGRAM_ID
+			FROM 
+				CPES_BULLETIN A 
+			JOIN 
+				CPES_USER B
+			ON 
+				A.REG_USER_SEQ = B.USER_SEQ
+			JOIN 
+				CPES_BULLETIN_MNG D
+			ON 
+				A.BULLETIN_MNG_SEQ = D.BULLETIN_MNG_SEQ     
+			JOIN 
+				CPES_PROGRAM E
+			ON 
+				A.BULLETIN_MNG_SEQ = E.BULLETIN_MNG_SEQ
+	</sql>
+	
+	<sql id="whereBulletin">
+			A.DEL_YN = 'N'
+			AND A.BULLETIN_TYPE_CD = #{bulletinTypeCd}
+			
+			<if test="programId != null and programId != ''">
+				AND E.PROGRAM_ID = #{programId}
+			</if>			
+			
+            <!-- keyword search 1:title, 2:content, 3:reg user -->
+            <if test='keyword != null and keyword != ""'>
+	            <if test='keywordSel == "1"'> 
+					AND A.TITLE LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "2"'> 
+					AND A.CONTENT LIKE CONCAT('%',#{keyword},'%')
+				</if>
+				<if test='keywordSel == "3"'> 
+					AND A.USER_NM LIKE CONCAT('%',#{keyword},'%')
+				</if>
+			</if>
+			<!-- keyword search -->
+			
+			<if test="viewYn != null and viewYn != ''">
+				AND A.VIEW_YN = #{viewYn}
+			</if>
+			<if test="startDate != null and startDate != ''">
+			<![CDATA[
+			AND A.REG_DT	>= FN_GET_STR_TO_DATE(#{startDate}, 'S')
+			]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+			<![CDATA[			
+			AND A.REG_DT	<= FN_GET_STR_TO_DATE(#{endDate}, 'E')
+			]]>
+			</if>
+	</sql>
+	
+	<select id="selectBulletinBasicList" resultType="BulletinBean" parameterType="BulletinBean">
+        SELECT 
+			 A.*
+		FROM
+        	  (<include refid="bulletinList"/>		
+        	  	<where>
+		            <include refid="whereBulletin"/>
+				</where>
+         
+		) A
+		<choose>
+           <when test="orderColumn == 'REG_DT'">
+          	ORDER BY A.SORT_YN,A.REG_DATE ${orderColumnSort}
+          </when>
+          <otherwise>
+          	ORDER BY A.SORT_YN,${orderColumn} ${orderColumnSort}
+          </otherwise>
+        </choose>
+		
+        LIMIT ${start} , ${length}
+    </select>
+	
+	
+    
+    <select id="getUUID" resultType="java.lang.String" parameterType="BulletinBean">
+		select FN_GET_UUID_SEQ() AS uuid FROM DUAL
+	</select>
+    
+    <select id="selectBulletinBasicTotalCount" resultType="java.lang.Integer" parameterType="BulletinBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM 
+			(<include refid="bulletinList"/>
+				<where>
+					<include refid="whereBulletin"/>		
+				</where>
+		) A
+		
+	</select>
+	
+	<select id="selectUserInfo" resultType="java.lang.String" parameterType="map">
+		SELECT CASE WHEN #{lang} = 'kh' THEN A.USER_NM_KH ELSE A.USER_NM_EN END USER_NM
+		FROM CPES_USER A
+		WHERE A.MNG_ID = #{id}
+	</select>
+	
+	<select id="selectBulletinConf" resultType="BulletinBean" parameterType="map">
+		SELECT IFNULL(A.LIKE_YN,'N') AS LIKE_YN
+		      ,IFNULL(A.FILE_YN,'N') AS FILE_YN
+		      ,IFNULL(A.FILE_QTY,0) AS FILE_QTY
+		      ,IFNULL(A.FILE_SIZE,0) AS FILE_SIZE
+		FROM CPES_BULLETIN_MNG A JOIN CPES_PROGRAM B
+		                           ON A.BULLETIN_MNG_SEQ = B.BULLETIN_MNG_SEQ
+		                          AND B.PROGRAM_ID = #{id}
+	</select>
+	
+	<select id="selectBulletinNoticeCnt" resultType="java.lang.Integer" parameterType="BulletinBean">
+		SELECT COUNT(*) AS notiCnt
+		FROM CPES_BULLETIN A
+		JOIN CPES_PROGRAM B
+		ON A.BULLETIN_MNG_SEQ = B.BULLETIN_MNG_SEQ 
+		WHERE A.DEL_YN = 'N'
+		  AND A.NTC_YN = 'Y'
+		  AND B.PROGRAM_ID = #{programId}
+	</select>
+	
+	<select id="selectBulletinDtl" resultType="BulletinBean" parameterType="BulletinBean">
+        SELECT 	   A.BULLETIN_SEQ
+			     , A.BULLETIN_MNG_SEQ
+			     , A.FILE_GRP_SEQ
+			     , A.BULLETIN_CATE_SEQ
+			     , A.SORT
+			     , A.DEPTH
+			     , FN_GET_BASE_DATE_CHAR(A.WRITE_DT, #{lang}) AS WRITE_DT
+			     , A.WRITER_NM
+			     , A.TITLE_KH  
+			     , A.TITLE_EN 
+			     , A.CONTENT_KH  
+			     , A.CONTENT_EN 
+			     , IFNULL(A.VIEW_CNT,'0') VIEW_CNT
+			     , IFNULL(A.COMMENT_CNT,'0') COMMENT_CNT
+			     , A.DEL_YN
+			     , A.JC_CD
+			     , A.REG_USER_SEQ
+			     , FN_GET_BASE_DATE_CHAR(A.REG_DT, #{lang}) AS REG_DT
+			     , A.MOD_USER_SEQ
+			     , FN_GET_BASE_DATE_CHAR(A.MOD_DT, #{lang}) AS MOD_DT
+				 , IFNULL(A.VIEW_YN,'N') VIEW_YN
+				 , A.AGREE_YN
+				 , IFNULL(A.LIKE_CNT,'0') LIKE_CNT
+				 , (SELECT COUNT(*) FROM CPES_ATTACH_FILES WHERE FILE_GRP_SEQ = A.FILE_GRP_SEQ) AS FILE_CNT
+				 , B.BULLETIN_TYPE_CD
+				 , IFNULL(A.NTC_YN,'N') NTC_YN
+				 , C.PROGRAM_ID
+				 , D.BULLETIN_CATE_NM
+		FROM 
+			CPES_BULLETIN A 
+		JOIN 
+			CPES_BULLETIN_MNG B
+		ON 
+			A.BULLETIN_MNG_SEQ = B.BULLETIN_MNG_SEQ
+		JOIN 
+			CPES_PROGRAM C
+		ON 
+			A.BULLETIN_MNG_SEQ = C.BULLETIN_MNG_SEQ		
+	    LEFT OUTER JOIN
+	        CPES_BULLETIN_CATE D
+	    ON
+	        A.BULLETIN_CATE_SEQ = D.BULLETIN_CATE_SEQ
+		WHERE 
+			A.BULLETIN_SEQ = #{bulletinSeq}
+    </select>
+	
+	
+	<select id="selectBulletinCateList" resultType="BulletinBean" parameterType="BulletinBean">
+		SELECT 
+			A.BULLETIN_CATE_SEQ,
+			A.BULLETIN_CATE_NM
+		FROM 
+			CPES_BULLETIN_CATE A 
+		JOIN 
+			CPES_PROGRAM B
+		ON 
+			A.BULLETIN_MNG_SEQ = B.BULLETIN_MNG_SEQ			
+		WHERE 
+			B.PROGRAM_ID = #{programId}
+		ORDER BY SORT
+	</select>	
+</mapper>

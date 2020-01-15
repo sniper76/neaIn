@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="common">
+	
+	<select id="getCommCodeList" parameterType="ony.cmm.common.bean.CommonBean" resultType="ony.cmm.common.bean.CommonBean">
+		SELECT CCC.CODE_ID
+		, CCC.CODE
+		, CCC.CODE_NM
+		FROM cm_comm_code CCC
+		WHERE 1=1
+		AND CCC.CODE_ID = #{CODE_ID}
+	</select>
+	
+	<select id="getBatchConn" resultType="int">
+		SELECT COUNT(1) FROM DUAL
+	</select>
+	
+	<!-- insert conn log after success Login -->
+	<insert id="insertLoginSuccessLog" parameterType="SysConnLogBean">
+		<selectKey keyProperty="sysConnLog" resultType="int" order="BEFORE">
+			SELECT IFNULL(MAX(SYS_CONN_LOG) + 1,1) FROM CPES_SYS_CONN_LOG
+		</selectKey>
+		INSERT INTO CPES_SYS_CONN_LOG
+		(
+			  SYS_CONN_LOG
+			, USER_IP
+			, URL
+			, LOGIN_DT
+			, PROGRAM_SEQ
+			, REG_USER_SEQ
+			, REG_DT
+			, USER_SEQ
+			, SESSION_ID
+			, RANGE_CD
+		) VALUES
+		(
+			#{sysConnLog}
+		  , #{userIp}
+		  , #{url}
+		  , now()
+		  , (SELECT PROGRAM_SEQ FROM CPES_PROGRAM WHERE PROGRAM_URL LIKE CONCAT('%',#{url},'%')	LIMIT 1)
+		  , #{userSeq}
+		  , now()
+		  , #{userSeq}
+		  , #{sessionId}
+		  , #{rangeCd}
+		)
+	</insert>
+	
+	<!-- insert conn log All -->
+	<insert id="insertPageConnLog" parameterType="SysConnLogBean">
+		<selectKey keyProperty="sysConnLog" resultType="int" order="BEFORE">
+			SELECT IFNULL(MAX(SYS_PAGE_CONN_LOG_SEQ) + 1,1) FROM CPES_SYS_PAGE_CONN_LOG
+		</selectKey>
+		INSERT INTO CPES_SYS_PAGE_CONN_LOG
+		(
+			  SYS_PAGE_CONN_LOG_SEQ
+			, PROGRAM_SEQ
+			, PROGRAM_URL
+			, CONN_BGN_DT
+			, CONN_END_DT
+			, USER_SEQ
+			, PROGRAM_NM_KH
+			, PROGRAM_NM_EN
+			, RANGE_CD
+			, SESSION_ID
+		) VALUES
+		(
+			#{sysConnLog}
+		  , (SELECT PROGRAM_SEQ FROM CPES_PROGRAM WHERE PROGRAM_URL LIKE CONCAT('%',#{url},'%')	LIMIT 1)
+		  , #{url}
+		  , now()
+		  , null
+		  , #{userSeq}
+		  , (SELECT PROGRAM_NM_KH FROM CPES_PROGRAM WHERE PROGRAM_URL LIKE CONCAT('%',#{url},'%')	LIMIT 1)
+		  , (SELECT PROGRAM_NM_EN FROM CPES_PROGRAM WHERE PROGRAM_URL LIKE CONCAT('%',#{url},'%')	LIMIT 1)
+		  , #{rangeCd}
+		  , #{sessionId}
+		)
+	</insert>
+	
+	<select id="selectProgramSeqSameUrl" resultType="SysConnLogBean">
+		SELECT 
+			PROGRAM_SEQ 
+		FROM CPES_PROGRAM 
+		WHERE PROGRAM_URL LIKE CONCAT('%',#{url},'%')	
+		LIMIT 1
+	</select>
+	
+	<update id="updateSysConnLog" parameterType="SysConnLogBean">
+		UPDATE CPES_SYS_CONN_LOG
+		   SET LOGOUT_DT = now()
+		 WHERE SESSION_ID = #{sessionId}
+	</update>
+</mapper>

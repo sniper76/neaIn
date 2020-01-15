@@ -1,0 +1,114 @@
+<!DOCTYPE tiles-definitions PUBLIC
+  "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+  "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+ 
+<tiles-definitions>
+ 
+ 	<!-- index layer -->
+    <definition name="baseIndex" template="/WEB-INF/jsp/tiles/templateIndex.jsp" preparer="ony.framework.util.MenuPreparer">
+    	<put-attribute name="top" value="/WEB-INF/jsp/tiles/top.jsp" />
+        <put-attribute name="footer" value="/WEB-INF/jsp/tiles/footer.jsp" />
+    </definition>
+ 
+    <definition name="*.index" extends="baseIndex">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}.jsp" />
+    </definition>
+ 
+     <definition name="*/*.index" extends="baseIndex">
+         <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}.jsp" />
+     </definition>
+    
+    <definition name="*/*/*.index" extends="baseIndex">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}/{3}.jsp" />
+    </definition>
+    
+    <!-- base layer -->
+    <definition name="base" template="/WEB-INF/jsp/tiles/template.jsp" preparer="ony.framework.util.MenuPreparer">
+    	<put-attribute name="header" value="/WEB-INF/jsp/tiles/header.jsp" />
+    	<put-attribute name="top" value="/WEB-INF/jsp/tiles/top.jsp" />
+        <put-attribute name="left"   value="/WEB-INF/jsp/tiles/left.jsp" />
+        <put-attribute name="footer" value="/WEB-INF/jsp/tiles/footer.jsp" />
+    </definition>
+ 
+    <definition name="*.all" extends="base">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}.jsp" />
+    </definition>
+ 
+     <definition name="*/*.all" extends="base">
+         <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}.jsp" />
+     </definition>
+    
+    <definition name="*/*/*.all" extends="base">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}/{3}.jsp" />
+    </definition>
+    
+    <!-- need one layer -->
+    <!--  include Header and not login -->
+    <definition name="one" template="/WEB-INF/jsp/tiles/templateOne.jsp">
+    	<put-attribute name="header" value="/WEB-INF/jsp/tiles/header.jsp" />
+    </definition>
+    
+    <definition name="*.one" extends="one">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}.jsp" />
+    </definition>
+ 
+     <definition name="*/*.one" extends="one">
+         <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}.jsp" />
+     </definition>
+    
+    <definition name="*/*/*.one" extends="one">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}/{3}.jsp" />
+    </definition>
+    
+    <!-- empty layer -->
+    <definition name="baseEmpty" template="/WEB-INF/jsp/tiles/templateEmpty.jsp">
+    </definition>
+    
+    <definition name="*.empty" extends="baseEmpty">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}.jsp" />
+    </definition>
+ 
+     <definition name="*/*.empty" extends="baseEmpty">
+         <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}.jsp" />
+     </definition>
+    
+    <definition name="*/*/*.empty" extends="baseEmpty">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}/{3}.jsp" />
+    </definition>        
+    
+    <!-- popup layer -->
+    <definition name="popup" template="/WEB-INF/jsp/tiles/templatePopup.jsp">
+    </definition>
+    
+    <definition name="*.popup" extends="popup">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}.jsp" />
+    </definition>
+ 
+     <definition name="*/*.popup" extends="popup">
+         <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}.jsp" />
+     </definition>
+    
+    <definition name="*/*/*.popup" extends="popup">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}/{3}.jsp" />
+    </definition>  
+    
+    <!-- Just Login layer -->
+    
+    <definition name="login" template="/WEB-INF/jsp/tiles/templateLogin.jsp">
+    	<put-attribute name="header" value="/WEB-INF/jsp/tiles/loginHeader.jsp" />
+        <put-attribute name="footer" value="/WEB-INF/jsp/tiles/loginFooter.jsp" />
+    </definition>
+    
+    <definition name="*.login" extends="login">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}.jsp" />
+    </definition>
+ 
+     <definition name="*/*.login" extends="login">
+         <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}.jsp" />
+     </definition>
+    
+    <definition name="*/*/*.login" extends="login">
+        <put-attribute name="body" value="/WEB-INF/jsp/{1}/{2}/{3}.jsp" />
+    </definition>  
+    
+</tiles-definitions>

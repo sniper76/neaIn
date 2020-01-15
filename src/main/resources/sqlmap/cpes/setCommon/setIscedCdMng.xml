@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setIscedCdMng">
+	
+	<insert id="insertIscedCdMng" parameterType="IscedCdMngBean">
+		/** setIscoCdMng.insertIscedCdMng **/	
+		INSERT INTO CPES_ISCED_CD
+		(
+			 ISCED_ID
+			,ISCED_CD
+			,EN_NM
+			,KH_NM
+			,CD_LVL
+			,REG_USER_SEQ
+			,REG_DT
+			,MOD_USER_SEQ
+			,MOD_DT
+			,USE_YN
+			,LVL
+		)VALUES(
+			 #{iscedId}
+			,#{iscedCd}
+			,#{enNm}
+			,#{khNm}
+			<if test='depth == "1"'>
+			,#{iscedId}
+			</if>
+			<if test='depth == "2"'>
+			,CONCAT(#{oneDepth},'=>',#{iscedId})
+			</if>
+			<if test='depth == "3"'>
+			,CONCAT(#{oneDepth},'=>',#{twoDepth},'=>',#{iscedId})
+			</if>
+			<if test='depth == "4"'>
+			,CONCAT(#{oneDepth},'=>',#{twoDepth},'=>',#{threeDepth},'=>',#{iscedId})
+			</if>
+			,#{user.userSeq}
+			,NOW()
+			,#{user.userSeq}
+			,NOW()
+			,#{useYn}
+			,#{depth}
+		)
+	</insert>
+	
+	<insert id="updateIscedCdMng" parameterType="IscedCdMngBean">
+		UPDATE CPES_ISCED_CD SET 
+			    EN_NM = #{enNm}
+			  , KH_NM = #{khNm}
+			  <if test='depth == "1"'>
+				,CD_LVL = #{iscedId}
+			  </if>
+			  <if test='depth == "2"'>
+				,CD_LVL = CONCAT(#{oneDepth},'=>',#{iscedId})
+			  </if>
+			  <if test='depth == "3"'>
+				,CD_LVL = CONCAT(#{oneDepth},'=>',#{twoDepth},'=>',#{iscedId})
+			  </if>
+			  <if test='depth == "4"'>
+				,CD_LVL = CONCAT(#{oneDepth},'=>',#{twoDepth},'=>',#{threeDepth},'=>',#{iscedId})
+			  </if>
+			  , MOD_USER_SEQ = #{user.userSeq}
+			  , MOD_DT = NOW()
+			  , USE_YN = #{useYn}
+			  , LVL = #{depth}
+			WHERE ISCED_ID = #{iscedId}
+	</insert>
+	
+	
+	
+</mapper>

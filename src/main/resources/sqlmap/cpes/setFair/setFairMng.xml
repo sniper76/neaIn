@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setFairMng">
+
+	<update id="updateFairMng" parameterType="FairMngBean">
+		UPDATE
+			CPES_FAIR_MST
+		<set>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairNmKh)">FAIR_NM_KH = #{fairNmKh},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairNmEn)">FAIR_NM_EN = #{fairNmEn},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairDtlExplnKh)">FAIR_DTL_EXPLN_KH = #{fairDtlExplnKh},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairDtlExplnEn)">FAIR_DTL_EXPLN_EN = #{fairDtlExplnEn},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairStsCd)">FAIR_STS_CD = #{fairStsCd},</if>
+			
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrCd)">ADDR_CD = #{addrCd},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrFullCd)">ADDR_FULL_CD = #{addrFullCd},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrFullNm)">ADDR_FULL_NM = #{addrFullNm},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrDtl)">ADDR_DTL = #{addrDtl},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrDtl2)">ADDR_DTL2 = #{addrDtl2},</if>
+			
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(googleMapLink)">GOOGLE_MAP_LINK = #{googleMapLink},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(thumbFileGrpSeq)">THUMB_FILE_GRP_SEQ = #{thumbFileGrpSeq},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairFileGrpSeq)">FAIR_FILE_GRP_SEQ = #{fairFileGrpSeq},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(boothFileGrpSeq)">BOOTH_FILE_GRP_SEQ = #{boothFileGrpSeq},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(supporterFileGrpSeq)">SUPPORTER_FILE_GRP_SEQ = #{supporterFileGrpSeq},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(sponsorFileGrpSeq)">SPONSOR_FILE_GRP_SEQ = #{sponsorFileGrpSeq},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairViewYn)">FAIR_VIEW_YN = #{fairViewYn},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairDivCd)">FAIR_DIV_CD = #{fairDivCd},</if>
+			
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(mstJcCd)">MST_JC_CD = #{mstJcCd},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">JC_CD = #{jcCd},</if>
+			
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairBgnDt)">FAIR_BGN_DT = STR_TO_DATE(#{fairBgnDt}, '%d/%m/%Y'),</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairBgnHour)">FAIR_BGN_HOUR = #{fairBgnHour},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairBgnMinute)">FAIR_BGN_MINUTE = #{fairBgnMinute},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairBgnAmpm)">FAIR_BGN_AMPM = #{fairBgnAmpm},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairEndDt)">FAIR_END_DT = STR_TO_DATE(#{fairEndDt}, '%d/%m/%Y'),</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairEndHour)">FAIR_END_HOUR = #{fairEndHour},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairEndMinute)">FAIR_END_MINUTE = #{fairEndMinute},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairEndAmpm)">FAIR_END_AMPM = #{fairEndAmpm},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recurmtBgnDt)">RECURMT_BGN_DT = STR_TO_DATE(#{recurmtBgnDt}, '%d/%m/%Y'),</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recurmtBgnHour)">RECURMT_BGN_HOUR = #{recurmtBgnHour},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recurmtBgnMinute)">RECURMT_BGN_MINUTE = #{recurmtBgnMinute},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recurmtBgnAmpm)">RECURMT_BGN_AMPM = #{recurmtBgnAmpm},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recurmtEndDt)">RECURMT_END_DT = STR_TO_DATE(#{recurmtEndDt}, '%d/%m/%Y'),</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recurmtEndHour)">RECURMT_END_HOUR = #{recurmtEndHour},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recurmtEndMinute)">RECURMT_END_MINUTE = #{recurmtEndMinute},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(recurmtEndAmpm)">RECURMT_END_AMPM = #{recurmtEndAmpm},</if>
+			
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(tel1)">TEL1 = #{tel1},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(tel2)">TEL2 = #{tel2},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(email)">EMAIL = #{email},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(url)">URL = #{url},</if>			
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairHashtag)">FAIR_HASHTAG = #{fairHashtag},</if>
+			
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairCompnyViewYn)">FAIR_COMPNY_VIEW_YN = #{fairCompnyViewYn},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairVacancyViewYn)">FAIR_VACANCY_VIEW_YN = #{fairVacancyViewYn},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairInsttViewYn)">FAIR_INSTT_VIEW_YN = #{fairInsttViewYn},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairTrnngViewYn)">FAIR_TRNNG_VIEW_YN = #{fairTrnngViewYn},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(boothTel)">BOOTH_TEL = #{boothTel},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(boothEmail)">BOOTH_EMAIL = #{boothEmail},</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(boothFeeExpln)">BOOTH_FEE_EXPLN = #{boothFeeExpln},</if>
+
+			MOD_USER_SEQ = #{modUserSeq},
+			MOD_DT = NOW()
+		</set>
+		WHERE
+			FAIR_SEQ = #{fairSeq}
+	</update>
+
+	<insert id="insertFairMng" parameterType="FairMngBean">
+		INSERT INTO CPES_FAIR_MST (
+			FAIR_SEQ,
+			FAIR_NM_KH,
+			FAIR_NM_EN,
+			FAIR_DTL_EXPLN_KH,
+			FAIR_DTL_EXPLN_EN,
+			FAIR_STS_CD,
+			ADDR_CD,
+			ADDR_FULL_CD,
+			ADDR_FULL_NM,
+			ADDR_DTL,
+			ADDR_DTL2,
+			GOOGLE_MAP_LINK,
+			FAIR_LNGTD,
+			FAIR_LATTD,
+			THUMB_FILE_GRP_SEQ,
+			FAIR_FILE_GRP_SEQ,
+			BOOTH_FILE_GRP_SEQ,
+			SUPPORTER_FILE_GRP_SEQ,
+			SPONSOR_FILE_GRP_SEQ,
+			USE_YN,
+			FAIR_VIEW_YN,
+			FAIR_DIV_CD,
+			MST_JC_CD,
+			JC_CD,
+			FAIR_BGN_DT,
+			FAIR_BGN_HOUR,
+			FAIR_BGN_MINUTE,
+			FAIR_BGN_AMPM,
+			FAIR_END_DT,
+			FAIR_END_HOUR,
+			FAIR_END_MINUTE,
+			FAIR_END_AMPM,
+			RECURMT_BGN_DT,
+			RECURMT_BGN_HOUR,
+			RECURMT_BGN_MINUTE,
+			RECURMT_BGN_AMPM,
+			RECURMT_END_DT,
+			RECURMT_END_HOUR,
+			RECURMT_END_MINUTE,
+			RECURMT_END_AMPM,
+			TEL1,
+			TEL2,
+			EMAIL,
+			URL,
+			FAIR_HASHTAG,
+			FAIR_COMPNY_VIEW_YN,
+			FAIR_VACANCY_VIEW_YN,
+			FAIR_INSTT_VIEW_YN,
+			FAIR_TRNNG_VIEW_YN,
+			BOOTH_TEL,
+			BOOTH_EMAIL,
+			BOOTH_FEE_EXPLN,
+			DEL_YN,
+			REG_USER_SEQ,
+			REG_DT,
+			MOD_USER_SEQ,
+			MOD_DT,
+			USE_YN
+		) VALUES (
+			#{fairSeq},
+			#{fairNmKh},
+			#{fairNmEn},
+			#{fairDtlExplnKh},
+			#{fairDtlExplnEn},
+			#{fairStsCd},
+			#{addrCd},
+			#{addrFullCd},
+			#{addrFullNm},
+			#{addrDtl},
+			#{addrDtl2},
+			#{googleMapLink},
+			#{fairLngtd},
+			#{fairLattd},
+			#{thumbFileGrpSeq},
+			#{fairFileGrpSeq},
+			#{boothFileGrpSeq},
+			#{supporterFileGrpSeq},
+			#{sponsorFileGrpSeq},
+			#{useYn},
+			#{fairViewYn},
+			#{fairDivCd},
+			#{mstJcCd},
+			#{jcCd},
+			STR_TO_DATE(#{fairBgnDt}, '%d/%m/%Y'),
+			#{fairBgnHour},
+			#{fairBgnMinute},
+			#{fairBgnAmpm},
+			STR_TO_DATE(#{fairEndDt}, '%d/%m/%Y'),
+			#{fairEndHour},
+			#{fairEndMinute},
+			#{fairEndAmpm},
+			STR_TO_DATE(#{recurmtBgnDt}, '%d/%m/%Y'),
+			#{recurmtBgnHour},
+			#{recurmtBgnMinute},
+			#{recurmtBgnAmpm},
+			STR_TO_DATE(#{recurmtEndDt}, '%d/%m/%Y'),
+			#{recurmtEndHour},
+			#{recurmtEndMinute},
+			#{recurmtEndAmpm},
+			#{tel1},
+			#{tel2},
+			#{email},
+			#{url},
+			#{fairHashtag},
+			#{fairCompnyViewYn},
+			#{fairVacancyViewYn},
+			#{fairInsttViewYn},
+			#{fairTrnngViewYn},
+			#{boothTel},
+			#{boothEmail},
+			#{boothFeeExpln},
+			#{delYn},
+			#{regUserSeq},
+			NOW(),
+			#{modUserSeq},
+			NOW(),
+			'Y'
+		)
+	</insert>
+
+	
+	<update id="deleteFairMng" parameterType="FairMngBean">
+		UPDATE
+			CPES_FAIR_MST
+		<set>
+			DEL_YN = 'Y',
+			MOD_USER_SEQ = #{modUserSeq},
+			MOD_DT = NOW()
+		</set>
+		WHERE
+			FAIR_SEQ = #{fairSeq}
+	</update>
+</mapper>

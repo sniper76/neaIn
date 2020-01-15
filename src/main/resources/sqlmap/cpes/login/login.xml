@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="login">
+	
+	
+	<resultMap type="ony.cmm.common.bean.CustomUserDetailsBean" id="userMap">
+		<result property="id" 				column="id" 				javaType="String" />
+		<result property="password" 		column="password" 			javaType="String" />
+		<result property="username" 		column="username" 			javaType="String" />
+		<result property="authority" 		column="authority" 			javaType="String" />
+		<result property="mngId" 			column="mngId" 				javaType="String" />
+		<result property="pwdChgYn" 		column="pwdChgYn" 			javaType="String" />
+		<result property="pwdFailCnt" 		column="pwdFailCnt" 		javaType="int" />
+		<result property="accntLockStsCd" 	column="accntLockStsCd" 	javaType="String" />
+	</resultMap>
+	
+	<!-- user Login -->
+	<select id="selectUserById" resultMap="userMap" parameterType="String">
+        <![CDATA[
+        	/*login.selectUserById*/
+            SELECT
+                USER_AUTH_CD AS authority
+                , USER_EMAIL as id
+                , USER_SEQ AS username
+                , USER_PWD AS password
+                , MNG_ID   AS mngId
+                , CASE 
+                	WHEN PWD_CREAT_DT >= DATE_ADD(now(), interval - 3 month) THEN 'Y'
+                  ELSE 'N'
+                  END AS pwdChgYn
+                , PWD_FAIL_CNT AS pwdFailCnt
+                , ACCNT_LOCK_STS_CD	as accntLockStsCd
+            FROM
+                CPES_USER
+           WHERE MNG_ID=#{mngId}
+             AND MNG_YN = 'Y'
+             AND USE_YN = 'Y'
+        ]]>
+    </select>
+    
+	<!-- get Auth by User -->
+	<select id="selectMenuAuthByUser" resultType="ony.cmm.common.bean.CustomUserMenuInfoBean" parameterType="String">
+        <![CDATA[
+        	/*login.selectMenuAuthByUser*/
+            SELECT
+                A.MENU_CD			AS menuCd
+              , A.UPPER_MENU_CD		AS upperMenuCd
+              , A.MENU_NM_KH		AS menuNmKh
+              , A.MENU_NM_EN		AS menuNmEn
+              , A.MENU_NM_KR		AS menuNmKr
+              , A.MENU_LVL			AS menuLvl
+              , A.MENU_SORT			AS menuSort
+              , A.MENU_GRP_CD		AS menuGrpCd
+            FROM
+                CPES_MENU A
+            
+        ]]>
+    </select>
+	
+	<select id="selectSearchIdPwd" resultType="UserBean" parameterType="UserBean">
+		/*login.selectSearchIdPwd*/
+		SELECT 
+			USER_EMAIL
+		  , USER_CELL
+		  , USER_PWD
+		  , USER_PWD_OLD
+		  , NEW_PWD_APPLY_YN
+		  , CASE 
+          		WHEN PWD_CREAT_DT >= DATE_ADD(now(), interval - 3 month) THEN 'Y'
+            	ELSE 'N'
+            END AS pwdChgYn
+		  <choose>
+		  <when test="lang == 'en'">
+		  , USER_NM_EN AS USER_NM
+		  </when>
+		  <otherwise>
+		  , USER_NM_KH AS USER_NM
+		  </otherwise>
+		  </choose>
+		  , MNG_ID
+		  , EMAIL_USER_AUTH_VALUE
+		  , USER_SEQ
+		  , JC_CD
+		  , USER_AUTH_CD
+		FROM CPES_USER
+	   WHERE MNG_YN = 'Y'
+         AND USE_YN = 'Y'
+		 <if test="userEmail != null and userEmail != ''">
+		 AND USER_EMAIL = #{userEmail}
+		 </if>
+		 <if test="userCell != null and userCell != ''">
+		 AND USER_CELL = #{userCell}
+		 </if>
+		 <if test="userNm != null and userNm != ''">
+		 	<choose>
+		  	<when test="lang == 'en'">
+		  	AND USER_NM_EN = #{userNm}
+			</when>
+			<otherwise>
+			AND USER_NM_KH = #{userNm}
+			</otherwise>
+			</choose>
+		 </if>
+		 <if test="mngId != null and mngId != ''">
+		 AND MNG_ID = #{mngId}
+		 </if>
+		 <if test="userPwd != null and userPwd != ''">
+		 AND USER_PWD = #{userPwd}
+		 </if>
+		 <if test="emailUserAuthValue != null and emailUserAuthValue != ''">
+		 AND EMAIL_USER_AUTH_VALUE = #{emailUserAuthValue}
+		 </if>
+		 <if test="userSeq != null and userSeq != ''">
+		 AND USER_SEQ = #{userSeq}
+		 </if>
+	</select>
+	
+</mapper>

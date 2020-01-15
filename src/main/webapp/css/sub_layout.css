@@ -1,0 +1,69 @@
+@charset "utf-8";
+
+.colgroup{position:relative;padding:0 30px 0 40px;z-index:10;}
+#contents{min-height:800px;padding:0 0 50px;font-weight:300;}
+
+/* sub head */
+.sub_head{position:relative;}
+.sub_head .sub_title{position:relative;height:60px;padding-top:45px;line-height:60px;vertical-align:middle;}
+.sub_head .sub_title h2{display:inline-block;font-size:25px;line-height:26px;color:#000;font-weight:400;}
+.sub_head .path{position:absolute;left:0;top:0;width:100%;height:45px;padding-left:10px;font-family:Arial;font-size:11px;line-height:12px;color:#535a65;border-bottom:1px solid #e1e4eb;box-sizing:border-box;overflow:hidden;}
+.sub_head .path:before{position:absolute;left:0;top:calc(50% - 2px);display:inline-block;width:5px;height:5px;content:'';border-radius:10px;background-color:#000;box-sizing:border-box;}
+.sub_head .path span,.sub_head .path strong{display:inline-block;padding:0 12px 0 8px;line-height:45px;}
+.sub_head .path span{background:url(../images/common/path_arrow.png) right center no-repeat;}
+.sub_head .path strong{color:#000;}
+
+/* tab menu */
+.sub_tab_menu{position:relative;margin-bottom:20px;}
+.sub_tab_menu:before{position:absolute;left:0;bottom:0;display:block;width:100%;height:1px;content:'';background-color:#c6cbd8;}
+.sub_tab_menu ul{position:relative;}
+.sub_tab_menu li{float:left;position:relative;height:35px;padding:0 20px;line-height:35px;text-align:center;border-right:1px solid #fff;background-color:#c6cbd8;}
+.sub_tab_menu li a{display:inline-block;font-size:14px;line-height:28px;color:#000;font-weight:300;}
+.sub_tab_menu li a:before{position:absolute;left:0;top:0;display:block;width:100%;height:100%;content:'';}
+.sub_tab_menu li.on,.sub_tab_menu li:hover{background-color:#2668b4;}
+.sub_tab_menu li.on a,.sub_tab_menu li:hover a{color:#fff;}
+
+/* heading */
+h3{margin-bottom:10px;font-size:20px;line-height:22px;color:#000;font-weight:400;}
+h4{margin-bottom:8px;font-size:18px;line-height:20px;color:#000;font-weight:400;}
+h5{margin-bottom:5px;font-size:16px;line-height:18px;color:#000;font-weight:400;}
+h6{margin-bottom:5px;color:#000;}
+
+/* search box */
+.search_box{margin-bottom:20px;}
+.search_box .top_box{position:relative;padding-bottom:10px;}
+/* .search_box .top_box h3{position:relative;padding-left:15px;}
+.search_box .top_box h3:before{position:absolute;left:0;top:10px;display:inline-block;width:6px;height:6px;content:'';background-color:#535a65;} */
+.search_box .top_box .btn_registration{position:absolute;right:0;top:0;display:inline-block;padding:0 15px 0 40px;font-size:13px;line-height:30px;color:#fff;border:none;border-radius:2px;background:url(../images/common/btn_registration.png) 15px center no-repeat #08b2aa;box-sizing:border-box;}
+.search_box .contents_box table{width:100%;font-weight:300;border-top:1px solid #000;}
+.search_box .contents_box th,.search_box .contents_box td{min-height:30px;line-height:30px;border:1px solid #e1e4eb;}
+.search_box .contents_box tr:first-child th,.search_box .contents_box tr:first-child td{border-top:none;}
+.search_box .contents_box tbody th{width:12%;text-align:left;background-color:#eaecf1;}
+.search_box .contents_box th{padding:7px 15px;color:#000;font-weight:300;}
+.search_box .contents_box td{padding:7px 10px;}
+.search_box .contents_box .detail_table{height:0;overflow:hidden;transition:height 400ms ease-in-out;}
+.search_box.active .contents_box .detail_table{height:inherit;margin-top:-1px;}
+.search_box .contents_box .detail_table table{margin-top:-1px;border-top:none;}
+.search_box .contents_box .detail_table tr:first-child th,.search_box .contents_box .detail_table tr:first-child td{border-top:1px solid #e1e4eb;}
+.search_box .contents_box .radio_box{display:inline-block;margin-right:20px;vertical-align:middle;}
+.search_box .contents_box .period_box .date_box{position:relative;display:inline-block;height:30px;padding-right:32px;margin-right:5px;line-height:0;vertical-align:middle;border:1px solid #c6cbd8;background-color:#e1e4eb;}
+.search_box .contents_box .period_box .date_box input[type="text"]{width:135px;height:30px;line-height:30px;border:none;color:#000;vertical-align:middle;background-color:transparent;}
+.search_box .contents_box .period_box .date_box button{position:absolute;right:0;top:0;display:inline-block;width:32px;height:100%;font-size:2px;line-height:2px;color:transparent;background:url(../images/common/btn_calender.png) center center no-repeat;overflow:hidden;}
+.search_box .contents_box .period_choose button{min-width:55px;height:32px;padding:0 10px;font-size:13px;line-height:32px;color:#000;font-weight:300;text-align:center;border-radius:2px;background-color:#e1e4eb;box-sizing:border-box;}
+.search_box .contents_box .period_choose button:hover,.search_box .contents_box .period_choose button.on{color:#fff;background-color:#535a65;}
+.search_box .contents_box .put_box{position:relative;padding:10px 0 40px;text-align:center;border-bottom:2px solid #e1e4eb;}
+.search_box .contents_box .put_box .open_detail{position:absolute;right:0;top:-1px;height:30px;padding:0 30px 0 20px;font-size:13px;line-height:26px;color:#000;font-weight:300;border:1px solid #e1e4eb;background:url(../images/common/open_detail.png) 95% center no-repeat;}
+.search_box .contents_box .put_box .open_detail.on{background-image:url(../images/common/open_detail_on.png);}
+.search_box .contents_box .put_box .btn_submit{display:inline-block;padding:0 20px;font-size:15px;line-height:40px;color:#fff;border:none;border-radius:3px;background-color:#08b2aa;box-sizing:border-box;}
+
+/* form style */
+input[type="search"],input[type="text"],select{height:30px;padding:0 5px;vertical-align:middle;border:1px solid #c6cbd8;box-sizing:border-box;}
+input[type="checkbox"],input[type="radio"]{margin:2px;vertical-align:middle;}
+textarea{min-height:30px;border:1px solid #c6cbd8;}
+label{vertical-align:middle;}
+
+.box{padding:20px;margin-bottom:20px;background-color:#f2f2f2;}
+.blt{position:relative;padding-left:10px;}
+.blt:before{position:absolute;left:0;top:8px;display:inline-block;width:3px;height:3px;content:'';background-color:#727272;}
+
+.blocker{z-index:100 !important;}

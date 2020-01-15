@@ -1,0 +1,12 @@
+﻿@charset "UTF-8";
+
+/* 19-9-12 LEE YOUNGHO */
+a:link{color:#555;text-decoration:none;}
+a:visited{color:#555;text-decoration:none;}
+a:hover{color:#222;text-decoration:underline;}
+a:active{color:#555;text-decoration:underline;}
+
+/* contents shortcut  */
+.accessibility {position:relative;overflow:hidden;z-index:3000;width:100%;}
+.accessibility a{display:block;overflow:hidden;z-index:3000;height:1px;width:1px;margin:0 -1px -1px 0;font-size:0;line-height:0;text-align:center;}
+.accessibility a:focus,#accessibility a:hover,#accessibility a:active{width:auto;height:20px;margin:0;padding:8px 0;background:#20262c;font-size:16px;font-weight:700;line-height:1em;color:#fff;}

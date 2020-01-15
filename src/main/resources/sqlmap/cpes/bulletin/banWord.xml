@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="banWord">
+	
+	<sql id="banWordList">
+			SELECT BANWORD_SEQ
+			     , BANWORD
+			     , REG_USER_SEQ
+			     , FN_GET_USER_NM_BY_USER_SEQ(REG_USER_SEQ, #{lang}) AS REG_USER_NM
+			     , FN_GET_BASE_DATE_CHAR(REG_DT, #{lang}) AS REG_DT
+			     , MOD_USER_SEQ
+			     , FN_GET_USER_NM_BY_USER_SEQ(MOD_USER_SEQ, #{lang}) AS MOD_USER_NM
+			     , FN_GET_BASE_DATE_CHAR(MOD_DT, #{lang}) AS MOD_DT
+			     , USE_YN
+			FROM CPES_BANWORD
+            
+	</sql>
+	
+	<sql id="whereBanword">
+            <!-- keyword search -->
+            <if test="@org.apache.commons.lang.StringUtils@isNotBlank(keyword)">
+					AND BANWORD LIKE CONCAT('%',#{keyword},'%')		
+			</if>
+			
+	</sql>
+	
+	
+	<select id="selectBanWordList" resultType="BanWordBean" parameterType="BanWordBean">
+        SELECT 
+			 A.*
+			,${recordsTotal} - ((${pageNo} - 1) * ${length}) - (@ROWNUM:=@ROWNUM+1) + 1 AS ROW_NUM
+		FROM
+        	  (<include refid="banWordList"/>		
+         <where>
+            <include refid="whereBanword"/>
+		</where>
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+			ORDER BY ${orderColumn} ${orderColumnSort}
+		</if>
+		) A,
+		(SELECT @ROWNUM := 1) B
+		
+        LIMIT ${start} , ${length}
+    </select>
+    
+    
+    <select id="selectBanWordTotalCount" resultType="java.lang.Integer" parameterType="BanWordBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM 
+			(<include refid="banWordList"/>
+		<where>
+			<include refid="whereBanword"/>		
+		</where>
+		) A
+	</select>
+	
+    
+    <select id="selectUUID" resultType="java.lang.String" parameterType="BanWordBean">
+		select FN_GET_UUID_SEQ() AS uuid FROM DUAL
+	</select>
+	
+	
+	
+</mapper>

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setBatch">
+	
+	<insert id="insertBatchTodayPopulCompny" parameterType="java.util.HashMap">
+	INSERT CPES_BATCH_TODAY_POPUL_COMPNY
+		(
+			TODAY_POPUL_COMPNY_SEQ
+		    , COMPNY_SEQ
+		    , COMPNY_BKMK_CNT
+		    , REG_USER_SEQ
+		    , REG_DT
+		    , RANKING
+		)
+		SELECT
+		  FN_GET_UUID_SEQ()
+		, M.TABLE_KEY_SEQ
+		, M.CNT
+		, 'SYSTEM'
+		, NOW()
+		, (@row_number:=@row_number + 1) AS num
+		FROM (
+		    SELECT
+		        B.TABLE_KEY_SEQ 
+		      , COUNT(*) AS CNT
+		    FROM CPES_BKMK B
+		    INNER JOIN CPES_COMPNY C
+		      ON B.TABLE_KEY_SEQ = C.COMPNY_SEQ
+		    WHERE B.CATE_CD = 'BCT0000000001'
+		    AND B.REG_DT &gt; (NOW() - INTERVAL 1 DAY) 
+		    GROUP BY B.TABLE_KEY_SEQ
+		    ) M
+		    , (SELECT @row_number:=0) AS t
+		    ORDER BY CNT DESC
+	</insert>
+	
+	<insert id="insertBatchWeekPopulCompny" parameterType="java.util.HashMap">
+	INSERT CPES_BATCH_TODAY_POPUL_COMPNY
+		(
+			TODAY_POPUL_COMPNY_SEQ
+		    , COMPNY_SEQ
+		    , COMPNY_BKMK_CNT
+		    , REG_USER_SEQ
+		    , REG_DT
+		    , RANKING
+		)
+		SELECT
+		  FN_GET_UUID_SEQ()
+		, M.TABLE_KEY_SEQ
+		, M.CNT
+		, 'SYSTEM'
+		, NOW()
+		, (@row_number:=@row_number + 1) AS num
+		FROM (
+		    SELECT
+		        B.TABLE_KEY_SEQ 
+		      , COUNT(*) AS CNT
+		    FROM CPES_BKMK B
+		    INNER JOIN CPES_COMPNY C
+		      ON B.TABLE_KEY_SEQ = C.COMPNY_SEQ
+		    WHERE B.CATE_CD = 'BCT0000000001'
+		    AND B.REG_DT &gt; (NOW() - INTERVAL 7 DAY) 
+		    GROUP BY B.TABLE_KEY_SEQ
+		    ) M
+		    , (SELECT @row_number:=0) AS t
+		    ORDER BY CNT DESC
+	</insert>
+	
+	<insert id="insertBatchMonthPopulCompny" parameterType="java.util.HashMap">
+	INSERT CPES_BATCH_TODAY_POPUL_COMPNY
+		(
+			TODAY_POPUL_COMPNY_SEQ
+		    , COMPNY_SEQ
+		    , COMPNY_BKMK_CNT
+		    , REG_USER_SEQ
+		    , REG_DT
+		    , RANKING
+		)
+		SELECT
+		  FN_GET_UUID_SEQ()
+		, M.TABLE_KEY_SEQ
+		, M.CNT
+		, 'SYSTEM'
+		, NOW()
+		, (@row_number:=@row_number + 1) AS num
+		FROM (
+		    SELECT
+		        B.TABLE_KEY_SEQ 
+		      , COUNT(*) AS CNT
+		    FROM CPES_BKMK B
+		    INNER JOIN CPES_COMPNY C
+		      ON B.TABLE_KEY_SEQ = C.COMPNY_SEQ
+		    WHERE B.CATE_CD = 'BCT0000000001'
+		    AND B.REG_DT &gt; (NOW() - INTERVAL 30 DAY) 
+		    GROUP BY B.TABLE_KEY_SEQ
+		    ) M
+		    , (SELECT @row_number:=0) AS t
+		    ORDER BY CNT DESC
+	</insert>
+	
+	<insert id="insertBatchMonthPopulVacancy" parameterType="java.util.HashMap">
+	INSERT CPES_BATCH_TODAY_POPUL_VACANCY
+		(
+			TODAY_POPUL_VACANCY_SEQ
+		    , VACANCY_SEQ
+		    , VACANCY_BKMK_CNT
+		    , REG_USER_SEQ
+		    , REG_DT
+		    , RANKING
+		)
+		SELECT
+		  FN_GET_UUID_SEQ()
+		, M.TABLE_KEY_SEQ
+		, M.CNT
+		, 'SYSTEM'
+		, NOW()
+		, (@row_number:=@row_number + 1) AS num
+		FROM (
+		    SELECT
+		        B.TABLE_KEY_SEQ 
+		      , COUNT(*) AS CNT
+		    FROM CPES_BKMK B
+		    INNER JOIN CPES_VACANCY V
+		      ON B.TABLE_KEY_SEQ = V.VACANCY_SEQ
+		    WHERE B.CATE_CD = 'BCT0000000003'
+		    AND B.REG_DT > (NOW() - INTERVAL 1 DAY) 
+		    GROUP BY B.TABLE_KEY_SEQ
+		    ) M
+		    , (SELECT @row_number:=0) AS t
+		    ORDER BY CNT DESC
+	</insert>
+	
+	<update id="updateBatchDormancyMember">
+		UPDATE CPES_USER SET 
+			ACCNT_LOCK_STS_CD = 'ALS0000000002'
+			, DORMANCY_YN = 'Y'
+			WHERE LAST_LOGIN_DT &lt; (NOW() - INTERVAL 90 DAY) 
+	
+	</update>
+
+	<update id="updateBatchNowVacancy">
+			UPDATE CPES_VACANCY
+				SET  VACANCY_STS_CD = 'VCS0000000001'
+				WHERE BGN_DT &lt;= date_format(NOW(), '%Y-%m-%d')
+				AND END_DT &gt; date_format(NOW(), '%Y-%m-%d') 
+				AND VACANCY_STS_CD != 'VCS0000000001' 
+	</update>
+		
+	<update id="updateBatchOverVacancy">
+			UPDATE CPES_VACANCY
+				SET  VACANCY_STS_CD = 'VCS0000000002'
+				, VACANCY_CLOSE_DT = NOW()
+				WHERE END_DT &lt; date_format(NOW(), '%Y-%m-%d') 
+				AND VACANCY_STS_CD != 'VCS0000000002' 
+	</update>
+	
+	<update id="updateBatchBeforeEduTrnng">
+			UPDATE CPES_EDU_TRNNG
+				SET  RECRUMT_STS_CD = 'RSC0000000001'
+				WHERE RECURMT_BGN_DT &lt; date_format(NOW(), '%Y-%m-%d')
+				AND  RECRUMT_STS_CD != 'RSC0000000001'
+	</update>
+	
+	<update id="updateBatchNowEduTrnng">
+			UPDATE CPES_EDU_TRNNG
+				SET  RECRUMT_STS_CD = 'RSC0000000002'
+				WHERE RECURMT_BGN_DT &lt;= date_format(NOW(), '%Y-%m-%d')
+				AND RECURMT_END_DT &gt; date_format(NOW(), '%Y-%m-%d') 
+	</update>
+	
+	
+	<update id="updateBatchOverEduTrnng">
+			UPDATE CPES_EDU_TRNNG
+				SET  RECRUMT_STS_CD = 'RSC0000000003'
+				WHERE RECURMT_END_DT &lt; date_format(NOW(), '%Y-%m-%d') 
+				AND RECRUMT_STS_CD != 'RSC0000000003' 
+	</update>
+	
+	<insert id="insertBatchLog" parameterType="BatchLogBean">
+		<selectKey keyProperty="batchLogSeq" resultType="string" order="BEFORE">
+			SELECT FN_GET_UUID_SEQ() FROM DUAL
+		</selectKey>
+		INSERT INTO CPES_BATCH_LOG
+		(
+			BATCH_LOG_SEQ
+			, BATCH_KIND_CD
+			, BATCH_KIND_NM
+			, BATCH_BGN_DT
+		) VALUES
+		(
+			  #{batchLogSeq}
+			, #{batchKindCd}
+			, FN_GET_COMMON_NM('BATCH_KIND_CD',#{batchKindCd},'en')
+			, NOW()
+		)
+	</insert>
+	
+	<update id="updateBatchLog" parameterType="BatchLogBean">
+		UPDATE CPES_BATCH_LOG
+		   SET BATCH_END_DT = NOW()
+		     , SUCCESS_YN = #{successYn}
+		 WHERE BATCH_LOG_SEQ = #{batchLogSeq}
+	</update>
+	
+</mapper>

@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="referralMatch">
+
+	
+	<select id="selectResumeInfo" resultType="ReferralMatchBean" parameterType="ReferralMatchBean">
+		SELECT A.RESUME_SEQ
+		      ,A.USER_SEQ
+		      ,FN_GET_USER_NM_BY_USER_SEQ(A.USER_SEQ,#{lang}) AS FULL_USER_NM
+		      ,C.EMAIL_ADDR AS EMAIL
+		      ,FN_GET_COMMON_NM('USER_AUTH_CD',B.USER_AUTH_CD, #{lang}) AS USER_AUTH_CD
+		      ,D.CELL
+		      ,TRUNCATE((TO_DAYS(NOW()) - TO_DAYS(DATE_FORMAT(A.BIRTH, '%Y-%m-%d'))) / 365, 0) AS AGE
+		      ,FN_GET_COMMON_NM('GENDER_CD',B.GENDER_CD, #{lang}) AS GENDER
+		      ,A.ADDR_FULL_NM AS ADDR_DTL
+		      ,A.RESUME_TITLE
+		      ,A.EXPCT_MIN_SALARY_AMT
+		      ,E.CD_LVL
+		      ,SUBSTRING_INDEX(SUBSTRING_INDEX(E.CD_LVL,'=>',-4),'=>',1) AS ONE_DEPTH
+		      ,(SELECT CASE WHEN #{lang} = 'kh'
+		                    THEN T3.KH_NM
+		                    ELSE T3.EN_NM
+		                    END AS NM
+		        FROM CPES_ISCO_CD T3 WHERE T3.ISCO_ID = SUBSTRING_INDEX(SUBSTRING_INDEX(E.CD_LVL,'=>',-4),'=>',1) ) AS ONE_DEPTH_NM
+		      ,SUBSTRING_INDEX(SUBSTRING_INDEX(E.CD_LVL,'=>',-3),'=>',1) AS TWO_DEPTH
+		      ,(SELECT CASE WHEN #{lang} = 'kh'
+		                    THEN T3.KH_NM
+		                    ELSE T3.EN_NM
+		                    END AS NM
+		        FROM CPES_ISCO_CD T3 WHERE T3.ISCO_ID = SUBSTRING_INDEX(SUBSTRING_INDEX(E.CD_LVL,'=>',-3),'=>',1) ) AS TWO_DEPTH_NM
+		      ,SUBSTRING_INDEX(SUBSTRING_INDEX(E.CD_LVL,'=>',-2),'=>',1) AS THREE_DEPTH
+		      ,(SELECT CASE WHEN #{lang} = 'kh'
+		                    THEN T3.KH_NM
+		                    ELSE T3.EN_NM
+		                    END AS NM
+		        FROM CPES_ISCO_CD T3 WHERE T3.ISCO_ID = SUBSTRING_INDEX(SUBSTRING_INDEX(E.CD_LVL,'=>',-2),'=>',1) ) AS THREE_DEPTH_NM
+		      ,SUBSTRING_INDEX(SUBSTRING_INDEX(E.CD_LVL,'=>',-1),'=>',1) AS FOUR_DEPTH
+		      ,(SELECT CASE WHEN #{lang} = 'kh'
+		                    THEN T3.KH_NM
+		                    ELSE T3.EN_NM
+		                    END AS NM
+		        FROM CPES_ISCO_CD T3 WHERE T3.ISCO_ID = SUBSTRING_INDEX(SUBSTRING_INDEX(E.CD_LVL,'=>',-1),'=>',1) ) AS FOUR_DEPTH_NM
+		      ,A.ADDR_FULL_CD
+		      ,SUBSTRING_INDEX(SUBSTRING_INDEX(A.ADDR_FULL_CD,',',-4),',',1) AS PROVINCE
+		      ,SUBSTRING_INDEX(SUBSTRING_INDEX(A.ADDR_FULL_CD,',',-3),',',1) AS DISTRICT
+		      ,(SELECT CASE WHEN #{lang} = 'kh'
+		                    THEN T4.NM_KH
+		                    ELSE T4.NM_EN
+		                    END
+		        FROM CPES_LOC_CD T4 WHERE T4.LVL_CD = SUBSTRING_INDEX(SUBSTRING_INDEX(A.ADDR_FULL_CD,',',-3),',',1)) AS DIST_NM
+		      ,FN_GET_EDU_CONVERSION(F.EDU_DEGREE_CD) AS EDU
+		FROM CPES_RESUME A JOIN CPES_USER B
+		                     ON A.USER_SEQ = B.USER_SEQ
+		                   LEFT OUTER JOIN CPES_RESUME_EMAIL C
+		                                ON A.RESUME_SEQ = C.RESUME_SEQ
+		                   LEFT OUTER JOIN CPES_RESUME_CELL D
+		                                ON A.RESUME_SEQ = D.RESUME_SEQ
+		                   LEFT OUTER JOIN (SELECT T.RESUME_SEQ,T2.CD_LVL
+		                                    FROM CPES_RESUME_ISCO T LEFT OUTER JOIN CPES_ISCO_CD T2
+		                                                              ON T.ISCO_CD = T2.ISCO_CD) E
+		                                ON A.RESUME_SEQ = E.RESUME_SEQ
+		                   LEFT OUTER JOIN CPES_RESUME_GENRL_EDU F
+		                                ON A.RESUME_SEQ = F.RESUME_SEQ
+	    WHERE A.RESUME_SEQ = #{resumeSeq}
+	</select>
+	
+	<select id="selectResumeSeq" resultType="ReferralMatchBean" parameterType="ReferralMatchBean">
+		SELECT A.RESUME_SEQ,COUNT(*) AS RESUME_SEQ_CNT
+		FROM CPES_RESUME A 
+		WHERE A.USER_SEQ = #{userSeq}
+		  AND A.PRI_RESUME_YN = 'Y'
+		GROUP BY A.RESUME_SEQ
+	</select>
+	
+	<select id="selectCmpnyInfo" resultType="ReferralMatchBean" parameterType="ReferralMatchBean">
+		SELECT B.COMPNY_SEQ
+		      ,A.VACANCY_SEQ
+		      ,FN_GET_COMPNY_NM(B.COMPNY_SEQ,#{lang}) AS COMPNY_NM
+		      ,B.MNGER_TEL
+		      ,B.MNGER_CELL
+		      ,B.MNGER_NM
+		      ,CONCAT(B.ADDR_FULL_NM,B.ADDR_DTL) AS ADDR_NM
+		      ,(SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(CD_LVL,'=>',-4),'=>',1) FROM CPES_ISCO_CD WHERE ISCO_CD = B.ISCO_CD) AS ONE_DEPTH
+		      ,(SELECT CASE WHEN #{lang} = 'kh'
+		                    THEN KH_NM
+		                    ELSE EN_NM
+		                    END AS NM
+		        FROM CPES_ISCO_CD WHERE ISCO_ID = (SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(CD_LVL,'=>',-4),'=>',1)  FROM CPES_ISCO_CD WHERE ISCO_CD = B.ISCO_CD)) AS ONE_DEPTH_NM
+		      ,(SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(CD_LVL,'=>',-3),'=>',1) FROM CPES_ISCO_CD WHERE ISCO_CD = B.ISCO_CD) AS TWO_DEPTH
+		      ,(SELECT CASE WHEN #{lang} = 'kh'
+		                    THEN KH_NM
+		                    ELSE EN_NM
+		                    END AS NM
+		        FROM CPES_ISCO_CD WHERE ISCO_ID = (SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(CD_LVL,'=>',-3),'=>',1)  FROM CPES_ISCO_CD WHERE ISCO_CD = B.ISCO_CD)) AS TWO_DEPTH_NM
+		      ,(SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(CD_LVL,'=>',-2),'=>',1) FROM CPES_ISCO_CD WHERE ISCO_CD = B.ISCO_CD) AS THREE_DEPTH
+		      ,(SELECT CASE WHEN #{lang} = 'kh'
+		                    THEN KH_NM
+		                    ELSE EN_NM
+		                    END AS NM
+		        FROM CPES_ISCO_CD WHERE ISCO_ID = (SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(CD_LVL,'=>',-2),'=>',1)  FROM CPES_ISCO_CD WHERE ISCO_CD = B.ISCO_CD)) AS THREE_DEPTH_NM
+		      ,(SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(CD_LVL,'=>',-1),'=>',1) FROM CPES_ISCO_CD WHERE ISCO_CD = B.ISCO_CD) AS FOUR_DEPTH
+		      ,(SELECT CASE WHEN #{lang} = 'kh'
+		                    THEN KH_NM
+		                    ELSE EN_NM
+		                    END AS NM
+		        FROM CPES_ISCO_CD WHERE ISCO_ID = (SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(CD_LVL,'=>',-1),'=>',1)  FROM CPES_ISCO_CD WHERE ISCO_CD = B.ISCO_CD)) AS FOUR_DEPTH_NM
+		      ,D.MAX_WAGE AS SALARY
+		      ,SUBSTRING_INDEX(SUBSTRING_INDEX(C.ADDR_FULL_CD,',',-4),',',1) AS PROVINCE
+		      ,SUBSTRING_INDEX(SUBSTRING_INDEX(C.ADDR_FULL_CD,',',-3),',',1) AS DISTRICT
+		      ,(SELECT CASE WHEN #{lang} = 'kh'
+		                    THEN T4.NM_KH
+		                    ELSE T4.NM_EN
+		                    END
+		        FROM CPES_LOC_CD T4 WHERE T4.LVL_CD = SUBSTRING_INDEX(SUBSTRING_INDEX(C.ADDR_FULL_CD,',',-3),',',1)) AS DIST_NM
+		      ,A.MIN_EDU_DEGREE_CD AS EDU
+		FROM CPES_VACANCY A JOIN CPES_COMPNY B
+		                     ON A.COMPNY_SEQ = B.COMPNY_SEQ
+		                   LEFT OUTER JOIN CPES_VACANCY_LOC C
+		                     ON A.VACANCY_SEQ = C.VACANCY_SEQ
+		                   LEFT OUTER JOIN CPES_VACANCY_WAGE D
+		                     ON A.VACANCY_SEQ = D.VACANCY_SEQ
+		WHERE A.VACANCY_SEQ = #{vacancySeq}
+		  AND A.JC_AGREE_YN = 'Y'
+		  AND A.VACANCY_STS_CD = 'VCS0000000001'
+	</select>
+	
+	<select id="selectIscoOneList" resultType="IscoBean" parameterType="ReferralMatchBean">
+	/** referralMatch.selectIscoOneList **/
+	
+		SELECT A.ISCO_ID
+		      , CASE WHEN #{lang} = 'kh'
+		             THEN A.KH_NM
+		             ELSE A.EN_NM
+		             END  AS CATE_NM
+		FROM CPES_ISCO_CD A
+		WHERE A.LVL = '1' 
+	</select>
+	
+	<select id="selectIscoTwoList" resultType="IscoBean" parameterType="IscoBean">
+	/** referralMatch.selectIscoTwoList **/
+	
+		SELECT A.ISCO_ID
+		      , CASE WHEN #{lang} = 'kh'
+		             THEN A.KH_NM
+		             ELSE A.EN_NM
+		             END  AS CATE_NM
+		FROM CPES_ISCO_CD A
+		WHERE A.LVL = '2' 
+		  AND SUBSTRING_INDEX(SUBSTRING_INDEX(A.CD_LVL,'=>',-3),'=>',1) = #{iscoId}
+	</select>
+	
+	<select id="selectIscoThreeList" resultType="IscoBean" parameterType="IscoBean">
+	/** referralMatch.selectIscoThreeList **/
+	
+		SELECT A.ISCO_ID
+		      , CASE WHEN #{lang} = 'kh'
+		             THEN A.KH_NM
+		             ELSE A.EN_NM
+		             END  AS CATE_NM
+		FROM CPES_ISCO_CD A
+		WHERE A.LVL = '3' 
+		  AND SUBSTRING_INDEX(SUBSTRING_INDEX(A.CD_LVL,'=>',-2),'=>',1) = #{iscoId}
+	</select>
+	
+	<select id="selectIscoFourList" resultType="IscoBean" parameterType="IscoBean">
+	/** referralMatch.selectIscoFourList **/
+	
+		SELECT A.ISCO_ID
+		      , CASE WHEN #{lang} = 'kh'
+		             THEN A.KH_NM
+		             ELSE A.EN_NM
+		             END  AS CATE_NM
+		FROM CPES_ISCO_CD A
+		WHERE A.LVL = '4' 
+		  AND SUBSTRING_INDEX(SUBSTRING_INDEX(A.CD_LVL,'=>',-2),'=>',1) = #{iscoId}
+	</select>
+	
+	<select id="selectProvincList" resultType="LocationBean" parameterType="ReferralMatchBean">
+	/** referralMatch.selectProvincList **/
+	
+		  SELECT B.LVL_CD
+		         ,CASE WHEN #{lang} = 'kh'
+		               THEN B.NM_KH
+		               ELSE B.NM_EN
+		               END AS NM
+		  FROM CPES_LOC_CD B
+		  WHERE B.LVL = '2'
+		    AND B.COUNTRY_ID = '1'
+	</select>
+	
+	<select id="selectDistrictList" resultType="LocationBean" parameterType="LocationBean">
+	/** referralMatch.selectDistrictList **/
+	
+		    SELECT A.LVL_CD
+		         ,CASE WHEN #{lang} = 'kh'
+		               THEN A.NM_KH
+		               ELSE A.NM_EN
+		               END AS NM
+		  FROM CPES_LOC_CD A
+		  WHERE A.LVL = '3'
+		    AND A.PROVINCE_ID = (SELECT B.PROVINCE_ID 
+		                         FROM CPES_LOC_CD B 
+		                         WHERE B.LVL = '3' 
+		                         AND A.LOC_SEQ = B.LOC_SEQ 
+		                         AND SUBSTRING(B.LVL_CD,1,3) = SUBSTRING(#{lvlCd},1,3))
+		    
+	</select>
+	
+	<select id="selectJobskReferralMatchList" resultType="ReferralMatchBean" parameterType="ReferralMatchBean">
+			/** referralMatch.selectJobskReferralMatchList **/
+			SELECT (@ROWNUM:=@ROWNUM+1) AS ROW_NUM, M.* FROM (
+				SELECT A.VACANCY_SEQ
+				      ,A.RESUME_SEQ
+				      ,A.ISCO_CD
+				      ,A.MIN_EDU_DEGREE_CD
+				      ,A.TOT_POINT
+				      ,A.OCCUP
+				      ,A.EDU
+				      ,A.LOC
+				      ,A.WAGE
+				      ,A.COMPNY_NM
+				      ,A.EMPLOY_FORM_CD
+				      ,A.VACANCY_TITLE
+				      ,A.MNGER_NM
+				      ,A.MNGER_CELL
+				      ,A.MNGER_EMAIL
+				      ,A.END_DT
+				      ,A.END_DATE
+				      ,A.JC_NM
+					  ,A.JC_CD
+				FROM(
+						
+						SELECT A.VACANCY_SEQ
+						      ,#{resumeSeq} AS RESUME_SEQ
+						      ,A.ISCO_CD
+						      ,A.MIN_EDU_DEGREE_CD
+						      ,FN_GET_MATCH_OCCU_NM(#{oneDepth},#{twoDepth},#{threeDepth},#{fourDepth},A.ISCO_CD) AS OCCUP
+						      ,(FN_GET_MATCH_OCCU_POINT(#{oneDepth},#{twoDepth},#{threeDepth},#{fourDepth},A.ISCO_CD)  + 
+						       FN_GET_MATCH_EDU_POINT(A.MIN_EDU_DEGREE_CD,#{minEduDegreeCd}) + 
+						       B.LOC_POINT +
+						       C.WAGE_POINT) AS TOT_POINT
+						      ,FN_GET_MATCH_EDU_NM(A.MIN_EDU_DEGREE_CD,#{minEduDegreeCd}) AS EDU
+						      ,B.LOC AS LOC
+						      ,C.WAGE
+						      ,CASE WHEN #{lang} = 'kh'
+						            THEN D.COMPNY_NM_KH
+						            ELSE D.COMPNY_NM_EN
+						            END AS COMPNY_NM
+						      ,FN_GET_COMMON_NM('EMPLOY_FORM_CD',A.EMPLOY_FORM_CD, #{lang}) AS EMPLOY_FORM_CD
+						      ,A.VACANCY_TITLE
+						      ,A.MNGER_NM
+						      ,A.MNGER_CELL
+						      ,A.MNGER_EMAIL
+						      ,FN_GET_BASE_DATE_CHAR(A.END_DT, #{lang}) AS END_DT
+						      ,A.END_DT AS END_DATE
+						      ,CASE WHEN #{lang} = 'kh'
+						            THEN E.JC_KH
+						            ELSE E.JC_EN
+						            END  AS JC_NM
+							  ,E.JC_CD
+						FROM CPES_VACANCY A LEFT OUTER JOIN (SELECT T2.VACANCY_SEQ,T2.LOC,MAX(T2.LOC_POINT) AS LOC_POINT
+															 FROM(
+																  SELECT T1.VACANCY_SEQ
+																        ,FN_GET_MATCH_LOC_NM(#{province},#{district},T1.ADDR_FULL_CD) AS LOC
+																        ,FN_GET_MATCH_LOC_POINT(#{province},#{district},T1.ADDR_FULL_CD) AS LOC_POINT
+																   FROM CPES_VACANCY_LOC T1, CPES_VACANCY T3
+																   WHERE T1.VACANCY_SEQ = T3.VACANCY_SEQ
+																     AND T3.JC_AGREE_YN = 'Y'
+																     AND T3.VACANCY_STS_CD = 'VCS0000000001'
+																     AND T3.USE_YN = 'Y'
+																     AND T3.DEL_YN = 'N'
+															  ) T2
+															  GROUP BY T2.VACANCY_SEQ
+															) B
+						                      ON A.VACANCY_SEQ = B.VACANCY_SEQ
+						                    LEFT OUTER JOIN (SELECT T6.VACANCY_SEQ,T6.WAGE,MAX(T6.WAGE_POINT) AS WAGE_POINT
+						                                     FROM(
+							                                     SELECT T4.VACANCY_SEQ
+							                                           ,FN_GET_MATCH_WAGE_NM(T4.MIN_WAGE,#{wage}) AS WAGE
+							                                           ,FN_GET_MATCH_WAGE_POINT(T4.MIN_WAGE,#{wage}) AS WAGE_POINT
+							                                     FROM CPES_VACANCY_WAGE T4, CPES_VACANCY T5
+							                                     WHERE T4.VACANCY_SEQ = T5.VACANCY_SEQ
+							                                       AND T5.JC_AGREE_YN = 'Y'
+																   AND T5.VACANCY_STS_CD = 'VCS0000000001'
+																   AND T5.USE_YN = 'Y'
+																   AND T5.DEL_YN = 'N'
+															    ) T6
+															    GROUP BY T6.VACANCY_SEQ
+						                                     ) C
+						                      ON A.VACANCY_SEQ = C.VACANCY_SEQ
+						                    LEFT OUTER JOIN CPES_COMPNY D
+						                      ON A.COMPNY_SEQ = D.COMPNY_SEQ
+						                    LEFT OUTER JOIN CPES_JOB_CENTER E
+						                      ON A.JC_CD = E.JC_CD
+						                     AND E.USE_YN = 'Y'
+						WHERE A.JC_AGREE_YN = 'Y'
+						  AND A.VACANCY_STS_CD = 'VCS0000000001'
+						  AND A.USE_YN = 'Y'
+					      AND A.DEL_YN = 'N'
+		
+				) A
+		ORDER BY A.TOT_POINT DESC
+		)M , (SELECT @ROWNUM := 0) B
+		
+        LIMIT ${start} , ${length}
+	</select>
+	
+	<select id="selectJobskReferralMatchTotalCount" resultType="int" parameterType="ReferralMatchBean">
+			/** referralMatch.selectJobskReferralMatchTotalCount **/
+			
+				SELECT COUNT(*) AS totalCount 
+				FROM(
+						SELECT A.VACANCY_SEQ
+						      ,#{resumeSeq} AS RESUME_SEQ
+						      ,A.ISCO_CD
+						      ,A.MIN_EDU_DEGREE_CD
+						      ,FN_GET_MATCH_OCCU_NM(#{oneDepth},#{twoDepth},#{threeDepth},#{fourDepth},A.ISCO_CD) AS OCCUP
+						      ,(FN_GET_MATCH_OCCU_POINT(#{oneDepth},#{twoDepth},#{threeDepth},#{fourDepth},A.ISCO_CD)  + 
+						       FN_GET_MATCH_EDU_POINT(A.MIN_EDU_DEGREE_CD,#{minEduDegreeCd}) + 
+						       B.LOC_POINT +
+						       C.WAGE_POINT) AS TOT_POINT
+						      ,FN_GET_MATCH_EDU_NM(A.MIN_EDU_DEGREE_CD,#{minEduDegreeCd}) AS EDU
+						      ,B.LOC AS LOC
+						      ,C.WAGE
+						      ,CASE WHEN #{lang} = 'kh'
+						            THEN D.COMPNY_NM_KH
+						            ELSE D.COMPNY_NM_EN
+						            END AS COMPNY_NM
+						      ,FN_GET_COMMON_NM('EMPLOY_FORM_CD',A.EMPLOY_FORM_CD, #{lang}) AS EMPLOY_FORM_CD
+						      ,A.VACANCY_TITLE
+						      ,A.MNGER_NM
+						      ,A.MNGER_CELL
+						      ,A.MNGER_EMAIL
+						      ,FN_GET_BASE_DATE_CHAR(A.END_DT, #{lang}) AS END_DT
+						      ,A.END_DT AS END_DATE
+						      ,CASE WHEN #{lang} = 'kh'
+						            THEN E.JC_KH
+						            ELSE E.JC_EN
+						            END  AS JC_NM
+							  ,E.JC_CD
+						FROM CPES_VACANCY A LEFT OUTER JOIN (SELECT T2.VACANCY_SEQ,T2.LOC,MAX(T2.LOC_POINT) AS LOC_POINT
+															 FROM(
+																  SELECT T1.VACANCY_SEQ
+																        ,FN_GET_MATCH_LOC_NM(#{province},#{district},T1.ADDR_FULL_CD) AS LOC
+																        ,FN_GET_MATCH_LOC_POINT(#{province},#{district},T1.ADDR_FULL_CD) AS LOC_POINT
+																   FROM CPES_VACANCY_LOC T1, CPES_VACANCY T3
+																   WHERE T1.VACANCY_SEQ = T3.VACANCY_SEQ
+																     AND T3.JC_AGREE_YN = 'Y'
+																     AND T3.VACANCY_STS_CD = 'VCS0000000001'
+																     AND T3.USE_YN = 'Y'
+																     AND T3.DEL_YN = 'N'
+															  ) T2
+															  GROUP BY T2.VACANCY_SEQ
+															) B
+						                      ON A.VACANCY_SEQ = B.VACANCY_SEQ
+						                    LEFT OUTER JOIN (SELECT T6.VACANCY_SEQ,T6.WAGE,MAX(T6.WAGE_POINT) AS WAGE_POINT
+						                                     FROM(
+							                                     SELECT T4.VACANCY_SEQ
+							                                           ,FN_GET_MATCH_WAGE_NM(T4.MIN_WAGE,#{wage}) AS WAGE
+							                                           ,FN_GET_MATCH_WAGE_POINT(T4.MIN_WAGE,#{wage}) AS WAGE_POINT
+							                                     FROM CPES_VACANCY_WAGE T4, CPES_VACANCY T5
+							                                     WHERE T4.VACANCY_SEQ = T5.VACANCY_SEQ
+							                                       AND T4.WAGE_UNIT_CD = 'WUC0000000001'
+							                                       AND T5.JC_AGREE_YN = 'Y'
+																   AND T5.VACANCY_STS_CD = 'VCS0000000001'
+																   AND T5.USE_YN = 'Y'
+																   AND T5.DEL_YN = 'N'
+															    ) T6
+															    GROUP BY T6.VACANCY_SEQ
+						                                     ) C
+						                      ON A.VACANCY_SEQ = C.VACANCY_SEQ
+						                    LEFT OUTER JOIN CPES_COMPNY D
+						                      ON A.COMPNY_SEQ = D.COMPNY_SEQ
+						                    LEFT OUTER JOIN CPES_JOB_CENTER E
+						                      ON A.JC_CD = E.JC_CD
+						                     AND E.USE_YN = 'Y'
+						WHERE A.JC_AGREE_YN = 'Y'
+						  AND A.VACANCY_STS_CD = 'VCS0000000001'
+						  AND A.USE_YN = 'Y'
+					      AND A.DEL_YN = 'N'
+				) A
+	</select>
+	
+	<select id="selectVacancyReferralMatchList" resultType="ReferralMatchBean" parameterType="ReferralMatchBean">
+		/** referralMatch.selectVacancyReferralMatchList **/
+	SELECT (@ROWNUM:=@ROWNUM+1) AS ROW_NUM, M.* FROM (
+		SELECT A.RESUME_SEQ
+		      ,A.VACANCY_SEQ
+		      ,A.USER_NM
+		      ,A.GENDER
+		      ,A.AGE
+		      ,A.CELL
+		      ,A.EMAIL
+		      ,A.RESUME_TITLE
+		      ,A.TOT_POINT
+		      ,A.OCCUP
+		      ,A.EDU
+		      ,A.LOC
+		      ,A.WAGE
+		      ,(@ROWNUM:=@ROWNUM+1) AS ROW_NUM
+		FROM(
+				
+					SELECT A.RESUME_SEQ
+					      ,A.VACANCY_SEQ
+					      ,A.USER_NM
+					      ,A.GENDER
+					      ,A.AGE
+					      ,A.CELL
+					      ,A.EMAIL
+					      ,A.RESUME_TITLE
+					      ,A.TOT_POINT
+					      ,A.OCCUP
+					      ,A.EDU
+					      ,A.LOC
+					      ,A.WAGE
+					FROM(
+							SELECT A.RESUME_SEQ
+							      ,#{vacancySeq} AS VACANCY_SEQ
+							      ,FN_GET_USER_NM_BY_USER_SEQ(A.USER_SEQ,#{lang}) AS USER_NM
+							      ,FN_GET_COMMON_NM('GENDER_CD',B.GENDER_CD, #{lang}) AS GENDER
+							      ,FN_GET_USER_AGE(A.BIRTH) AS AGE
+							      ,B.USER_CELL AS CELL
+							      ,B.USER_EMAIL AS EMAIL
+							      ,A.RESUME_TITLE
+							      ,D.OCCUP
+							      ,(D.OCCUP_POINT + C.EDU_POINT + E.LOC_POINT +
+							       FN_GET_MATCH_WAGE_POINT(#{wage},A.EXPCT_MIN_SALARY_AMT)) AS TOT_POINT
+							      ,C.EDU
+							      ,E.LOC
+							      ,FN_GET_MATCH_WAGE_NM(#{wage},A.EXPCT_MIN_SALARY_AMT) AS WAGE
+							FROM CPES_RESUME A JOIN CPES_USER B
+							                     ON A.USER_SEQ = B.USER_SEQ
+							                   LEFT OUTER JOIN (SELECT T6.RESUME_SEQ,T6.EDU,MAX(T6.EDU_POINT) AS EDU_POINT
+							                                    FROM(
+									                                    SELECT T4.RESUME_SEQ
+									                                          ,FN_GET_MATCH_EDU_NM(#{minEduDegreeCd},T4.EDU_DEGREE_CD) AS EDU
+									                                          ,FN_GET_MATCH_EDU_POINT(#{minEduDegreeCd},T4.EDU_DEGREE_CD) AS EDU_POINT
+									                                    FROM CPES_RESUME_GENRL_EDU T4 JOIN CPES_RESUME T5
+									                                    WHERE T4.RESUME_SEQ = T5.RESUME_SEQ
+									                                      AND T5.USE_YN = 'Y'
+										                                  AND T5.PRI_RESUME_YN = 'Y'
+																	      AND T5.RESUME_STS_CD = 'RSS0000000002'
+																		  AND T5.JC_VERITY_USER_SEQ IS NOT NULL
+																	  ) T6
+																  GROUP BY T6.RESUME_SEQ
+							                                    ) C
+							                     ON A.RESUME_SEQ = C.RESUME_SEQ
+							                   LEFT OUTER JOIN (SELECT T9.RESUME_SEQ,T9.OCCUP,MAX(T9.OCCUP_POINT) AS OCCUP_POINT
+							                                    FROM(
+								                                    SELECT T7.RESUME_SEQ
+								                                          ,FN_GET_MATCH_OCCU_NM(#{oneDepth},#{twoDepth},#{threeDepth},#{fourDepth},T7.ISCO_CD) AS OCCUP
+								                                          ,FN_GET_MATCH_OCCU_POINT(#{oneDepth},#{twoDepth},#{threeDepth},#{fourDepth},T7.ISCO_CD) AS OCCUP_POINT
+								                                    FROM CPES_RESUME_ISCO T7 JOIN CPES_RESUME T8
+								                                    WHERE T7.RESUME_SEQ = T8.RESUME_SEQ
+								                                      AND T8.USE_YN = 'Y'
+									                                  AND T8.PRI_RESUME_YN = 'Y'
+																      AND T8.RESUME_STS_CD = 'RSS0000000002'
+																	  AND T8.JC_VERITY_USER_SEQ IS NOT NULL
+																  ) T9
+																  GROUP BY T9.RESUME_SEQ
+							                                   ) D
+							                     ON A.RESUME_SEQ = D.RESUME_SEQ
+							                   LEFT OUTER JOIN (SELECT T2.RESUME_SEQ, T2.LOC, MAX(T2.LOC_POINT) AS LOC_POINT
+							                                    FROM(
+								                                     SELECT T1.RESUME_SEQ,FN_GET_MATCH_LOC_NM(#{province},#{district},T1.ADDR_FULL_CD) AS LOC
+								                                           ,FN_GET_MATCH_LOC_POINT(#{province},#{district},T1.ADDR_FULL_CD) AS LOC_POINT
+								                                     FROM CPES_RESUME_HOPE_WORK_LOC T1 JOIN CPES_RESUME T3
+								                                     WHERE T1.RESUME_SEQ = T3.RESUME_SEQ
+								                                       AND T3.USE_YN = 'Y'
+								                                       AND T3.PRI_RESUME_YN = 'Y'
+																	   AND T3.RESUME_STS_CD = 'RSS0000000002'
+																	   AND T3.JC_VERITY_USER_SEQ IS NOT NULL
+								                                ) T2
+							                                    GROUP BY T2.RESUME_SEQ) E
+                                                 ON A.RESUME_SEQ = E.RESUME_SEQ
+							WHERE A.USE_YN = 'Y'
+							  AND A.PRI_RESUME_YN = 'Y'
+							  AND A.RESUME_STS_CD = 'RSS0000000002'
+							  AND A.JC_VERITY_USER_SEQ IS NOT NULL
+					  )A
+			 
+			  
+		  )A
+		  ORDER BY A.TOT_POINT DESC
+		  LIMIT ${start} , ${length}
+		  ) M,(SELECT @ROWNUM := 0) B
+	</select>
+	
+	<select id="selectVacancyReferralMatchTotalCount" resultType="int" parameterType="ReferralMatchBean">
+		/** referralMatch.selectVacancyReferralMatchTotalCount **/
+		SELECT COUNT(*) AS totalCount 
+				FROM(
+						SELECT A.RESUME_SEQ
+							      ,#{vacancySeq} AS VACANCY_SEQ
+							      ,FN_GET_USER_NM_BY_USER_SEQ(A.USER_SEQ,#{lang}) AS USER_NM
+							      ,FN_GET_COMMON_NM('GENDER_CD',B.GENDER_CD, #{lang}) AS GENDER
+							      ,FN_GET_USER_AGE(A.BIRTH) AS AGE
+							      ,B.USER_CELL AS CELL
+							      ,B.USER_EMAIL AS EMAIL
+							      ,A.RESUME_TITLE
+							      ,D.OCCUP
+							      ,(D.OCCUP_POINT + C.EDU_POINT + E.LOC_POINT +
+							       FN_GET_MATCH_WAGE_POINT(#{wage},A.EXPCT_MIN_SALARY_AMT)) AS TOT_POINT
+							      ,C.EDU
+							      ,E.LOC
+							      ,FN_GET_MATCH_WAGE_NM(#{wage},A.EXPCT_MIN_SALARY_AMT) AS WAGE
+							FROM CPES_RESUME A JOIN CPES_USER B
+							                     ON A.USER_SEQ = B.USER_SEQ
+							                   LEFT OUTER JOIN (SELECT T6.RESUME_SEQ,T6.EDU,MAX(T6.EDU_POINT) AS EDU_POINT
+							                                    FROM(
+									                                    SELECT T4.RESUME_SEQ
+									                                          ,FN_GET_MATCH_EDU_NM(#{minEduDegreeCd},T4.EDU_DEGREE_CD) AS EDU
+									                                          ,FN_GET_MATCH_EDU_POINT(#{minEduDegreeCd},T4.EDU_DEGREE_CD) AS EDU_POINT
+									                                    FROM CPES_RESUME_GENRL_EDU T4 JOIN CPES_RESUME T5
+									                                    WHERE T4.RESUME_SEQ = T5.RESUME_SEQ
+									                                      AND T5.USE_YN = 'Y'
+										                                  AND T5.PRI_RESUME_YN = 'Y'
+																	      AND T5.RESUME_STS_CD = 'RSS0000000002'
+																		  AND T5.JC_VERITY_USER_SEQ IS NOT NULL
+																	  ) T6
+																  GROUP BY T6.RESUME_SEQ
+							                                    ) C
+							                     ON A.RESUME_SEQ = C.RESUME_SEQ
+							                   LEFT OUTER JOIN (SELECT T9.RESUME_SEQ,T9.OCCUP,MAX(T9.OCCUP_POINT) AS OCCUP_POINT
+							                                    FROM(
+								                                    SELECT T7.RESUME_SEQ
+								                                          ,FN_GET_MATCH_OCCU_NM(#{oneDepth},#{twoDepth},#{threeDepth},#{fourDepth},T7.ISCO_CD) AS OCCUP
+								                                          ,FN_GET_MATCH_OCCU_POINT(#{oneDepth},#{twoDepth},#{threeDepth},#{fourDepth},T7.ISCO_CD) AS OCCUP_POINT
+								                                    FROM CPES_RESUME_ISCO T7 JOIN CPES_RESUME T8
+								                                    WHERE T7.RESUME_SEQ = T8.RESUME_SEQ
+								                                      AND T8.USE_YN = 'Y'
+									                                  AND T8.PRI_RESUME_YN = 'Y'
+																      AND T8.RESUME_STS_CD = 'RSS0000000002'
+																	  AND T8.JC_VERITY_USER_SEQ IS NOT NULL
+																  ) T9
+																  GROUP BY T9.RESUME_SEQ
+							                                   ) D
+							                     ON A.RESUME_SEQ = D.RESUME_SEQ
+							                   LEFT OUTER JOIN (SELECT T2.RESUME_SEQ, T2.LOC, MAX(T2.LOC_POINT) AS LOC_POINT
+							                                    FROM(
+								                                     SELECT T1.RESUME_SEQ
+								                                           ,FN_GET_MATCH_LOC_NM(#{province},#{district},T1.ADDR_FULL_CD) AS LOC
+								                                           ,FN_GET_MATCH_LOC_POINT(#{province},#{district},T1.ADDR_FULL_CD) AS LOC_POINT
+								                                     FROM CPES_RESUME_HOPE_WORK_LOC T1 JOIN CPES_RESUME T3
+								                                     WHERE T1.RESUME_SEQ = T3.RESUME_SEQ
+								                                       AND T3.USE_YN = 'Y'
+								                                       AND T3.PRI_RESUME_YN = 'Y'
+																	   AND T3.RESUME_STS_CD = 'RSS0000000002'
+																	   AND T3.JC_VERITY_USER_SEQ IS NOT NULL
+								                                ) T2
+							                                    GROUP BY T2.RESUME_SEQ) E
+                                                 ON A.RESUME_SEQ = E.RESUME_SEQ
+							WHERE A.USE_YN = 'Y'
+							  AND A.PRI_RESUME_YN = 'Y'
+							  AND A.RESUME_STS_CD = 'RSS0000000002'
+							  AND A.JC_VERITY_USER_SEQ IS NOT NULL
+				  )A
+	</select>
+	    
+</mapper>

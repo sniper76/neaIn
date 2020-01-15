@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setReferral">
+    
+    <delete id="deleteReferralHisMngList" parameterType="ReferralBean">
+		DELETE 
+		FROM CPES_REFERRAL 
+		WHERE VACANCY_SEQ		= #{vacancySeq}
+		AND RESUME_SEQ			= #{resumeSeq}
+    </delete>      
+    
+    <insert id="insertReferralMgmt" parameterType="ReferralBean">
+    	INSERT INTO CPES_REFERRAL
+		(
+			VACANCY_SEQ
+		   ,RESUME_SEQ
+		   ,JC_CD
+		   ,JC_USER_SEQ
+		   ,REFERRAL_STS_CD
+		   ,REFERRAL_TYPE_CD
+		   ,REFERRAL_COUNSEL_RECORD
+		   ,MNGER_OPINION
+		   ,DEL_YN
+		   ,REG_USER_SEQ
+		   ,REG_DT
+		   ,MOD_USER_SEQ
+		   ,MOD_DT
+		) VALUES (
+		    #{vacancySeq}
+		   ,#{resumeSeq}
+		   ,#{user.jcCd}
+		   ,#{user.userSeq}
+		   ,#{referralStsCd}
+		   ,#{referralTypeCd}
+		   ,#{referralCounselRecord}
+		   ,#{mngerOpinion}
+		   ,#{delYn}
+		   ,#{user.userSeq}
+		   ,NOW()
+		   ,#{user.userSeq}
+		   ,NOW()
+		)
+		ON DUPLICATE KEY
+		   UPDATE   JC_CD = #{user.jcCd}
+		           ,JC_USER_SEQ = #{user.userSeq}
+		           ,REFERRAL_STS_CD = #{referralStsCd}
+		           ,REFERRAL_COUNSEL_RECORD = #{referralCounselRecord}
+		           ,MNGER_OPINION = #{mngerOpinion}
+		           ,MOD_USER_SEQ = #{user.userSeq}
+		           ,MOD_DT = NOW()
+    </insert>
+        
+</mapper>

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="commCode">
+
+
+	<select id="selectCommCodeList" parameterType="CommDtlCdBean" resultType="CommDtlCdBean">
+		SELECT
+				GRP_CD
+			  , DTL_CD
+			  , CD_KH_NM
+			  , CD_EN_NM
+			  , CD_CONTENT
+			  , USE_YN
+			  , SORT
+			  , REG_USER_SEQ
+			  , REG_DT
+			  , MOD_USER_SEQ
+			  , MOD_DT
+	     FROM CPES_COMM_DTL_CD
+	     <where>
+			<choose>
+				<when test="commGrpCdList.size != 0">
+					AND GRP_CD IN
+					<foreach collection="commGrpCdList" item="item" index="index" separator="," open="(" close=")">
+						#{item}
+					</foreach>
+				</when>
+				<otherwise>
+					AND GRP_CD = #{grpCd}
+				</otherwise>
+			</choose>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(commGrpUseYn)">AND USE_YN = #{commGrpUseYn}</if>
+		</where>
+	 ORDER BY SORT
+	</select>
+
+
+	<select id="selectCommCodeListTotalCount" parameterType="CommDtlCdBean" resultType="java.lang.Integer">
+		SELECT
+			  COUNT(*) AS totalCount
+		 FROM CPES_COMM_DTL_CD
+		WHERE GRP_CD = #{grpCd}
+	</select>
+
+	<sql id="sqlUserDtlInfo">
+		SELECT
+			 USER_SEQ
+	       , USER_ID
+	       , USER_AUTH_CD
+	       , FN_GET_USER_NM_BY_USER_SEQ(USER_SEQ, #{lang}) AS USER_NM
+	       , JC_CD
+		   , FN_GET_JOB_CNTR_NM(JC_CD, #{lang}) AS JC_NM
+		   , BIRTH
+		   , GENDER_CD
+		   , FN_GET_COMMON_NM('GENDER_CD', GENDER_CD,'EN') AS GENDER_NM
+		   , USER_CELL
+		   , USER_EMAIL
+		   , ADDR_CD
+		   , ADDR_DTL
+		   , NID
+		   , FN_GET_COMMON_NM('NATION_CD', GENDER_CD,'EN') AS NATION_NM
+		   , REG_USER_SEQ
+		   , FN_GET_USER_NM_BY_USER_SEQ(REG_USER_SEQ, #{lang}) AS REG_NM
+		   , FN_GET_BASE_DATE_CHAR(REG_DT, #{lang}) AS REG_DT
+		   , MOD_USER_SEQ
+		   , FN_GET_USER_NM_BY_USER_SEQ(MOD_USER_SEQ, #{lang}) AS MOD_NM
+		   , FN_GET_BASE_DATE_CHAR(MOD_DT, #{lang}) AS MOD_DT
+		   , NEA_JC_DIV_CD
+		FROM CPES_USER
+	</sql>
+
+	<sql id="sqlUserDtlInfoWhere">
+		WHERE MNG_ID = #{mngId}
+	</sql>
+	<select id="selectCommonUserDtlInfo" parameterType="UserBean" resultType="UserBean">
+		 <include refid="sqlUserDtlInfo"/>
+		 <include refid="sqlUserDtlInfoWhere"/>
+	</select>
+
+
+	<select id="selectLoction" parameterType="LocationBean" resultType="LocationBean">
+		/*commCode.selectLoction*/
+		SELECT
+				LOC_SEQ
+			  , LVL_CD
+			  , COUNTRY_ID
+			  , PROVINCE_ID
+			  , DISTRICT_ID
+			  , COMMUNE_ID
+			  , VILLAGE_ID
+			  , PARENT_ID
+			  , LVL
+			  , NM_EN
+			  , NM_KH
+			  , PROVINCE_ID_API
+		  FROM  CPES_LOC_CD
+		 <where>
+		  	<if test="countryId != null and countryId != ''">
+		  	COUNTRY_ID = #{countryId}
+		  	</if>
+		  	<if test="provinceId != null and provinceId != ''">
+		  	AND PROVINCE_ID = #{provinceId}
+		  	</if>
+		  	<if test="districtId != null and districtId != ''">
+		  	AND DISTRICT_ID = #{districtId}
+		  	</if>
+		  	<if test="communeId != null and communeId != ''">
+		  	AND COMMUNE_ID = #{communeId}
+		  	</if>
+		  	<if test="villageId != null and villageId != ''">
+		  	AND VILLAGE_ID = #{villageId}
+		  	</if>
+		  	<if test="lvl != null and lvl != ''">
+		  	AND LVL = #{lvl}
+		  	</if>
+		  	<if test="depth == 0">
+				AND LVL = 1
+			</if>
+			<!-- 연구 및 전문분야 관련 조회 -->
+			<if test="depth == '99'">
+				AND LVL = 2
+				AND LEFT(LVL_CD, #{cdLength}) = #{condGrpCd}
+			</if>
+			<if test="depth == '999'">
+				AND LVL = 2
+			</if>
+		 </where>
+
+	</select>
+
+
+	<select id="selectIscoCd" parameterType="IscoBean" resultType="IscoBean">
+		/*commCode.selectIscoCd*/
+		SELECT
+				ISCO_CD
+				, EN_NM
+				, KH_NM
+				, UPPER_CD
+				, CD_LVL
+				, REG_USER_SEQ
+				, REG_DT
+				, MOD_USER_SEQ
+				, MOD_DT
+				, USE_YN
+				, LVL
+				, EXPLN
+				, CATE_NM
+		  FROM  CPES_ISCO_CD
+		 <where>
+		 	<choose>
+		  	<when test="cdLvl != null and cdLvl != ''">
+		  	CD_LVL = cdLvl
+		  	</when>
+		  	<otherwise>
+		  	CD_LVL = 1
+		  	</otherwise>
+		  	</choose>
+		  	<if test="upperCd != null and upperCd != ''">
+		  	AND UPPER_CD = #{upperCd}
+		  	</if>
+		 </where>
+	</select>
+
+	<select id="selectIscoCdList" parameterType="ony.cmm.common.bean.CommonBean" resultType="ony.cmm.common.bean.CommonBean">
+		SELECT IC.ISCO_CD AS CD
+			 , CASE WHEN UPPER(#{lang}) = 'kh' THEN KH_NM ELSE EN_NM END AS CD_NM
+		FROM CPES_ISCO_CD IC
+		WHERE 1=1
+		AND IC.USE_YN = 'Y'
+		<choose>
+			<when test="depth == null or depth == ''">
+				AND IC.LVL = 1
+			</when>
+			<when test="depth == 1 and cd != null and cd != ''">
+				AND IC.LVL = 2
+				AND LEFT(IC.ISCO_CD, 1) = #{cd}
+			</when>
+			<when test="depth == 2 and cd != null and cd != ''">
+				AND IC.LVL = 3
+				AND LEFT(IC.ISCO_CD, 2) = #{cd}
+			</when>
+			<when test="depth == 3 and cd != null and cd != ''">
+				AND IC.LVL = 4
+				AND LEFT(IC.ISCO_CD, 3) = #{cd}
+			</when>
+		</choose>
+	</select>
+
+	<select id="selectJobCenterListForSelectBox" resultType="ony.cpes.internal.common.bean.JobCenterBean">
+		SELECT JC.JC_CD
+			 , JC.JC_EN
+			 , JC.JC_KH
+		FROM CPES_JOB_CENTER JC
+	</select>
+
+	<select id="selectIsicCdList" resultType="ony.cmm.common.bean.IsicBean">
+		SELECT ISIC.ISIC_CD
+			 , FN_GET_ISIC_NM(ISIC.ISIC_CD, #{lang}) AS ISIC_NM
+			 , ISIC.LVL
+		FROM CPES_ISIC_CD ISIC
+		WHERE ISIC.USE_YN = 'Y'
+	</select>
+
+</mapper>

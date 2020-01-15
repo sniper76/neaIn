@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setBanner">
+	<insert id="insertBanner" parameterType="BannerBean">
+		INSERT INTO CPES_BANNER
+		(
+			  BANNER_SEQ
+			, BGN_DT
+			, END_DT
+			, CONTENT
+			, USE_YN
+			, REG_USER_SEQ
+			, REG_DT
+			, MOD_USER_SEQ
+			, MOD_DT
+			, TITLE
+			, BGN_HOUR
+			, END_HOUR
+			, BGN_MINUTE
+			, END_MINUTE
+			, BGN_AMPM
+			, END_AMPM
+			, RESV_YN
+			, TODAY_OPEN_YN
+			, CONN_URL
+			) VALUES (
+			 #{bannerSeq}
+			,#{bgnDt}
+			,#{endDt}
+			,#{content}
+			,#{useYn}
+			,#{user.userSeq}
+			,NOW()
+			,#{user.userSeq}
+			,NOW()
+			,#{title}
+			,#{bgnHour}
+			,#{endHour}
+			,#{bgnMinute}
+			,#{endMinute}
+			,#{bgnAmpm}
+			,#{endAmpm}
+			,#{resvYn}
+			,#{todayOpenYn}
+			,#{connUrl}
+			)
+
+
+
+
+	</insert>
+	
+	
+	<update id="updateBanner" parameterType="BannerBean">
+		UPDATE CPES_BANNER SET 
+			BGN_DT        = #{bgnDt}, 
+			END_DT        = #{endDt}, 
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(content)">CONTENT       = #{content},         </if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(useYn)">USE_YN        = #{useYn},             </if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(title)">TITLE         = #{title},             </if>
+			BGN_HOUR      = #{bgnHour},
+			END_HOUR      = #{endHour}, 
+			BGN_MINUTE    = #{bgnMinute},
+			END_MINUTE    = #{endMinute}, 
+			BGN_AMPM      = #{bgnAmpm}, 
+			END_AMPM      = #{endAmpm},
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(resvYn)">RESV_YN       = #{resvYn},           </if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(todayOpenYn)">TODAY_OPEN_YN = #{todayOpenYn}, </if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(connUrl)">CONN_URL = #{connUrl}, </if>
+
+		MOD_USER_SEQ = #{user.userSeq},
+		MOD_DT = NOW()
+		WHERE BANNER_SEQ = #{bannerSeq}
+	</update>
+	
+	<delete id="deleteBanner" parameterType="BannerBean">
+		DELETE FROM CPES_BANNER WHERE BANNER_SEQ = #{bannerSeq}
+	</delete>
+	
+</mapper>

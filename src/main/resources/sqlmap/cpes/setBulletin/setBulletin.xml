@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setBulletin">
+	<insert id="insertBulletinBasic" parameterType="BulletinBean">
+		INSERT INTO CPES_BULLETIN
+		(
+			  BULLETIN_SEQ
+			, FILE_GRP_SEQ
+			, BULLETIN_CATE_SEQ
+			, WRITE_DT
+			, WRITER_NM
+			, TITLE_EN
+			, CONTENT_EN
+			, DEL_YN
+			, JC_CD
+			, REG_USER_SEQ
+			, REG_DT
+			, MOD_USER_SEQ
+			, MOD_DT
+			, BULLETIN_MNG_SEQ
+			, TITLE_KH
+			, CONTENT_KH
+			, VIEW_YN
+			, AGREE_YN
+			, NTC_YN
+			, BULLETIN_TYPE_CD
+		) VALUES (
+		    #{bulletinSeq},
+			#{fileGrpSeq},
+			#{bulletinCateSeq},
+			NOW(),
+			#{user.userNm},
+			#{titleEn},
+			#{contentEn},
+			#{delYn},
+			#{jcCd},
+			#{user.userSeq},
+			NOW(),
+			#{user.userSeq},
+			NOW(),
+			( SELECT BULLETIN_MNG_SEQ FROM CPES_PROGRAM WHERE PROGRAM_ID = #{programId} ),
+			#{titleKh},
+			#{contentKh},
+			#{viewYn},
+			#{agreeYn},
+			#{ntcYn},
+			#{bulletinTypeCd}
+		)
+
+
+
+	</insert>
+	
+	<delete id="deleteBulletin" parameterType="BulletinBean">
+		DELETE FROM CPES_BULLETIN WHERE BULLETIN_SEQ = #{bulletinSeq}
+	</delete>
+	
+	<update id="updateBulletinDtl" parameterType="BulletinBean">
+		UPDATE
+			CPES_BULLETIN
+		SET
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(titleEn)"> TITLE_EN       = #{titleEn},     </if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(titleKh)"> TITLE_KH       = #{titleKh},     </if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(viewYn)"> VIEW_YN      	= #{viewYn},     </if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(ntcYn)"> NTC_YN      		= #{ntcYn},     </if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(contentEn)">CONTENT_EN    = #{contentEn}, </if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(contentKh)">CONTENT_KH    = #{contentKh}, </if>
+			MOD_USER_SEQ = #{user.userSeq},
+			MOD_DT = NOW()
+		WHERE
+			BULLETIN_SEQ = #{bulletinSeq}
+	</update>
+	
+	<delete id="deleteBulletinDtl" parameterType="BulletinBean">
+		UPDATE
+			CPES_BULLETIN
+		SET
+		    DEL_YN           = #{delYn},   
+			MOD_USER_SEQ = #{user.userSeq},
+			MOD_DT = NOW()
+		WHERE
+			BULLETIN_SEQ = #{bulletinSeq}
+	</delete>
+	
+</mapper>

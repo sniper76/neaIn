@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fairMng">
+
+	<select id="selectUUID" resultType="java.lang.String" >
+		SELECT REPLACE(UUID(),'-','') AS uuid FROM DUAL
+	</select>
+
+	<sql id="selectJobFairMngColumn">
+		A.FAIR_SEQ,
+		A.FAIR_NM_KH AS FAIR_NM_KH,
+		A.FAIR_NM_EN AS FAIR_NM_EN,
+		<choose>
+			<when test="lang == 'kh'">
+				A.FAIR_NM_KH AS FAIR_NM,
+			</when>
+			<otherwise>
+				A.FAIR_NM_EN AS FAIR_NM,
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="lang == 'kh'">
+				A.FAIR_DTL_EXPLN_KH,
+			</when>
+			<otherwise>
+				A.FAIR_DTL_EXPLN_EN,
+			</otherwise>
+		</choose>
+		FN_GET_COMMON_NM('FAIR_STS_CD',A.FAIR_STS_CD, #{lang}) AS FAIR_STS_NM,
+		A.FAIR_STS_CD,
+		A.ADDR_CD,
+		A.ADDR_FULL_CD,
+		A.ADDR_FULL_NM,
+		A.ADDR_DTL,
+		A.ADDR_DTL2,
+		A.GOOGLE_MAP_LINK,
+		A.FAIR_LNGTD,
+		A.FAIR_LATTD,
+		A.THUMB_FILE_GRP_SEQ,
+		A.FAIR_FILE_GRP_SEQ,
+		A.BOOTH_FILE_GRP_SEQ,
+		A.SPONSOR_FILE_GRP_SEQ,
+		A.SUPPORTER_FILE_GRP_SEQ,
+		A.USE_YN,
+		A.FAIR_VIEW_YN,
+		A.FAIR_DIV_CD,
+		FN_GET_COMMON_NM('FAIR_DIV_CD',A.FAIR_DIV_CD, #{lang}) AS FAIR_DIV_NM,
+		A.MST_JC_CD,
+		A.JC_CD,
+		FN_GET_JOB_CNTR_NM(A.MST_JC_CD,#{lang}) AS MST_JC_NM,
+		FN_GET_JOB_CNTR_NM(A.JC_CD,#{lang}) AS JC_NM,
+		DATE_FORMAT(A.FAIR_BGN_DT, '%d/%m/%Y') AS FAIR_BGN_DT,
+		A.FAIR_BGN_HOUR,
+		A.FAIR_BGN_MINUTE,
+		A.FAIR_BGN_AMPM,
+		DATE_FORMAT(A.FAIR_END_DT, '%d/%m/%Y') AS FAIR_END_DT,
+		A.FAIR_END_HOUR,
+		A.FAIR_END_MINUTE,
+		A.FAIR_END_AMPM,
+		DATE_FORMAT(A.RECURMT_BGN_DT, '%d/%m/%Y') AS RECURMT_BGN_DT,
+		A.RECURMT_BGN_HOUR,
+		A.RECURMT_BGN_MINUTE,
+		A.RECURMT_BGN_AMPM,
+		DATE_FORMAT(A.RECURMT_END_DT, '%d/%m/%Y') AS RECURMT_END_DT,
+		A.RECURMT_END_HOUR,
+		A.RECURMT_END_MINUTE,
+		A.RECURMT_END_AMPM,
+		A.TEL1,
+		A.TEL2,
+		A.EMAIL,
+		A.URL,
+		A.FAIR_HASHTAG,
+		A.FAIR_COMPNY_VIEW_YN,
+		A.FAIR_VACANCY_VIEW_YN,
+		A.FAIR_INSTT_VIEW_YN,
+		A.FAIR_TRNNG_VIEW_YN,
+		A.BOOTH_TEL,
+		A.BOOTH_EMAIL,
+		A.BOOTH_FEE_EXPLN,
+		A.DEL_YN,
+		A.REG_USER_SEQ,
+		FN_GET_USER_NM_BY_USER_SEQ(A.REG_USER_SEQ, #{lang}) AS REG_USER_NM,
+		A.REG_DT,
+		A.MOD_USER_SEQ,
+		FN_GET_USER_NM_BY_USER_SEQ(A.MOD_USER_SEQ, #{lang}) AS REG_MOD_NM,
+		A.MOD_DT
+	</sql>		
+	
+	<sql id="whereJobFairMng">
+		AND IFNULL(A.DEL_YN, 'N') != 'Y'
+
+		<!-- 주관 기관 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+		
+		<!-- 검색어 (fairNm : A.FAIR_NM_KH or A.FAIR_NM_EN, regUserNm :CPES_USER.USER_NM_KH or CPES_USER.USER_NM_EN) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+			<choose>
+				<when test="searchKeyword == 'fairNm'">
+					<choose>
+						<when test="lang == 'kh'">
+							AND A.FAIR_NM_KH LIKE CONCAT('%', #{searchValue}, '%')
+						</when>
+						<otherwise>
+							AND A.FAIR_NM_EN LIKE CONCAT('%', #{searchValue}, '%')
+						</otherwise>
+					</choose>
+				</when>
+				<when test="searchKeyword == 'regUserNm'">
+					<choose>
+						<when test="lang == 'kh'">
+							AND REG_USER_SEQ IN (
+								SELECT USER_SEQ FROM CPES_USER 
+								WHERE USER_NM_KH LIKE CONCAT('%', #{searchValue}, '%')
+							)
+						</when>
+						<otherwise>
+							AND REG_USER_SEQ IN (
+								SELECT USER_SEQ FROM CPES_USER 
+								WHERE USER_NM_EN LIKE CONCAT('%', #{searchValue}, '%')
+							)
+						</otherwise>
+					</choose>				
+				</when>
+			</choose>
+		</if>
+
+		<!-- 행사구분 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairDivCd)">AND A.FAIR_DIV_CD = #{fairDivCd}</if>
+
+		<!-- 행사상태 코드  -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairStsDiv)">
+			<choose>
+				<when test="fairStsDiv == 'RSC0000000002'">
+					AND A.RECURMT_BGN_DT = CURDATE()
+				</when>
+				<when test="fairStsDiv == 'RSC0000000003'">
+					AND A.RECURMT_END_DT = CURDATE()
+				</when>
+				<when test="fairStsDiv == 'FAS0000000002'">
+					AND A.FAIR_BGN_DT = CURDATE()
+				</when>
+				<when test="fairStsDiv == 'FAS0000000003'">
+					AND A.FAIR_END_DT = CURDATE()
+				</when>
+			</choose>			
+		</if>
+
+		<!-- 지역 코드 2 Depth (Province) -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(addrCd2Depth)">
+			AND TRIM(SUBSTRING_INDEX(A.ADDR_FULL_CD, ',', 1)) = #{addrCd2Depth}
+		</if>
+
+		<!-- 전시 여부 -->
+		<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairViewYn)">
+			AND A.FAIR_VIEW_YN = #{fairViewYn}
+		</if>
+
+
+		<!-- 분류 기간 조회  -->
+		<choose>
+			<!-- 등록일일 경우 -->
+			<when test="periodKeyword == 'regDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+					AND A.REG_DT <![CDATA[ >= ]]> FN_GET_STR_TO_DATE(#{startDate}, 'S') 
+					AND A.REG_DT <![CDATA[ <= ]]> FN_GET_STR_TO_DATE(#{endDate}, 'E') 
+				</if>
+			</when>
+
+			<!-- 모집기간일 경우 -->
+			<when test="periodKeyword == 'recurmtDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND A.RECURMT_BGN_DT <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND A.RECURMT_END_DT <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+					AND A.RECURMT_BGN_DT <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y')
+					AND A.RECURMT_END_DT <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y')
+				</if>
+			</when>
+
+			<!-- 행사기간일 경우 -->
+			<when test="periodKeyword == 'fairDt'">
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isBlank(endDate)">
+					AND A.FAIR_BGN_DT <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(endDate) and @org.apache.commons.lang.StringUtils@isBlank(startDate)">
+					AND A.FAIR_END_DT <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y')
+				</if>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(startDate) and @org.apache.commons.lang.StringUtils@isNotBlank(endDate)">
+					AND A.FAIR_BGN_DT <![CDATA[ >= ]]> STR_TO_DATE(#{startDate}, '%d/%m/%Y')
+					AND A.FAIR_END_DT <![CDATA[ <= ]]> STR_TO_DATE(#{endDate}, '%d/%m/%Y')
+				</if>
+			</when>
+		</choose>
+
+	</sql>
+	
+	<select id="selectJobFairMngTotalCount" resultType="java.lang.Integer" parameterType="FairMngBean">
+		SELECT 
+			COUNT(*) AS totalCount 
+		FROM
+			CPES_FAIR_MST A
+		<where>
+			<include refid="whereJobFairMng"/>
+		</where>
+	</select>
+	
+	<select id="selectJobFairMngList" resultType="FairMngBean" parameterType="FairMngBean">
+		SELECT 
+			${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM,
+			T.* 
+		FROM (	
+				SELECT 
+					<include refid="selectJobFairMngColumn"/>
+				FROM
+					CPES_FAIR_MST A
+				JOIN
+					(SELECT @ROWNUM := 0 AS ROW_NUM) E
+				<where>
+					<include refid="whereJobFairMng"/>
+				</where>
+				<if test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+				ORDER BY 
+					<choose>
+						<when test="orderColumn == 'FAIR_NM'">
+							<choose>
+								<when test="lang == 'kh'">A.FAIR_NM_KH ${orderColumnSort}</when>
+								<otherwise>A.FAIR_NM_EN ${orderColumnSort} </otherwise>								
+							</choose>
+						</when>
+						<otherwise>
+							${orderColumn} ${orderColumnSort}	
+						</otherwise>
+					</choose>
+				</if>
+				<if test="length > -1">
+				LIMIT 
+					${start} , ${length}				
+				</if>
+		) T		
+	</select>
+	
+	<select id="selectJobFairMngDetail" resultType="FairMngBean" parameterType="FairMngBean">
+		SELECT 
+			<include refid="selectJobFairMngColumn"/>
+		FROM
+			CPES_FAIR_MST A
+		<where>
+			A.FAIR_SEQ = #{fairSeq}
+		</where>
+	</select>
+	
+	
+	<select id="selectJobFairListLayer" resultType="FairMngBean" parameterType="FairMngBean">
+		SELECT 
+			<include refid="selectJobFairMngColumn"/>
+		FROM
+			CPES_FAIR_MST A
+		<where>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(jcCd)">AND A.JC_CD = #{jcCd}</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(fairDivCd)">AND A.FAIR_DIV_CD = #{fairDivCd}</if>
+			<if test="@org.apache.commons.lang.StringUtils@isNotBlank(searchKeyword) and @org.apache.commons.lang.StringUtils@isNotBlank(searchValue)" >
+				<choose>
+					<when test="searchKeyword == 'fairNm'">
+						<choose>
+							<when test="lang == 'kh'">
+								AND A.FAIR_NM_KH LIKE CONCAT('%', #{searchValue}, '%')
+							</when>
+							<otherwise>
+								AND A.FAIR_NM_EN LIKE CONCAT('%', #{searchValue}, '%')
+							</otherwise>
+						</choose>
+					</when>
+				</choose>
+			</if>
+		</where>	
+	</select>
+
+	<select id="selectJobFairDtlInfo" resultType="JobFairBean" parameterType="JobFairBean">
+		SELECT
+		A.FAIR_SEQ
+		, A.FAIR_DIV_CD
+		, FN_GET_COMMON_NM('FAIR_DIV_CD', A.FAIR_DIV_CD, #{lang}) AS FAIR_DIV_NM
+		, CASE WHEN #{lang} = 'kh' THEN A.FAIR_NM_KH ELSE A.FAIR_NM_EN END AS FAIR_NM
+		, A.THUMB_FILE_GRP_SEQ
+		, A.FAIR_FILE_GRP_SEQ
+		, A.BOOTH_FILE_GRP_SEQ
+		, A.SPONSOR_FILE_GRP_SEQ
+		, A.SUPPORTER_FILE_GRP_SEQ
+		, A.JC_CD
+		, FN_GET_JOB_CNTR_NM(A.JC_CD,#{lang}) AS JC_NM,
+		, A.ADDR_FULL_NM
+		, CONCAT(FN_GET_BASE_DATE_TIME(A.FAIR_BGN_DT, 'D', #{lang}), ' '
+		        , A.FAIR_BGN_HOUR, ':', A.FAIR_BGN_MINUTE, ' ', A.FAIR_BGN_AMPM, ' ~ '
+		        , FN_GET_BASE_DATE_TIME(A.FAIR_END_DT, 'D', #{lang}), ' '
+		        , A.FAIR_END_HOUR, ':', A.FAIR_END_MINUTE, ' ', A.FAIR_BGN_AMPM) AS FAIR_TERM
+		, CONCAT(FN_GET_BASE_DATE_TIME(A.RECURMT_BGN_DT, 'D', #{lang}), ' '
+		        , A.RECURMT_BGN_HOUR, ':', A.RECURMT_BGN_MINUTE, ' ', A.RECURMT_BGN_AMPM, ' ~ '
+		        , FN_GET_BASE_DATE_TIME(A.RECURMT_END_DT, 'D', #{lang}), ' '
+		        , A.RECURMT_END_HOUR, ':', A.RECURMT_END_MINUTE, ' ', A.RECURMT_BGN_AMPM) AS RECURMT_TERM
+		, A.TEL1
+		, A.TEL2
+		, A.EMAIL
+		, CASE WHEN #{lang} = 'kh' THEN A.FAIR_DTL_EXPLN_KH ELSE A.FAIR_DTL_EXPLN_EN END AS FAIR_DTL_EXPLN
+		, A.FAIR_HASHTAG
+		, A.FAIR_COMPNY_VIEW_YN
+		, A.FAIR_VACANCY_VIEW_YN
+		, A.FAIR_INSTT_VIEW_YN
+		, A.FAIR_TRNNG_VIEW_YN
+		, A.USE_YN
+		FROM CPES_FAIR_MST A
+		WHERE A.FAIR_SEQ			= #{fairSeq}
+		
+    </select>
+    
+    <select id="selectLoc1DepthList" resultType="CommDtlCdBean">
+    	SELECT
+			'CPES_LOC_CD' AS GRP_CD,
+			LVL_CD AS DTL_CD,
+			NM_EN AS CD_EN_NM,
+			NM_KH AS CD_KH_NM	
+		FROM
+			CPES_LOC_CD 
+		WHERE
+			LVL = 2
+		ORDER BY LOC_SEQ
+    </select>
+    
+    <select id="selectLoc1DepthTotalCount" resultType="int">
+    	SELECT
+			COUNT(*) AS totCnt
+		FROM
+			CPES_LOC_CD 
+		WHERE
+			LVL = 2
+    </select>
+    
+</mapper>
