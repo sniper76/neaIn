@@ -517,6 +517,9 @@ public class UserServiceImpl implements UserService{
 		return  param;
 	}
 
+	/**
+	 * Duplication check use email
+	 */
 	public UserBean selectUserEmailDupl(HttpServletRequest request, UserBean param) throws Exception {
 		int result = userDAO.selectUserDuplAjax(param);
 		if (result > 0) {
@@ -531,6 +534,9 @@ public class UserServiceImpl implements UserService{
 		return param;
 	}
 
+	/**
+	 * Duplication check use Cell
+	 */
 	public UserBean selectUserCellDupl(HttpServletRequest request, UserBean param) throws Exception {
 		int result = userDAO.selectUserDuplAjax(param);
 		if (result > 0) {
@@ -616,6 +622,9 @@ public class UserServiceImpl implements UserService{
 	}
 
 
+	/**
+	 * update password after make Password 
+	 */
 	public UserBean updateUserPassword(HttpServletRequest request, UserBean param) throws Exception  {
 		try {
 

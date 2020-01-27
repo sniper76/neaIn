@@ -64,6 +64,7 @@
 			, PROGRAM_NM_EN
 			, RANGE_CD
 			, SESSION_ID
+			, MOBILE_PC_DIV_CD
 		) VALUES
 		(
 			#{sysConnLog}
@@ -76,6 +77,7 @@
 		  , (SELECT PROGRAM_NM_EN FROM CPES_PROGRAM WHERE PROGRAM_URL LIKE CONCAT('%',#{url},'%')	LIMIT 1)
 		  , #{rangeCd}
 		  , #{sessionId}
+		  ,	#{mobilePcDivCd}
 		)
 	</insert>
 	

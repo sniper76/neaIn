@@ -3,6 +3,10 @@
 /* 컨텐츠 그룹 */
 #container{position:relative;width:100%;padding:30px 3%;box-sizing:border-box;}
 
+.rowgroup_top{margin-bottom:10px;}
+.rowgroup_top label,.rowgroup_top select{display:inline-block;vertical-align:middle;}
+.rowgroup_top label{font-size:16px;font-weight:400;color:#000;}
+
 .rowgroup{margin-bottom:30px;}
 .rowgroup .colgroup{float:left;width:49%;}
 .rowgroup .today{position:relative;padding:24px 5% 25px;border:1px solid #c6cbd8;}

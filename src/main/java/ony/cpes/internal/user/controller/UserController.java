@@ -481,7 +481,7 @@ public class UserController extends BaseController{
 	}
 
     /**
-     * 
+     * Application List main Ajax
      * @param userAplcBean
      * @param locale
      * @param request
@@ -499,6 +499,15 @@ public class UserController extends BaseController{
     	return mv;
 	}
 
+    /**
+     * Application List Sub Ajax
+     * @param userAplcBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserDtlInfoAplcListSubAjax")
 	public ModelAndView selectUserDtlInfoAplcListSubAjax(@ModelAttribute("UserAplcBean") UserAplcBean userAplcBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -532,8 +541,14 @@ public class UserController extends BaseController{
 	  	return mv;
 	}
 
-    /*
-     * User Detail Info Offer
+    /**
+     * offer List Main in user Detail
+     * @param userOfferBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
      */
     @RequestMapping(value="/selectUserDtlInfoOfferListMainAjax")
     public ModelAndView selectUserDtlInfoOfferListMainAjax(@ModelAttribute("UserOfferBean") UserOfferBean userOfferBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -546,6 +561,15 @@ public class UserController extends BaseController{
     	return mv;
 	}
 
+    /**
+     * offer list sub in user detail
+     * @param userOfferBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserDtlInfoOfferListSubAjax")
 	public ModelAndView selectUserDtlInfoOfferListSubAjax(@ModelAttribute("UserOfferBean") UserOfferBean userOfferBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -579,8 +603,14 @@ public class UserController extends BaseController{
 	  	return mv;
 	}
 
-    /*
-     * User Detail Info Interview
+    /**
+     * interview list main in user detail
+     * @param userIntvwBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
      */
     @RequestMapping(value="/selectUserDtlInfoIntvwListMainAjax")
     public ModelAndView selectUserDtlInfoIntvwListMainAjax(@ModelAttribute("UserIntvwBean") UserIntvwBean userIntvwBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -593,6 +623,15 @@ public class UserController extends BaseController{
     	return mv;
 	}
 
+    /**
+     * interview list sub in user detail
+     * @param userIntvwBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserDtlInfoIntvwListSubAjax")
 	public ModelAndView selectUserDtlInfoIntvwListSubAjax(@ModelAttribute("UserIntvwBean") UserIntvwBean userIntvwBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -626,8 +665,14 @@ public class UserController extends BaseController{
 	  	return mv;
 	}
 
-    /*
-     * User Detail Info Referral
+    /**
+     * referral list main in user detail
+     * @param userReferralBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
      */
     @RequestMapping(value="/selectUserDtlInfoReferralListMainAjax")
     public ModelAndView selectUserDtlInfoReferralListMainAjax(@ModelAttribute("UserReferralBean") UserReferralBean userReferralBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -639,6 +684,15 @@ public class UserController extends BaseController{
     	return mv;
 	}
 
+    /**
+     * referral list sub in user detail
+     * @param userReferralBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserDtlInfoReferralListSubAjax")
 	public ModelAndView selectUserDtlInfoReferralListSubAjax(@ModelAttribute("UserReferralBean") UserReferralBean userReferralBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -672,8 +726,14 @@ public class UserController extends BaseController{
 	  	return mv;
 	}
 
-    /*
-     * User Detail Info Fair
+    /**
+     * Fair list main in user detail
+     * @param userFairBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
      */
     @RequestMapping(value="/selectUserDtlInfoFairListMainAjax")
     public ModelAndView selectUserDtlInfoFairListMainAjax(@ModelAttribute("UserFairBean") UserFairBean userFairBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -685,6 +745,15 @@ public class UserController extends BaseController{
     	return mv;
 	}
 
+    /**
+     * fair list sub in user detail
+     * @param userFairBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserDtlInfoFairListSubAjax")
 	public ModelAndView selectUserDtlInfoFairListSubAjax(@ModelAttribute("UserFairBean") UserFairBean userFairBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -719,7 +788,7 @@ public class UserController extends BaseController{
 	}
 
     /**
-     * screen Regist User Info
+     * egist Screen  User Info
      * @param request
      * @param response
      * @return
@@ -771,8 +840,14 @@ public class UserController extends BaseController{
 	}
 
 
+    /**
+     * process update for user info
+     * @param request
+     * @param response
+     * @throws Exception
+     */
     @RequestMapping(value="/updateUserDtlInfoAjax")
-    public void updateUserDetailInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void updateUserDtlInfoAjax(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
     	UserBean param = (UserBean) getObjectFromJSON(request, UserBean.class);
     	UserBean user = (UserBean) userService.updateUserDetailInfo(request, param);
@@ -781,6 +856,12 @@ public class UserController extends BaseController{
 
 	}
 
+    /**
+     * Email Duplication check
+     * @param request
+     * @param response
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserEmailDuplAjax")
     public void selectUserEmailDuplAjax(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -791,6 +872,12 @@ public class UserController extends BaseController{
 	}
 
 
+    /**
+     * cell duplication check
+     * @param request
+     * @param response
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCellDuplAjax")
     public void selectUserCellDuplAjax(HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -801,10 +888,15 @@ public class UserController extends BaseController{
     	this.outputJSON(request, response, user);
 	}
 
-    /*
-     * Counsel Info
+    /**
+     * Screen for counsel info in user detail 
+     * @param userBean
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
      */
-    @RequestMapping(value="/selectCounselInfoAjax")
+    @RequestMapping(value= {"/selectCounselInfoAjax", "/selectCompnyCounselInfoAjax", "/selectInsttCounselInfoAjax"})
     public ModelAndView selectCounselInfoAjax(@ModelAttribute("UserBean") UserBean userBean, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
 
@@ -815,8 +907,14 @@ public class UserController extends BaseController{
 	}
 
 
-    /*
-     * User Detail Info Main
+    /**
+     * inquiry user info detail
+     * @param userBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
      */
     @RequestMapping(value="/selectUserDtlInfo")
     public ModelAndView selectUserDtlInfo(@ModelAttribute("UserBean") UserBean userBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -829,8 +927,12 @@ public class UserController extends BaseController{
     	return mv;
 	}
 
-    /*
-     * User Detail Info Main
+    /**
+     * update user password
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
      */
     @RequestMapping(value="/updateUserPasswordAjax")
     public ModelAndView updateUserPassword(HttpServletRequest request, HttpServletResponse response) throws Exception {

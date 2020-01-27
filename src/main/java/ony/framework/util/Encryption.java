@@ -11,9 +11,6 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.CharEncoding;
 import org.apache.commons.codec.binary.Base64;
 
-
-
-@SuppressWarnings("unchecked")
 public class Encryption {
 
 	private final static String KEY = "jababanet01234567890123456789012";

@@ -22,8 +22,26 @@ public class UserElementaryDAO extends EgovAbstractMapper{
 	
 	public int selectUserElementaryInfoListTotalCnt(UserElementaryBean param) {
         return getSqlSession().selectOne("userElementary.selectUserElementaryInfoListTotalCnt", param);
-	}	
+	}
+	
+	/**
+	 * Get Address Full Code By Address Code
+	 * @param UserElementaryBean
+	 * @return UserElementaryBean
+	 */
+	public UserElementaryBean selectAddrFullCdByAddrCd(UserElementaryBean param) {
+        return getSqlSession().selectOne("userElementary.selectAddrFullCdByAddrCd", param);
+    }	
 
+	/**
+	 * Registration User Info By Excel
+	 * @param UserElementaryBean
+	 * @return
+	 */
+	public int insertUserElementaryRegUserInfoByExcel(UserElementaryBean param) {
+        return getSqlSession().update("setUserElementary.insertUserElementaryRegUserInfoByExcel", param);
+	}
+	
 	/**
 	 * User Detail Info Main Using Elementary Job Seeker
 	 * @param UserElementaryBean

@@ -43,6 +43,6 @@
 		sessionStorage.setItem("UserElementaryInfo", JSON.stringify(formData));
 
 		$("#frmUserElementaryDtlInfoBase").attr("method", "post");
-		$("#frmUserElementaryDtlInfoBase").attr("action", contextPath + "/internal/user/selectUserElementaryDtlInfoModifyAjax.do");
+		$("#frmUserElementaryDtlInfoBase").attr("action", contextPath + "/internal/user/selectUserElementaryDtlInfoModify.do");
 		$("#frmUserElementaryDtlInfoBase").submit();			
 	}	

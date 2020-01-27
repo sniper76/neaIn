@@ -169,7 +169,7 @@
 					sessionStorage.setItem("userElementaryInfo", JSON.stringify(formData));
 
 					$("#frmUserElementaryInfoList").attr("method", "post");
-					$("#frmUserElementaryInfoList").attr("action", contextPath + "/internal/user/selectUserElementaryDtlInfoMainAjax.do");
+					$("#frmUserElementaryInfoList").attr("action", contextPath + "/internal/user/selectUserElementaryDtlInfoMain.do");
 					$("#frmUserElementaryInfoList").submit();
 				},
 				//게시물 그리기
@@ -184,7 +184,7 @@
 		sessionStorage.setItem("userElementaryRegInfo", JSON.stringify(formData));
 
 		$("#frmUserElementaryInfoList").attr("method", "post");
-		$("#frmUserElementaryInfoList").attr("action", contextPath + "/internal/user/selectUserElementaryRegBaseInfoAjax.do");
+		$("#frmUserElementaryInfoList").attr("action", contextPath + "/internal/user/selectUserElementaryRegBaseInfo.do");
 		$("#frmUserElementaryInfoList").submit();
 	}
 	

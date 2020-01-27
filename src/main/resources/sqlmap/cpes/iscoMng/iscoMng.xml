@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="iscoMng">
+
+	<select id="selectIscoMngList" parameterType="ony.cmm.common.bean.IscoBean" resultType="ony.cmm.common.bean.IscoBean">
+		/*iscoMng.selectIscoMngList*/
+		SELECT ${totalCount} - ((${pageNo} - 1) * ${length}) - (@rownum:=@rownum+1) + 1 AS ROW_NUM
+			 , B.ISCO_CD
+			 , B.USE_YN
+			 , FN_GET_USER_NM_BY_USER_SEQ(B.MOD_USER_SEQ, #{lang}) AS MOD_USER_NM
+			 , DATE_FORMAT(B.MOD_DT, '%d/%m/%Y') AS MOD_DT
+			 , (SELECT CASE WHEN UPPER(#{lang}) = 'KH' THEN KH_NM ELSE EN_NM END
+			 	FROM CPES_ISCO_CD WHERE LVL = '1' AND ISCO_CD = LEFT(B.ISCO_CD, 1)) AS DEPTH_NM1
+			 , (SELECT CASE WHEN UPPER(#{lang}) = 'KH' THEN KH_NM ELSE EN_NM END
+			 	FROM CPES_ISCO_CD WHERE LVL = '2' AND ISCO_CD = LEFT(B.ISCO_CD, 2)) AS DEPTH_NM2
+			 , (SELECT CASE WHEN UPPER(#{lang}) = 'KH' THEN KH_NM ELSE EN_NM END
+			 	FROM CPES_ISCO_CD WHERE LVL = '3' AND ISCO_CD = LEFT(B.ISCO_CD, 3)) AS DEPTH_NM3
+			 , CASE WHEN UPPER(#{lang}) = 'KH' THEN B.KH_NM ELSE B.EN_NM END AS DEPTH_NM4
+		FROM (SELECT IC.ISCO_CD
+				 , IC.USE_YN
+				 , IC.MOD_USER_SEQ
+				 , IC.MOD_DT
+				 , IC.EN_NM
+				 , IC.KH_NM
+			FROM CPES_ISCO_CD IC
+				JOIN (SELECT @ROWNUM := 0 AS ROW_NUM) A
+			WHERE IC.LVL = '4'
+			<if test="searchKeyword != null and searchKeyword != ''">
+				<choose>
+					<when test="searchType == 'iscoNm'">
+						AND (CASE WHEN UPPER(#{lang}) = 'KH' THEN IC.KH_NM ELSE IC.EN_NM END) LIKE CONCAT('%', #{searchKeyword}, '%')
+					</when>
+					<when test="searchType == 'def'">
+						AND (CASE WHEN UPPER(#{lang}) = 'KH' THEN IC.DEF_KH ELSE IC.DEF_EN END) LIKE CONCAT('%', #{searchKeyword}, '%')
+					</when>
+					<when test="searchType == 'iscoCd'">
+						AND IC.ISCO_CD LIKE CONCAT('%', #{searchKeyword}, '%')
+					</when>
+				</choose>
+			</if>
+			<if test="iscoCd != null and iscoCd != ''">
+				AND LEFT(IC.ISCO_CD, 1) = #{iscoCd}
+			</if>
+			<if test="useYn != null and useYn != ''">
+				AND IC.USE_YN = #{useYn}
+			</if>
+
+			<choose>
+				<when test="@org.apache.commons.lang.StringUtils@isNotBlank(orderColumn)">
+					ORDER BY ${orderColumn} ${orderColumnSort}
+               	</when>
+				<otherwise>
+					ORDER BY B.REG_DT DESC
+				</otherwise>
+			</choose>
+
+			<if test="length > -1">
+			LIMIT
+				${start} , ${length}
+			</if>
+			) B
+	</select>
+
+	<select id="selectIscoMngTotCnt" parameterType="ony.cmm.common.bean.IscoBean" resultType="int">
+		/*iscoMng.selectIscoMngTotCnt*/
+		SELECT COUNT(1) AS CNT
+		FROM CPES_ISCO_CD IC
+		WHERE IC.LVL = '4'
+		<if test="searchKeyword != null and searchKeyword != ''">
+			<choose>
+				<when test="searchType == 'iscoNm'">
+					AND (CASE WHEN UPPER(#{lang}) = 'KH' THEN IC.KH_NM ELSE IC.EN_NM END) LIKE CONCAT('%', #{searchKeyword}, '%')
+				</when>
+				<when test="searchType == 'def'">
+					AND (CASE WHEN UPPER(#{lang}) = 'KH' THEN IC.DEF_KH ELSE IC.DEF_EN END) LIKE CONCAT('%', #{searchKeyword}, '%')
+				</when>
+				<when test="searchType == 'iscoCd'">
+					AND IC.ISCO_CD LIKE CONCAT('%', #{searchKeyword}, '%')
+				</when>
+			</choose>
+		</if>
+		<if test="iscoCd != null and iscoCd != ''">
+			AND LEFT(IC.ISCO_CD, 1) = #{iscoCd}
+		</if>
+		<if test="useYn != null and useYn != ''">
+			AND IC.USE_YN = #{useYn}
+		</if>
+	</select>
+
+	<select id="selectIscoMngDetail" parameterType="ony.cmm.common.bean.IscoBean" resultType="ony.cmm.common.bean.IscoBean">
+		/*iscoMng.selectIscoMngDetail*/
+		SELECT IC.ISCO_CD
+			 , IC.EN_NM
+			 , IC.KH_NM
+			 , IC_DEPTH1.EN_NM AS DEPTH1_EN_NM
+			 , IC_DEPTH1.KH_NM AS DEPTH1_KH_NM
+			 , IC_DEPTH2.EN_NM AS DEPTH2_EN_NM
+			 , IC_DEPTH2.KH_NM AS DEPTH2_KH_NM
+			 , IC_DEPTH3.EN_NM AS DEPTH3_EN_NM
+			 , IC_DEPTH3.KH_NM AS DEPTH3_KH_NM
+			 , IC.USE_YN
+			 , IC.DEF_EN
+			 , IC.DEF_KH
+			 , IC.OCCUP_INC_KH
+			 , IC.OCCUP_INC_EN
+			 , IC.OCCUP_EXC_KH
+			 , IC.OCCUP_EXC_EN
+			 , IC.NOTE_KH
+			 , IC.NOTE_EN
+			 , IC.TASK_EN
+			 , IC.TASK_KH
+			 , IC.JOB_CATE_CD
+			 , IC.CATE_NM
+			 , IC.TITLE_KH
+			 , IC.TITLE_EN
+			 , IC.DUTIES_KH
+			 , IC.DUTIES_EN
+			 , IC.SKILL_KH
+			 , IC.SKILL_EN
+			 , IC.RESPONSIBILITIES_KH
+			 , IC.RESPONSIBILITIES_EN
+			 , IC.EDU_TRNNG_KH
+			 , IC.EDU_TRNNG_EN
+			 , IC.HIGH_EDU_KH
+			 , IC.HIGH_EDU_EN
+			 , IC.MAJOR_STUDY_KH
+			 , IC.MAJOR_STUDY_EN
+			 , IC.SKILL_RELATED_EXP_KH
+			 , IC.SKILL_RELATED_EXP_EN
+			 , IC.THUMB_FILE_GRP_SEQ
+			 , FN_GET_USER_NM_BY_USER_SEQ(IC.MOD_USER_SEQ, #{lang}) AS MOD_USER_NM
+			 , DATE_FORMAT(IC.MOD_DT, '%d/%m/%Y') AS MOD_DT
+			 , FN_GET_FILE_PATH(IC.THUMB_FILE_GRP_SEQ) AS FILE_PATH
+		FROM CPES_ISCO_CD IC
+			LEFT JOIN CPES_ISCO_CD IC_DEPTH1
+			ON LEFT(IC.ISCO_CD, 1) = IC_DEPTH1.ISCO_CD
+			AND IC_DEPTH1.LVL = '1'
+				LEFT JOIN CPES_ISCO_CD IC_DEPTH2
+				ON LEFT(IC.ISCO_CD, 2) = IC_DEPTH2.ISCO_CD
+				AND IC_DEPTH2.LVL = '2'
+					LEFT JOIN CPES_ISCO_CD IC_DEPTH3
+					ON LEFT(IC.ISCO_CD, 3) = IC_DEPTH3.ISCO_CD
+					AND IC_DEPTH3.LVL = '3'
+		WHERE IC.ISCO_CD = #{detailIscoCd}
+	</select>
+
+</mapper>

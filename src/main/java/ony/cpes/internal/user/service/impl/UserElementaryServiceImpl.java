@@ -1,8 +1,10 @@
 package ony.cpes.internal.user.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -16,6 +18,7 @@ import ony.cpes.internal.user.bean.UserElementaryBean;
 import ony.cpes.internal.user.bean.UserElementaryIntvwBean;
 import ony.cpes.internal.user.dao.UserElementaryDAO;
 import ony.cpes.internal.user.service.UserElementaryService;
+import ony.cmm.common.service.CommonService;
 import ony.cpes.internal.common.bean.CommCdMngBean;
 import ony.cpes.internal.counsel.bean.CounselBean;
 
@@ -80,7 +83,66 @@ public class UserElementaryServiceImpl implements UserElementaryService{
 		return param;
 
 	}
+	
+	/**
+	 * Insert User Info By Excel
+	 * @param UserElementaryBean
+	 * @return UserElementaryBean
+	*/
+	@Override
+	//public UserElementaryBean insertUserElementaryRegUserInfoByExcel(UserElementaryBean param) throws Exception {
+	public UserElementaryBean insertUserElementaryRegUserInfoByExcel(List<Map<String, Object>> param, Locale locale, HttpServletRequest request) throws Exception {
 
+		UserElementaryBean resultParam = new UserElementaryBean();
+		UserElementaryBean userInfoParam = new UserElementaryBean();
+		UserElementaryBean cdParam = new UserElementaryBean();
+		UserElementaryBean rtnCdParam = new UserElementaryBean();
+        
+		try {
+			int result = 0;
+			int loopCnt = param.size();
+			
+			for (int i = 0; i < loopCnt; i++) {
+				
+				userInfoParam.setJcCd(param.get(i).get("jcCd").toString());
+				userInfoParam.setRegUserSeq(param.get(i).get("regUserSeq").toString());
+				userInfoParam.setUserNmKh(param.get(i).get("userNmKh").toString());
+				userInfoParam.setUserNmEn(param.get(i).get("userNmEn").toString());
+				userInfoParam.setUserEmail(param.get(i).get("userEmail").toString());
+				userInfoParam.setUserCell(param.get(i).get("userCell").toString());
+				userInfoParam.setUserPasswd(param.get(i).get("userPasswd").toString());
+				userInfoParam.setBirth(param.get(i).get("userBirth").toString());
+				userInfoParam.setGenderCd(param.get(i).get("userGender").toString());
+				
+				cdParam.setAddrCd(param.get(i).get("userAddrCd").toString());
+				rtnCdParam = userElementaryDAO.selectAddrFullCdByAddrCd(cdParam);
+				userInfoParam.setAddrFullCd(rtnCdParam.getAddrFullCd());
+				
+				userInfoParam.setAddrDtl(param.get(i).get("userDtlAddr").toString());
+				
+				result = userElementaryDAO.insertUserElementaryRegUserInfoByExcel(userInfoParam);
+		
+			    if(result > 0) {
+		    		resultParam.setResultCode("0000");
+			    	resultParam.setMsg("Success");
+		
+			    } else {
+			    	// Later Change to ResultCode as ErrCode
+			    	resultParam.setResultCode(Integer.toString(result));
+			    	resultParam.setMsg(messageSource.getMessage("cpes.error.msg",null, "Error", localeResolver.resolveLocale(request)));
+			    }
+			}
+		
+		    
+		} catch (Exception e) {
+			resultParam.setResultCode(messageSource.getMessage("cpes.error.code",null, "Error", localeResolver.resolveLocale(request)));
+			resultParam.setMsg(messageSource.getMessage("cpes.error.msg",null, "Error", localeResolver.resolveLocale(request)));
+		}
+		
+		return resultParam;
+		
+    }	
+	
 	/**
 	 * User Detail Info Main Using Elementary Job Seeker
 	 * @param UserElementaryBean
@@ -196,7 +258,13 @@ public class UserElementaryServiceImpl implements UserElementaryService{
 		String srchAddrCd = "";
 		srchAddrCd = param.getAddrFullCd().toString();
 		String[] arrSrchAddrCd = srchAddrCd.split(",");
-		srchAddrCd = arrSrchAddrCd[0] + "," + arrSrchAddrCd[1];
+		
+		if (arrSrchAddrCd.length > 1) {
+			srchAddrCd = arrSrchAddrCd[0] + arrSrchAddrCd[1];
+		} else {
+			srchAddrCd = arrSrchAddrCd[0];
+		}
+		
 		param.setSrchAddrCd(srchAddrCd);
 
 		UserElementaryBean jcRtnParam = new UserElementaryBean();

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="setIscoMng">
+
+	<update id="updateIscoMng" parameterType="ony.cmm.common.bean.IscoBean">
+		UPDATE CPES_ISCO_CD
+		SET MOD_DT = NOW()
+		, MOD_USER_SEQ = #{modUserSeq}
+		<if test="occupIncKh != null and occupIncKh != ''">, OCCUP_INC_KH = #{occupIncKh}</if>
+		<if test="occupIncEn != null and occupIncEn != ''">, OCCUP_INC_EN = #{occupIncEn}</if>
+		<if test="occupExcKh != null and occupExcKh != ''">, OCCUP_EXC_KH = #{occupExcKh}</if>
+		<if test="occupExcEn != null and occupExcEn != ''">, OCCUP_EXC_EN = #{occupExcEn}</if>
+		<if test="noteKh != null and noteKh != ''">, NOTE_KH = #{noteKh}</if>
+		<if test="noteEn != null and noteEn != ''">, NOTE_EN = #{noteEn}</if>
+		<if test="defEn != null and defEn != ''">, DEF_EN = #{defEn}</if>
+		<if test="defKh != null and defKh != ''">, DEF_KH = #{defKh}</if>
+		<if test="taskEn != null and taskEn != ''">, TASK_EN = #{taskEn}</if>
+		<if test="taskKh != null and taskKh != ''">, TASK_KH = #{taskKh}</if>
+		<if test="jobCateCd != null and jobCateCd != ''">, JOB_CATE_CD = #{jobCateCd}</if>
+		<if test="titleKh != null and titleKh != ''">, TITLE_KH = #{titleKh}</if>
+		<if test="dutiesKh != null and dutiesKh != ''">, DUTIES_KH = #{dutiesKh}</if>
+		<if test="skillKh != null and skillKh != ''">, SKILL_KH = #{skillKh}</if>
+		<if test="responsibilitiesKh != null and responsibilitiesKh != ''">, RESPONSIBILITIES_KH = #{responsibilitiesKh}</if>
+		<if test="eduTrnngKh != null and eduTrnngKh != ''">, EDU_TRNNG_KH = #{eduTrnngKh}</if>
+		<if test="highEduKh != null and highEduKh != ''">, HIGH_EDU_KH = #{highEduKh}</if>
+		<if test="majorStudyKh != null and majorStudyKh != ''">, MAJOR_STUDY_KH = #{majorStudyKh}</if>
+		<if test="skillRelatedExpKh != null and skillRelatedExpKh != ''">, SKILL_RELATED_EXP_KH = #{skillRelatedExpKh}</if>
+		<if test="titleEn != null and titleEn != ''">, TITLE_EN = #{titleEn}</if>
+		<if test="dutiesEn != null and dutiesEn != ''">, DUTIES_EN = #{dutiesEn}</if>
+		<if test="skillEn != null and skillEn != ''">, SKILL_EN = #{skillEn}</if>
+		<if test="responsibilitiesEn != null and responsibilitiesEn != ''">, RESPONSIBILITIES_EN = #{responsibilitiesEn}</if>
+		<if test="eduTrnngEn != null and eduTrnngEn != ''">, EDU_TRNNG_EN = #{eduTrnngEn}</if>
+		<if test="highEduEn != null and highEduEn != ''">, HIGH_EDU_EN = #{highEduEn}</if>
+		<if test="majorStudyEn != null and majorStudyEn != ''">, MAJOR_STUDY_EN = #{majorStudyEn}</if>
+		<if test="skillRelatedExpEn != null and skillRelatedExpEn != ''">, SKILL_RELATED_EXP_EN = #{skillRelatedExpEn}</if>
+		<if test="thumbFileGrpSeq != null and thumbFileGrpSeq != ''">, THUMB_FILE_GRP_SEQ = #{thumbFileGrpSeq}</if>
+		<if test="useYn != null and useYn != ''">, USE_YN = #{useYn}</if>
+		WHERE ISCO_CD = #{iscoCd}
+	</update>
+
+</mapper>

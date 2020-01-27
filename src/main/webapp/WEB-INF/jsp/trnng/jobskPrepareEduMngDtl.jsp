@@ -26,7 +26,7 @@ button.ui-datepicker-trigger{position: relative; cursor: pointer; margin-left:-2
 <input type="hidden" id="teachTwoCommonUploadResult" name="teachTwoCommonUploadResult">
 <input type="hidden" id="lectureCommonUploadResult" name="lectureCommonUploadResult">
 
-<h3>교육정보</h3>
+<h3><spring:message code="field.dic.edu.info" /></h3>
 <div class="bbs_basic margin_b_20">
 	<table class="bbs_table write">
 		<caption>{Board name} View - 공지사항여부, 부서, 제목, 작성자, 내용, 첨부파일, 이미지첨부파일의 대체텍스트</caption>
@@ -38,7 +38,7 @@ button.ui-datepicker-trigger{position: relative; cursor: pointer; margin-left:-2
 		</colgroup>
 		<tbody>
 		<tr>
-			<th scope="row"><span class="exactly y">necessary</span><label for="eduTrnngNm">직업지원 교육명</label></th>
+			<th scope="row"><span class="exactly y">necessary</span><label for="eduTrnngNm"><spring:message code="field.dic.jobedu.nm" /></label></th>
 			<td colspan="3"><input type="text" id="eduTrnngNm" name="eduTrnngNm" value="<c:out value="${EduTrnngMngBean.eduTrnngNm}" />" style="width:100%;" required /></td>
 		</tr>
 		<tr>
@@ -47,15 +47,15 @@ button.ui-datepicker-trigger{position: relative; cursor: pointer; margin-left:-2
 			<td colspan="3"><textarea id="content" name="content" cols="30" rows="10" title="content" required ><c:out value="${EduTrnngMngBean.content}" /></textarea></td>
 		</tr>
 		<tr>
-			<th scope="row"><span class="exactly y">necessary</span><label for="curricl">커리큘럼 설명</label></th>
+			<th scope="row"><span class="exactly y">necessary</span><label for="curricl"><spring:message code="field.dic.curricl.explain" /></label></th>
 			<td colspan="3"><textarea id="curricl" name="curricl" cols="30" rows="10" title="curricl" required ><c:out value="${EduTrnngMngBean.curricl}" /></textarea></td>
 		</tr>
 		<tr>
-			<th scope="row"><label for="matr">준비물</label></th>
+			<th scope="row"><label for="matr"><spring:message code="field.dic.matr" /></label></th>
 			<td colspan="3"><textarea id="matr" name="matr" cols="30" rows="10" title="matr" ><c:out value="${EduTrnngMngBean.matr}" /></textarea></td>
 		</tr>
 		<tr>
-			<th scope="row"><span class="exactly y">necessary</span><label for="teachDt">교육일시</label></th>
+			<th scope="row"><span class="exactly y">necessary</span><label for="teachDt"><spring:message code="field.dic.edu.dt" /></label></th>
 			<td colspan="3">
 				<span class="period_box">
 					<span class="date_box">
@@ -166,39 +166,39 @@ button.ui-datepicker-trigger{position: relative; cursor: pointer; margin-left:-2
 		</colgroup>
 		<tbody>
 		<tr>
-			<th scope="row"><span class="exactly y">necessary</span><label for="eduTarget">대상</label></th>
+			<th scope="row"><span class="exactly y">necessary</span><label for="eduTarget"><spring:message code="field.dic.target" /></label></th>
 			<td><input type="text" id="eduTarget" name="eduTarget" value="<c:out value="${EduTrnngMngBean.eduTarget}" />"  required /></td>
 			<th scope="row"><span class="exactly y">necessary</span><label for="recrumtMemb"><spring:message code="field.dic.recrumt.memb" /></label></th>
 			<td><input type="text" id="recrumtMemb" name="recrumtMemb" value="<c:out value="${EduTrnngMngBean.recrumtMemb}" />" onKeyUp="onlyNumberCommon(this);" required /></td>
 		</tr>
 		<tr>
-			<th scope="row"><span class="exactly y">necessary</span><label for="teacherNm1">강사명1</label></th>
+			<th scope="row"><span class="exactly y">necessary</span><label for="teacherNm1"><spring:message code="field.dic.teacher.one" /></label></th>
 			<td><input type="text" id="teacherNm1" name="teacherNm1" value="<c:out value="${EduTrnngMngBean.teacherNm1}" />" /></td>
-			<th scope="row"><label for="teacherNm2">강사명2</label></th>
+			<th scope="row"><label for="teacherNm2"><spring:message code="field.dic.teacher.two" /></label></th>
 			<td><input type="text" id="teacherNm2" name="teacherNm2" value="<c:out value="${EduTrnngMngBean.teacherNm2}" />" /></td>
 		</tr>
 		<tr>
-			<th scope="row"><span class="exactly y">necessary</span><label for="teacher1PhotoFileGrpSeq">강사사진1</label></th>
+			<th scope="row"><span class="exactly y">necessary</span><label for="teacher1PhotoFileGrpSeq"><spring:message code="field.dic.teacherphoto.one" /></label></th>
 			<td style="vertical-align:middle;">
 				<input type="hidden" id="teacher1PhotoFileGrpSeq" name="teacher1PhotoFileGrpSeq" value="<c:out value="${EduTrnngMngBean.teacher1PhotoFileGrpSeq}" />">
 				<div id="teachOneDext5uploadArea"></div>
 			</td>
-			<th scope="row"><label for="teacher2PhotoFileGrpSeq">강사사진2</label></th>
+			<th scope="row"><label for="teacher2PhotoFileGrpSeq"><spring:message code="field.dic.teacherphoto.two" /></label></th>
 			<td style="vertical-align:middle;">
 				<input type="hidden" id="teacher2PhotoFileGrpSeq" name="teacher2PhotoFileGrpSeq" value="<c:out value="${EduTrnngMngBean.teacher2PhotoFileGrpSeq}" />">
 				<div id="teachTwoDext5uploadArea"></div>
 			</td>
 		</tr>
 		<tr>
-			<th scope="row"><span class="exactly y">necessary</span><label for="teacher1Career">강사약력1</label></th>
+			<th scope="row"><span class="exactly y">necessary</span><label for="teacher1Career"><spring:message code="field.dic.teachercareer.one" /></label></th>
 			<td colspan="3"><textarea id="teacher1Career" name="teacher1Career" cols="30" rows="10" title="teacher1Career" required ><c:out value="${EduTrnngMngBean.teacher1Career}" /></textarea></td>
 		</tr>
 		<tr>
-			<th scope="row"><label for="teacher2Career">강사약력2</label></th>
+			<th scope="row"><label for="teacher2Career"><spring:message code="field.dic.teachercareer.two" /></label></th>
 			<td colspan="3"><textarea id="teacher2Career" name="teacher2Career" cols="30" rows="10" title="teacher2Career" ><c:out value="${EduTrnngMngBean.teacher2Career}" /></textarea></td>
 		</tr>
 		<tr>
-			<th scope="row"><label for="lecturePhotoFileGrpSeq">강의사진</label></th>
+			<th scope="row"><label for="lecturePhotoFileGrpSeq"><spring:message code="field.dic.lecture.photo" /></label></th>
 			<td colspan="3" style="vertical-align:middle;">
 				<input type="hidden" id="lecturePhotoFileGrpSeq" name="lecturePhotoFileGrpSeq" value="<c:out value="${EduTrnngMngBean.lecturePhotoFileGrpSeq}" />">
 				<div id="lectureDext5uploadArea"></div>

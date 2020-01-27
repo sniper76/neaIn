@@ -32,8 +32,12 @@ public class UserInsttController extends BaseController{
 	@Autowired
 	private UserInsttService userInsttService;
 	
-	/*
-	 * User List
+	/**
+	 * Screen of Institution List
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception
 	 */
     @RequestMapping("/userInsttInfoList")
 	public String userInsttInfoList(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -41,7 +45,16 @@ public class UserInsttController extends BaseController{
 		return "user/userInsttInfoList.all";
 	}    
     
-    @RequestMapping(value="/selectUserInsttInfoList")    
+    /**
+     * get Institution List Ajax
+     * @param userInsttBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value="/selectUserInsttInfoListAjax")
 	public ModelAndView selectUserInsttInfoListAjax(@ModelAttribute("userInsttBean") UserInsttBean userInsttBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	
   		ModelAndView mv = new ModelAndView();
@@ -105,9 +118,15 @@ public class UserInsttController extends BaseController{
 		return mv;  
     }
     
-    /*
-     * Institution User Detail Info Main
-     */   
+    /**
+     * get Base info Detail of Institution 
+     * @param userInsttBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserInsttDtlInfoMainAjax") 
     public ModelAndView selectUserInsttDtlInfoMainAjax(@ModelAttribute("UserInsttBean") UserInsttBean userInsttBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -122,9 +141,15 @@ public class UserInsttController extends BaseController{
     	return mv;
 	}
     
-    /*
-     * Institution User Detail Info Base
-     */   
+    /**
+     * get Base info Detail of Institution
+     * @param userInsttBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserInsttDtlInfoBaseAjax") 
     public ModelAndView selectUserInsttDtlInfoBaseAjax(@ModelAttribute("UserInsttBean") UserInsttBean userInsttBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -136,9 +161,15 @@ public class UserInsttController extends BaseController{
     	return mv;
 	} 
     
-    /*
-     * Institution Detail Info Profile
-     */   
+    /**
+     * get Profile of Institution Ajax
+     * @param userInsttBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserInsttDtlInfoProfileAjax") 
     public ModelAndView selectUserInsttDtlInfoProfileAjax(@ModelAttribute("UserInsttBean") UserInsttBean userInsttBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -153,9 +184,15 @@ public class UserInsttController extends BaseController{
     	return mv;
 	} 
     
-    /*
-    * Institution Detail Info Education Training
-    */   
+    /**
+     * Screen Edu Program list of Institution Ajax
+     * @param userInsttEduBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
    @RequestMapping(value="/selectUserInsttDtlInfoEduMainAjax") 
    public ModelAndView selectUserInsttDtlInfoEduMainAjax(@ModelAttribute("UserInsttEduBean") UserInsttEduBean userInsttEduBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
    	ModelAndView mv = new ModelAndView();
@@ -166,6 +203,15 @@ public class UserInsttController extends BaseController{
    	return mv;
 	}    
    
+   /**
+    * get Edu Program list of Institution Ajax
+    * @param userInsttEduBean
+    * @param locale
+    * @param request
+    * @param response
+    * @return
+    * @throws Exception
+    */
    @RequestMapping(value="/selectUserInsttDtlInfoEduListSubAjax")    
 	public ModelAndView selectUserInsttDtlInfoEduListSubAjax(@ModelAttribute("UserInsttEduBean") UserInsttEduBean userInsttEduBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
    	
@@ -199,9 +245,15 @@ public class UserInsttController extends BaseController{
 	  	return mv;  
 	}     
 
-   /*
-   * Institution Detail Info Job Fair
-   */   
+   /**
+    * Screen Job Fair of Institution Ajax
+    * @param userInsttFairBean
+    * @param locale
+    * @param request
+    * @param response
+    * @return
+    * @throws Exception
+    */
   @RequestMapping(value="/selectUserInsttDtlInfoJobfairMainAjax") 
   public ModelAndView selectUserInsttDtlInfoJobfairMainAjax(@ModelAttribute("UserInsttFairBean") UserInsttFairBean userInsttFairBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
   	ModelAndView mv = new ModelAndView();
@@ -212,6 +264,15 @@ public class UserInsttController extends BaseController{
   	return mv;
 	}    
   
+  /**
+   * get Job Fair List of Institution Ajax
+   * @param userInsttFairBean
+   * @param locale
+   * @param request
+   * @param response
+   * @return
+   * @throws Exception
+   */
   @RequestMapping(value="/selectUserInsttDtlInfoJobfairSubAjax")    
 	public ModelAndView selectUserInsttDtlInfoJobfairSubAjax(@ModelAttribute("UserInsttFairBean") UserInsttFairBean userInsttFairBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
   	

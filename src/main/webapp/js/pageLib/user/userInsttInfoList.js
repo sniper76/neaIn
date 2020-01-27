@@ -92,7 +92,7 @@
 			          },
 			        serverMethod: 'post',
 			        ajax: {
-			            url: contextPath +"/internal/user/selectUserInsttInfoList.do?orderColumns="+orderColumns
+			            url: contextPath +"/internal/user/selectUserInsttInfoListAjax.do?orderColumns="+orderColumns
 			            , dataType: 'json'
 			            //, data: param
 			            , data: function ( d ) {

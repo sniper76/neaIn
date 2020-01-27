@@ -93,23 +93,16 @@ function goSel() {
 
 	var addrObj1 = $("#addrObj").val();
 
-	/* 유승우 addrFullCd 수정 2019.11.15 */
 	var provinceLvlCd = "", districtLvlCd = "", communeLvlCd = "", villageLvlCd = "";
 	$('ul#provinceLi > li').each(function(i, item) { if($(this).hasClass('on')) { provinceLvlCd = ($.trim($(this).attr('id'))).replace('btn_', ''); } });
 	$('ul#districtLi > li').each(function(i, item) { if($(this).hasClass('on')) { districtLvlCd = ($.trim($(this).attr('id'))).replace('btn_', ''); } });
 	$('ul#communeLi > li').each(function(i, item) { if($(this).hasClass('on')) { communeLvlCd = ($.trim($(this).attr('id'))).replace('btn_', ''); } });
 	$('ul#villageLi > li').each(function(i, item) { if($(this).hasClass('on')) { villageLvlCd = ($.trim($(this).attr('id'))).replace('btn_', ''); } });
-	addrFullCd = provinceLvlCd + (districtLvlCd != "" ? "," + districtLvlCd : "") + (communeLvlCd != "" ? "," + communeLvlCd : "") + (villageLvlCd != "" ? "," + villageLvlCd : "");
-	/* 유승우 addrFullCd 수정 2019.11.15 */
+	addrFullCd = villageLvlCd + (villageLvlCd != "" ? "," + communeLvlCd : "") + (communeLvlCd != "" ? "," + districtLvlCd : "") + (districtLvlCd != "" ? "," + provinceLvlCd : "");
 
 	var addrFullObj1 = $("#addrFullObj").val();
 	var addrFullObjTxt1 = $("#addrFullObjTxt").val();
 	var addrFullObjTxtView1 = $("#addrFullObjTxtView").val();
-/*
-	alert(addrFullObj1);
-	alert(addrFullObjTxt1);
-	alert(addrFullObjTxtView1);
- */
 
 	var multiFlag = $("#multiFlag").val();
 
@@ -241,41 +234,45 @@ function clkProvince(lvlCd, pid, did, cid, vid, lvl) {
 	} else if (lvl ==3) {
 		$("#provinceId").val(pid);
 		$("#districtId").val(did);
-		addrFullCd = pid+'>'+did;
+		addrFullCd = did+'>'+pid;
 		var txt = "";
-		$('.cls_2').each(function(i){
+		
+		$('.cls_3').each(function(i){
 			if ($(this).hasClass("on")) {
 				addrTxt = $(this).find('button').text();
 				lastaddrTxt = $(this).find('button').text();
 			}
 		});
-
-		$('.cls_3').each(function(i){
+		
+		$('.cls_2').each(function(i){
 			if ($(this).hasClass("on")) {
-				addrTxt += " > " + $(this).find('button').text();
+				addrTxt += " > " +$(this).find('button').text();
 				lastaddrTxt = $(this).find('button').text();
 			}
 		});
+
+		
 	} else if (lvl == 4) {
 		$("#provinceId").val(pid);
 		$("#districtId").val(did);
 		$("#communeId").val(cid);
-		addrFullCd = pid+'>'+did+'>'+cid;
-		$('.cls_2').each(function(i){
+		addrFullCd = cid+'>'+did+'>'+pid;
+		
+		$('.cls_4').each(function(i){
 			if ($(this).hasClass("on")) {
 				addrTxt = $(this).find('button').text();
 				lastaddrTxt = $(this).find('button').text();
 			}
 		});
-
+		
 		$('.cls_3').each(function(i){
 			if ($(this).hasClass("on")) {
 				addrTxt += " > " + $(this).find('button').text();
 				lastaddrTxt = $(this).find('button').text();
 			}
 		});
-
-		$('.cls_4').each(function(i){
+		
+		$('.cls_2').each(function(i){
 			if ($(this).hasClass("on")) {
 				addrTxt += " > " + $(this).find('button').text();
 				lastaddrTxt = $(this).find('button').text();
@@ -287,34 +284,36 @@ function clkProvince(lvlCd, pid, did, cid, vid, lvl) {
 		$("#districtId").val(did);
 		$("#communeId").val(cid);
 		$("#villageId").val(vid);
-		addrFullCd = pid+'>'+did+'>'+cid+'>'+vid;
-		$('.cls_2').each(function(i){
+		addrFullCd = vid+'>'+cid+'>'+did+'>'+pid;
+		
+		$('.cls_5').each(function(i){
 			if ($(this).hasClass("on")) {
 				addrTxt = $(this).find('button').text();
 				lastaddrTxt = $(this).find('button').text();
 			}
 		});
-
-		$('.cls_3').each(function(i){
-			if ($(this).hasClass("on")) {
-				addrTxt +=" > " + $(this).find('button').text();
-				lastaddrTxt = $(this).find('button').text();
-			}
-		});
-
+		
 		$('.cls_4').each(function(i){
 			if ($(this).hasClass("on")) {
 				addrTxt +=" > " + $(this).find('button').text();
 				lastaddrTxt = $(this).find('button').text();
 			}
 		});
-
-		$('.cls_5').each(function(i){
+		
+		$('.cls_3').each(function(i){
 			if ($(this).hasClass("on")) {
 				addrTxt +=" > " + $(this).find('button').text();
 				lastaddrTxt = $(this).find('button').text();
 			}
 		});
+		
+		$('.cls_2').each(function(i){
+			if ($(this).hasClass("on")) {
+				addrTxt +=" > " + $(this).find('button').text();
+				lastaddrTxt = $(this).find('button').text();
+			}
+		});
+		
 	}
 
 	// 다음 주소를 조회하기 위해 레빌을 +1 한다.

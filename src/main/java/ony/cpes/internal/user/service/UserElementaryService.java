@@ -1,6 +1,9 @@
 package ony.cpes.internal.user.service;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,6 +22,15 @@ public interface UserElementaryService {
      */
     public UserElementaryBean selectUserElementaryInfoList(UserElementaryBean param, HttpServletRequest request) throws Exception;
 
+	/**
+     * Registration User Info By Excel
+     *
+     * @param UserElementaryBean
+     * @return UserElementaryBean
+	*/
+    //public UserElementaryBean insertUserElementaryRegUserInfoByExcel(UserElementaryBean param) throws Exception;
+    public UserElementaryBean insertUserElementaryRegUserInfoByExcel(List<Map<String, Object>> param, Locale locale, HttpServletRequest request) throws Exception;
+    
 	/**
      * User Detail Info Main Using Elementary Job Seeker
      *

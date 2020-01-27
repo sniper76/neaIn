@@ -213,9 +213,10 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 			// if had session then erase session
 			if(menuSession.getAttribute("sessUser") != null) {
 				menuSession.removeAttribute("sessUser");
+				menuSession.removeAttribute("sessAuth");
 			}
-
 			menuSession.setAttribute("sessUser", sessUser);
+			menuSession.setAttribute("sessAuth", menuProgramMapList);
 		}
 		
 		// if success login then insert log for login

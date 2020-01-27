@@ -37,19 +37,17 @@
 			}
 	}
 	
-	
-	
 	$("#btnUserExcelReg").click(function (event) {
-
+		alert("11111");
 		var formData = $('#frmUserElementaryExcelReg').serializeObject();		
 		$("#frmUserElementaryExcelReg").attr("method", "post");
 		$("#frmUserElementaryExcelReg").attr("enctype", "multipart/form-data");
 		$("#frmUserElementaryExcelReg").attr("action", contextPath + "/internal/user/insertUserInfoByExcel.do");
 		$("#frmUserElementaryExcelReg").submit();
 	})
-	
-	function fnUserExcelReg(){
 
+	function fnUserExcelReg(){
+		alert("22222");
 		$("#frmUserElementaryExcelReg").attr("method", "post");
 		$("#frmUserElementaryExcelReg").attr("enctype", "multipart/form-data");
 		$("#frmUserElementaryExcelReg").attr("action", contextPath + "/internal/user/insertUserInfoByExcel.do");

@@ -42,17 +42,16 @@ public class UserCmpnyController extends BaseController{
 	@Autowired MessageSource messageSource;
 	
 	@Autowired SessionLocaleResolver localeResolver;
-	
-	/*
-	 * User List
-	@RequestMapping("/userCmpnyInfoList")
-	public String userCmpnyInfoList(HttpServletRequest request, HttpServletResponse response) throws Exception {
-    	
-    	
-		return "user/userCmpnyInfoList.all";
-	}
-     */
-    
+
+	/**
+	 * Screen by Company User
+	 * @param userCmpnyBean
+	 * @param locale
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 */
     @RequestMapping(value="/userCmpnyInfoList") 
     public ModelAndView userCmpnyInfoList(@ModelAttribute("UserCmpnyBean") UserCmpnyBean userCmpnyBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -66,7 +65,15 @@ public class UserCmpnyController extends BaseController{
     	return mv;
 	}
     
-    
+    /**
+     * inquiry company user list Ajax
+     * @param userCmpnyBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyInfoListAjax")    
 	public ModelAndView selectUserCmpnyInfoListAjax(@ModelAttribute("userCmpnyBean") UserCmpnyBean userCmpnyBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	
@@ -100,7 +107,15 @@ public class UserCmpnyController extends BaseController{
 	  	return mv;  
 	}
 
-    
+    /**
+     * 
+     * @param userCmpnyBean
+     * @param locale
+     * @param response
+     * @param request
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/deleteUserCmpnyInfo")
     public ModelAndView deleteUserCmpnyInfoAjax(@ModelAttribute("UserCmpnyBean") UserCmpnyBean userCmpnyBean, Locale locale, HttpServletResponse response, HttpServletRequest request) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -132,9 +147,16 @@ public class UserCmpnyController extends BaseController{
 		return mv;  
     } 
     
-    /*
-     * User Company Detail Info Main
-     */   
+    /**
+     * screen info by Company user
+     * @param userCmpnyBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     * IN_US_020102
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoMain") 
     public ModelAndView selectUserCmpnyDtlInfoMain(@ModelAttribute("UserCmpnyBean") UserCmpnyBean userCmpnyBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -148,9 +170,16 @@ public class UserCmpnyController extends BaseController{
     	return mv;
 	}
     
-    /*
-     * User Company Detail Info Base
-     */   
+    /**
+     * detail company user info
+     * @param userCmpnyBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     * IN_US_020102
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoBaseAjax") 
     public ModelAndView selectUserCmpnyDtlInfoBaseAjax(@ModelAttribute("UserCmpnyBean") UserCmpnyBean userCmpnyBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -163,9 +192,15 @@ public class UserCmpnyController extends BaseController{
     	return mv;
 	}
     
-    /*
-     * User Company Detail Info Profile
-     */   
+    /**
+     * inquiry company profile (IN_US_020103)
+     * @param userCmpnyBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoProfileAjax") 
     public ModelAndView selectUserCmpnyDtlInfoProfileAjax(@ModelAttribute("UserCmpnyBean") UserCmpnyBean userCmpnyBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -180,13 +215,18 @@ public class UserCmpnyController extends BaseController{
     	return mv;
 	}      
 
-    /*
-     * User Company Detail Info Vacancy
-     */   
+    /**
+     * Screen by Vacancy info in detail of company
+     * @param userCmpnyVccyBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoVccyListMainAjax") 
     public ModelAndView selectUserCmpnyDtlInfoVccyListMainAjax(@ModelAttribute("UserCmpnyVccyBean") UserCmpnyVccyBean userCmpnyVccyBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
-    	
 		
     	mv.addObject("rtnCompnySeq", userCmpnyVccyBean.getCompnySeq());			//Resume Base(Human) Data
     	mv.addObject("rtnLangCd", locale.getLanguage().toLowerCase());		//
@@ -194,6 +234,15 @@ public class UserCmpnyController extends BaseController{
     	return mv;
 	}
     
+    /**
+     * inquiry by Vacancy info List in Company
+     * @param userCmpnyVccyBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoVccyListSubAjax")    
 	public ModelAndView selectUserCmpnyDtlInfoVccyListSubAjax(@ModelAttribute("UserCmpnyVccyBean") UserCmpnyVccyBean userCmpnyVccyBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	
@@ -241,9 +290,15 @@ public class UserCmpnyController extends BaseController{
     	return mv;
 	}
     
-    /*
-     * User Company Detail Info Application
-     */   
+    /**
+     * Application screen in Company info
+     * @param userCmpnyAplcBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoAplcListMainAjax") 
     public ModelAndView selectUserCmpnyDtlInfoAplcListMainAjax(@ModelAttribute("UserCmpnyAplcBean") UserCmpnyAplcBean userCmpnyAplcBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -261,6 +316,15 @@ public class UserCmpnyController extends BaseController{
     	return mv;
 	}
     
+    /**
+     * Application list in company info
+     * @param userCmpnyAplcBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoAplcListSubAjax")    
 	public ModelAndView selectUserCmpnyDtlInfoAplcListSubAjax(@ModelAttribute("UserCmpnyAplcBean") UserCmpnyAplcBean userCmpnyAplcBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	
@@ -310,10 +374,16 @@ public class UserCmpnyController extends BaseController{
 	  	mv.setViewName("jsonView");
 	  	return mv;  
 	}  
-    
-    /*
-     * User Company Detail Info Offer
-     */   
+
+    /**
+     * offer Screen in company detail
+     * @param userCmpnyOfferBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoOfferMainAjax") 
     public ModelAndView selectUserCmpnyDtlInfoOfferMainAjax(@ModelAttribute("UserCmpnyOfferBean") UserCmpnyOfferBean userCmpnyOfferBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -331,6 +401,15 @@ public class UserCmpnyController extends BaseController{
     	return mv;
 	}    
     
+    /**
+     * offer list in company detail
+     * @param userCmpnyOfferBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoOfferListSubAjax")    
 	public ModelAndView selectUserCmpnyDtlInfoOfferListSubAjax(@ModelAttribute("UserCmpnyOfferBean") UserCmpnyOfferBean userCmpnyOfferBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	
@@ -381,9 +460,15 @@ public class UserCmpnyController extends BaseController{
 	  	return mv;  
 	}     
 
-    /*
-     * User Company Detail Info Interview
-     */   
+    /**
+     * Interview Screen in company detail
+     * @param userCmpnyIntvwBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoIntvwMainAjax") 
     public ModelAndView selectUserCmpnyDtlInfoIntvwMainAjax(@ModelAttribute("UserCmpnyIntvwBean") UserCmpnyIntvwBean userCmpnyIntvwBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -401,6 +486,15 @@ public class UserCmpnyController extends BaseController{
     	return mv;
 	}    
     
+    /**
+     * Interview list in company detail
+     * @param userCmpnyIntvwBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoIntvwListSubAjax")    
 	public ModelAndView selectUserCmpnyDtlInfoIntvwListSubAjax(@ModelAttribute("UserCmpnyIntvwBean") UserCmpnyIntvwBean userCmpnyIntvwBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	
@@ -451,9 +545,15 @@ public class UserCmpnyController extends BaseController{
 	  	return mv;  
 	} 
 
-    /*
-     * User Company Detail Info Job Fair
-     */   
+    /**
+     * Participation Job Fair Main in company Detail
+     * @param userCmpnyFairBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoJobfairMainAjax") 
     public ModelAndView selectUserCmpnyDtlInfoJobfairMainAjax(@ModelAttribute("UserCmpnyFairBean") UserCmpnyFairBean userCmpnyFairBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
@@ -464,6 +564,15 @@ public class UserCmpnyController extends BaseController{
     	return mv;
 	}    
     
+    /**
+     * Participation Job Fair Sub in company Detail
+     * @param userCmpnyFairBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserCmpnyDtlInfoJobfairListSubAjax")    
 	public ModelAndView selectUserCmpnyDtlInfoJobfairListSubAjax(@ModelAttribute("UserCmpnyFairBean") UserCmpnyFairBean userCmpnyFairBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	

@@ -21,7 +21,15 @@ public class SysConnLogBean extends PagingBean{
 	private String rangeCd = "";
 	private String regUserSeq = "";
 	private String regDt = "";
+	private String mobilePcDivCd = "";
 	
+	
+	public String getMobilePcDivCd() {
+		return mobilePcDivCd;
+	}
+	public void setMobilePcDivCd(String mobilePcDivCd) {
+		this.mobilePcDivCd = mobilePcDivCd;
+	}
 	public int getSysConnLog() {
 		return sysConnLog;
 	}

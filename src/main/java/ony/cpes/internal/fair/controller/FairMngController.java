@@ -301,7 +301,7 @@ public class FairMngController extends BaseController {
 	 * @return
 	 * @throws Exception
 	 */
-    @RequestMapping(value="/selectJobFairDtlInfoAjax") 
+    @RequestMapping(value= {"/selectJobFairDtlInfoAjax", "selectUserJobFairDtlInfoAjax", "selectCompnyJobFairDtlInfoAjax", "selectInsttJobFairDtlInfoAjax"}) 
     public ModelAndView selectJobFairDtlInfoAjax(@ModelAttribute("JobFairBean") JobFairBean jobFairBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	
     	ModelAndView mv = new ModelAndView();

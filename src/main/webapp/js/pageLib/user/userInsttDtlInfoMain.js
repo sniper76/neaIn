@@ -125,7 +125,7 @@
 		
 		$("#innerDtlInfo").empty();
 		
-		var action = contextPath + "/internal/user/selectCounselInfoAjax.do"
+		var action = contextPath + "/internal/user/selectInsttCounselInfoAjax.do"
 		var insttSeq = $('#insttSeq').val();
 		var param = {
 						insttSeq: insttSeq

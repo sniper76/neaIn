@@ -29,10 +29,10 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         
         CustomUserDetailsBean user = (CustomUserDetailsBean) userDeSer.loadUserByUsername(username);
         
-        if(!matchPassword(password, Encryption.getSHA512(user.getPassword()))) {
+        if(!password.equals(user.getPassword())) {
         	// wrong password
             throw new BadCredentialsException(username);
-        } else {
+        } else { 
         	if (user.getPwdFailCnt() > 4) {
         		throw new CredentialsExpiredException(username);
         	} else if (!"ALS0000000001".equals(user.getAccntLockStsCd())) {			// active user Code
@@ -52,10 +52,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         return true;
     }
     
-    private boolean matchPassword(String loginPwd, String password) {
-        return loginPwd.equals(password);
-    }
- 
 }
 
 

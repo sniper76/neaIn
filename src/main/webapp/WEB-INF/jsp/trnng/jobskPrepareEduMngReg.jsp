@@ -154,7 +154,7 @@ button.ui-datepicker-trigger{position: relative; cursor: pointer; margin-left:-2
 </div>
 <!-- //bbs_basic view -->
 
-<h3>담당자</h3>
+<h3><spring:message code="field.dic.rsps.prsn" /></h3>
 <div class="bbs_basic margin_b_20">
 	<table class="bbs_table write">
 		<caption>{Board name} View - 공지사항여부, 부서, 제목, 작성자, 내용, 첨부파일, 이미지첨부파일의 대체텍스트</caption>

@@ -1,16 +1,15 @@
 package ony.cpes.internal.user.controller;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,36 +25,27 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.DefaultNamingPolicy;
 import org.springframework.context.MessageSource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartRequest;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
-import ony.framework.BaseController;
+
 import com.google.common.base.CaseFormat;
 
 import ony.cmm.common.service.CommonService;
-import ony.cpes.internal.user.bean.UserBean;
-import ony.cpes.internal.common.bean.CommCdMngBean;
 import ony.cpes.internal.counsel.bean.CounselBean;
-
+import ony.cpes.internal.user.bean.UserBean;
 import ony.cpes.internal.user.bean.UserElementaryBean;
 import ony.cpes.internal.user.bean.UserElementaryIntvwBean;
 import ony.cpes.internal.user.service.UserElementaryService;
-
-import ony.framework.util.UploadBrowserCheck;
-import ony.framework.util.upload.UploadHelper;
 import ony.framework.BaseConfig;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import ony.framework.BaseController;
+import ony.framework.util.Encryption;
 
 
 @RequestMapping("/internal/user")
@@ -69,13 +59,13 @@ public class UserElementaryController extends BaseController{
 
 	@Autowired
 	private UserElementaryService userElementaryService;
-
+	
 	@Autowired MessageSource messageSource;
 
 	@Autowired SessionLocaleResolver localeResolver;
 
 	/**
-	 * User Info List Using Elementary Job Seeker
+	 * Screen Elementary Job Seeker
 	 * @param UserElementaryBean
 	 * @param UserElementaryBean
 	 * @return
@@ -87,6 +77,15 @@ public class UserElementaryController extends BaseController{
 		return "user/userElementaryInfoList.all";
 	}
 
+    /**
+     * get Elementary Job Seeker List Ajax
+     * @param userElementaryBean
+     * @param locale
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value="/selectUserElementaryInfoListAjax")
 	public ModelAndView selectUserElementaryInfoListAjax(@ModelAttribute("UserElementaryBean") UserElementaryBean userElementaryBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -149,6 +148,16 @@ public class UserElementaryController extends BaseController{
         response.setContentType("text/html;charset=utf-8");
         
     	MultipartFile resumeExcelFile = ((MultipartRequest) request).getFile("resumeExcelFile");
+    	List<Map<String, Object>> userInfoList = new ArrayList<Map<String, Object>>();
+    	UserElementaryBean rtnParam = new UserElementaryBean();
+        
+    	UserBean sessUser = (UserBean) CommonService.selectCommonUserDtlInfo();
+        String loginUserJcCd = sessUser.getJcCd();
+        String loginUser = sessUser.getUserSeq();
+        
+    	String encUserEmail = "";
+    	String encUserCell = "";
+    	String encUserPasswd = "";
     	
         if(resumeExcelFile==null || resumeExcelFile.isEmpty()){
             throw new RuntimeException("Please, Select Excel File");
@@ -171,7 +180,6 @@ public class UserElementaryController extends BaseController{
         fileExtension = fileExtension.toUpperCase();
         
         //File destFile = new File(uploadPath + resumeExcelFile.getOriginalFilename());
-        System.out.println("File Path & File Name : ===============================================================> " + uploadPath + orginalFileName + "_" + sdf.format(new Date()) + "." + fileExtension);
         File destFile = new File(uploadPath + orginalFileName + "_" + sdf.format(new Date()) + "." + fileExtension);
         
         try{
@@ -184,20 +192,17 @@ public class UserElementaryController extends BaseController{
         		XSSFWorkbook workbook=new XSSFWorkbook(fis);
 	        	XSSFSheet sheet=workbook.getSheetAt(0);
 	        	int rows=sheet.getPhysicalNumberOfRows();
-	        	//System.out.println(" XLXS ROW COUNT ========================================= :"+rows);
 	        	
-	        	for(int rowindex=0; rowindex < rows; rowindex++){
+	        	for(int rowindex=1; rowindex < rows; rowindex++){
 	        	    
 	        		XSSFRow row=sheet.getRow(rowindex);
 	        	    if(row !=null){
-	        	    	//System.out.println("  XLXS ROW INDEX ========================================= :"+rowindex);
 	        	    	
-	        	    	//int cells=row.getPhysicalNumberOfCells();
-	        	    	//int lastCellNum = row.getLastCellNum();
-	        	    	int cells = row.getLastCellNum();
-	        	    	//System.out.println("   XLXS CELL COUNT ========================================= :"+cells);
-	        	    	//System.out.println("   XLXS LAST CELL NO ========================================= :"+lastCellNum);
-	        	        
+	        	    	Map<String,Object> mapUserInfo = new HashMap<String,Object>();
+	        	    	
+	        	    	//int cells = row.getLastCellNum();
+	        	    	int cells = 8;
+	        	    	
 	        	    	for(int columnindex=0; columnindex < cells; columnindex++){
 	        	    		
 	        	        	XSSFCell cell=row.getCell(columnindex);
@@ -206,7 +211,6 @@ public class UserElementaryController extends BaseController{
 	        	            if(cell==null){
 	        	                continue;
 	        	            } else {
-	        	            	//System.out.println("    XLXS CELL INDEX ========================================= :"+columnindex);
 	        	            	
 	        	            	switch (cell.getCellType()){
 	        	                case XSSFCell.CELL_TYPE_FORMULA:
@@ -225,10 +229,38 @@ public class UserElementaryController extends BaseController{
 	        	                    value=cell.getErrorCellValue()+"";
 	        	                    break;
 	        	                }
+	        	            	
+	        	            	mapUserInfo.put("jcCd", loginUserJcCd);
+	        	            	mapUserInfo.put("regUserSeq", loginUser);
+	        	            	
+	        	            	if (columnindex == 0) {
+	        	            		mapUserInfo.put("userNmKh", value);
+	        	            	} else if (columnindex == 1) {
+	        	            		mapUserInfo.put("userNmEn", value);
+	        	            	} else if (columnindex == 2) {
+	        	            		encUserEmail = Encryption.encryptAES256(value);
+	        	            		mapUserInfo.put("userEmail", encUserEmail);
+	        	            	} else if (columnindex == 3) {
+	        	            		encUserCell = Encryption.encryptAES256(value);
+	        	            		mapUserInfo.put("userCell", encUserCell);
+	        	            	} else if (columnindex == 4) {
+	        	            		encUserPasswd = Encryption.encryptAES256(value);
+	        	            		mapUserInfo.put("userPasswd", encUserPasswd);
+	        	            	} else if (columnindex == 5) {
+	        	            		mapUserInfo.put("userBirth", value);
+	        	            	} else if (columnindex == 6) {
+	        	            		mapUserInfo.put("userGender", value);
+	        	            	} else if (columnindex == 7) {
+	        	            		mapUserInfo.put("userAddrCd", value);
+	        	            	} else {
+	        	            		mapUserInfo.put("userDtlAddr", value);
+	        	            	}
 	        	            }
-	        	            System.out.println("      XLXS Cell Value ========================================= :"+value);
 	        	        }
-	        	    }
+	        	    	
+	        	    	userInfoList.add(mapUserInfo);
+	        	    }  
+	        	    
 	        	}
 	        	
         	} else {
@@ -241,9 +273,13 @@ public class UserElementaryController extends BaseController{
         		    
         			HSSFRow row=sheet.getRow(rowindex);
         		    if(row !=null){
-        		        int cells=row.getPhysicalNumberOfCells();
+        		    	
+        		    	Map<String,Object> mapUserInfo = new HashMap<String,Object>();
+    		        	
+        		        //int cells=row.getPhysicalNumberOfCells();
+        		    	int cells = 8;
         		        for(int columnindex=0; columnindex <=cells; columnindex++){
-        		            
+        		        	
         		        	HSSFCell cell=row.getCell(columnindex);
         		            String value="";
         		            
@@ -267,19 +303,59 @@ public class UserElementaryController extends BaseController{
         		                    value=cell.getErrorCellValue()+"";
         		                    break;
         		                }
+        		                
+	        	            	mapUserInfo.put("jcCd", loginUserJcCd);
+	        	            	mapUserInfo.put("regUserSeq", loginUser);        		                
+        		                
+	        	            	if (columnindex == 0) {
+	        	            		mapUserInfo.put("userNmKh", value);
+	        	            	} else if (columnindex == 1) {
+	        	            		mapUserInfo.put("userNmEn", value);
+	        	            	} else if (columnindex == 2) {
+	        	            		encUserEmail = Encryption.encryptAES256(value);
+	        	            		mapUserInfo.put("userEmail", encUserEmail);
+	        	            	} else if (columnindex == 3) {
+	        	            		encUserCell = Encryption.encryptAES256(value);
+	        	            		mapUserInfo.put("userCell", encUserCell);
+	        	            	} else if (columnindex == 4) {
+	        	            		encUserPasswd = Encryption.encryptAES256(value);
+	        	            		mapUserInfo.put("userPasswd", encUserPasswd);
+	        	            	} else if (columnindex == 5) {
+	        	            		mapUserInfo.put("userBirth", value);
+	        	            	} else if (columnindex == 6) {
+	        	            		mapUserInfo.put("userGender", value);
+	        	            	} else if (columnindex == 7) {
+	        	            		mapUserInfo.put("userAddrCd", value);
+	        	            		mapUserInfo.put("userAddrFullCd", value);
+	        	            	} else {
+	        	            		mapUserInfo.put("userDtlAddr", value);
+	        	            	}        		                
         		            }
-        		            System.out.println(" XLS Cell Value ========================================= :"+value);
+
         		        }
+        		        
+        		        userInfoList.add(mapUserInfo);
         		    }
         		}
        		
         	}
         	
+        	rtnParam = userElementaryService.insertUserElementaryRegUserInfoByExcel(userInfoList, locale, request);
+        	
+        	if (rtnParam.getResultCode() == "0000") {
+        		System.out.println("Success ========================================================================");
+        	} else {
+        		System.out.println("Fail ========================================================================");
+        	}
+
         }catch(IllegalStateException | IOException e){
             throw new RuntimeException(e.getMessage(),e);
         }
         
         ModelAndView mv = new ModelAndView();
+        mv.addObject("rtnData", userInfoList);
+        mv.addObject("rtnParam", rtnParam);
+        
         //mv.setViewName("");
         return mv;
 
@@ -287,14 +363,14 @@ public class UserElementaryController extends BaseController{
     
     
 	/**
-	 * User Detail Info Main Using Elementary Job Seeker
+	 * User Detail Info Main Elementary Job Seeker
 	 * @param UserElementaryBean
 	 * @param UserElementaryBean
 	 * @return
 	 * @throws Exception
 	 */
-    @RequestMapping(value="/selectUserElementaryDtlInfoMainAjax")
-    public ModelAndView selectUserElementaryDtlInfoMainAjax(@ModelAttribute("UserElementaryBean") UserElementaryBean userElementaryBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    @RequestMapping(value="/selectUserElementaryDtlInfoMain")
+    public ModelAndView selectUserElementaryDtlInfoMain(@ModelAttribute("UserElementaryBean") UserElementaryBean userElementaryBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
     	userElementaryBean.setLang(locale.getLanguage().toLowerCase());
     	UserElementaryBean resultUserMain = (UserElementaryBean) userElementaryService.selectUserElementaryDtlInfoMain(userElementaryBean);
@@ -422,8 +498,8 @@ public class UserElementaryController extends BaseController{
 	 * @return
 	 * @throws Exception
 	 */
-    @RequestMapping(value="/selectUserElementaryRegBaseInfoAjax")
-    public ModelAndView selectUserElementaryRegBaseInfoAjax(@ModelAttribute("UserElementaryBean") UserElementaryBean userElementaryBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    @RequestMapping(value= "/selectUserElementaryRegBaseInfo")
+    public ModelAndView selectUserElementaryRegBaseInfo(@ModelAttribute("UserElementaryBean") UserElementaryBean userElementaryBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	ModelAndView mv = new ModelAndView();
     	userElementaryBean.setLang(locale.getLanguage().toLowerCase());
     	UserElementaryBean resultUserBase = (UserElementaryBean) userElementaryService.selectUserElementaryRegBaseInfo(userElementaryBean);

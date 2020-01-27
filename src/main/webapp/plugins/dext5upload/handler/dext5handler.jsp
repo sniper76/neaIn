@@ -221,14 +221,15 @@
 
 	String today = DateUtil.getDate("yyyyMMdd");
 	//String uploadPath = uploadPath + today + BaseConfig.getValue("SEPARATOR");
-	String uploadPath = BaseConfig.getValue("fileUploadDir") + "\\";
-	String uploadFullPath = uploadPath + today + "\\";
+	//String uploadPath = BaseConfig.getValue("fileUploadDir") + "\\";
+	String uploadPath = BaseConfig.getValue("fileUploadDir") + "/";
+	String uploadFullPath = uploadPath + today + "/";
 	upload.SetPhysicalPath(uploadPath);
 	//upload.SetVirtualPath(uploadFullPath);
 
 	// 임시파일 물리적 경로설정 ( SetVirtualPath에 설정된 경로 + dext5temp )
 	//String uploadPathTemp = uploadPath + "temp" + BaseConfig.getValue("SEPARATOR") + today + BaseConfig.getValue("SEPARATOR");
-	String uploadPathTemp = uploadPath + "temp\\" + today + "\\";
+	String uploadPathTemp = uploadPath + "temp/" + today + "/";
 	upload.SetTempPath(uploadPathTemp);
 
 	// ***************보안 설정 : 업로드 가능한 경로 설정 - 이외의 경로로 업로드 불가능***************

@@ -197,7 +197,7 @@
 	function tabCounselDtlInfo(){
 		
 		$("#innerDtlInfo").empty();
-		var action = contextPath + "/internal/user/selectCounselInfoAjax.do"
+		var action = contextPath + "/internal/user/selectCompnyCounselInfoAjax.do"
 		var compnySeq = $('#compnySeq').val();
 		var param = {
 						userSeq: compnySeq

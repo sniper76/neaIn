@@ -110,7 +110,7 @@ public class CounselController extends BaseController {
 	  	return mv;
 	}
     
-    @RequestMapping(value="/selectCounselHisDtlAjax")
+    @RequestMapping(value= {"/selectCounselHisDtlAjax","selectCompnyCounselHisDtlAjax","selectInsttCounselHisDtlAjax"})
 	public ModelAndView counselHistDtl(@ModelAttribute("CounselBean") CounselBean counselBean, Locale locale, HttpServletRequest request, HttpServletResponse response) throws Exception {    	
     	ModelAndView mv = new ModelAndView();
 

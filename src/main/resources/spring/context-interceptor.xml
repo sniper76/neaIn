@@ -12,11 +12,18 @@
   <mvc:interceptors>
     <mvc:interceptor>
       <mvc:mapping path="/**" />
+      <mvc:exclude-mapping path="/authLogin.do" />
+      <mvc:exclude-mapping path="/internal/index.do" />
+      <mvc:exclude-mapping path="/**/*Ajax.do" />
+      <mvc:exclude-mapping path="/**/**/*Ajax.do" />
+      <mvc:exclude-mapping path="/**/**/**/*Ajax.do" />
       <mvc:exclude-mapping path="/resources/**" />
+      <mvc:exclude-mapping path="/message/**" />
       <beans:bean id="onyCommonInterceptor" class="ony.framework.interceptor.OnyCommonInterceptor"></beans:bean>
     </mvc:interceptor>
+    
   </mvc:interceptors>
-  	
+  
   	<!-- 다국어설정 -->
  	<mvc:interceptors> 
  		<beans:bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"> 
